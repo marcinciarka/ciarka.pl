@@ -1,3 +1,5 @@
+import { seedToUniforms, type AuroraSeed } from "./seed";
+
 const VERTEX_SRC = `
 attribute vec2 aPosition;
 void main() {
@@ -12,8 +14,13 @@ uniform vec2 uResolution;
 uniform float uTime;
 // 0..1: scales the existing domain-warp displacement on scroll.
 uniform float uScrollWarp;
-// Per-load random offset into the noise field / animation phase.
+// Seed-derived offset into the noise field / animation phase.
 uniform vec2 uSeed;
+// Crossfade slot B: the incoming sky during a "new sky" transition.
+uniform vec2 uSeedB;
+uniform float uTimeB;
+// 0 = only slot A is drawn (steady state), 1 = only slot B.
+uniform float uBlend;
 
 vec3 aurora1 = vec3(0.208, 0.878, 0.761);
 vec3 aurora2 = vec3(0.486, 0.424, 0.965);
@@ -74,13 +81,16 @@ float curtain(vec2 uv, float t, float freq, float speed, float yOffset) {
   return smoothstep(0.32, 0.0, dist);
 }
 
-void main() {
+// One complete sky for a given animation time and seed offset. Factored
+// out of main() so two seeds can be evaluated and crossfaded; the visuals
+// are byte-for-byte the ones that used to live inline.
+vec3 sky(float rawTime, vec2 seedOffset) {
   float aspect = uResolution.x / uResolution.y;
   vec2 uv = gl_FragCoord.xy / uResolution.xy;
   uv.x *= aspect;
 
-  float t = uTime * 0.06;
-  vec2 so = uSeed;
+  float t = rawTime * 0.06;
+  vec2 so = seedOffset;
 
   // Double domain warp (warp of a warp): the second field is sampled
   // through the first, folding the curtains into marbled, nebula-like
@@ -114,9 +124,9 @@ void main() {
 
   // Drifting dust: three parallax layers, brighter where the aurora is.
   float glow = c1 + c2 + c3;
-  float dust = particles(uv + so * 0.15, uTime, 22.0, 0.045, 0.045) * 0.6;
-  dust += particles(uv * 1.3 + 13.7 + so.yx, uTime, 38.0, 0.085, 0.035) * 0.4;
-  dust += particles(uv * 1.9 + 41.2 - so, uTime, 60.0, 0.13, 0.028) * 0.25;
+  float dust = particles(uv + so * 0.15, rawTime, 22.0, 0.045, 0.045) * 0.6;
+  dust += particles(uv * 1.3 + 13.7 + so.yx, rawTime, 38.0, 0.085, 0.035) * 0.4;
+  dust += particles(uv * 1.9 + 41.2 - so, rawTime, 60.0, 0.13, 0.028) * 0.25;
   color += dust * mix(vec3(0.75, 0.85, 0.9), aurora1, 0.4) * (0.25 + glow * 0.45);
 
 
@@ -127,6 +137,16 @@ void main() {
   float vignette = smoothstep(1.1, 0.2, length((gl_FragCoord.xy / uResolution.xy - 0.5) * vec2(1.4, 1.0)));
   color *= mix(0.75, 1.0, vignette);
 
+  return color;
+}
+
+void main() {
+  vec3 color = sky(uTime, uSeed);
+  // Uniform branch: in steady state (uBlend == 0) the incoming sky is never
+  // evaluated, so the usual per-frame cost is exactly what it always was.
+  if (uBlend > 0.0) {
+    color = mix(color, sky(uTimeB, uSeedB), uBlend);
+  }
   gl_FragColor = vec4(color, 1.0);
 }
 `;
@@ -148,15 +168,23 @@ function compileShader(
   return shader;
 }
 
-export type AuroraHandle = {
-  destroy: () => void;
-  setPaused: (paused: boolean) => void;
+// Shared by the live hero and the offscreen snapshot renderer so both
+// draw the identical sky from the same seed.
+export type AuroraProgram = {
+  program: WebGLProgram;
+  positionBuffer: WebGLBuffer;
+  uResolution: WebGLUniformLocation | null;
+  uTime: WebGLUniformLocation | null;
+  uScrollWarp: WebGLUniformLocation | null;
+  uSeed: WebGLUniformLocation | null;
+  uSeedB: WebGLUniformLocation | null;
+  uTimeB: WebGLUniformLocation | null;
+  uBlend: WebGLUniformLocation | null;
 };
 
-export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
-  const gl = canvas.getContext("webgl", { antialias: true, alpha: false });
-  if (!gl) return null;
-
+export function setupAuroraProgram(
+  gl: WebGLRenderingContext,
+): AuroraProgram | null {
   let program: WebGLProgram;
   try {
     const vertexShader = compileShader(gl, gl.VERTEX_SHADER, VERTEX_SRC);
@@ -176,6 +204,7 @@ export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
   }
 
   const positionBuffer = gl.createBuffer();
+  if (!positionBuffer) return null;
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.bufferData(
     gl.ARRAY_BUFFER,
@@ -184,22 +213,66 @@ export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
   );
 
   const aPosition = gl.getAttribLocation(program, "aPosition");
-  const uResolution = gl.getUniformLocation(program, "uResolution");
-  const uTime = gl.getUniformLocation(program, "uTime");
-  const uScrollWarp = gl.getUniformLocation(program, "uScrollWarp");
-  const uSeed = gl.getUniformLocation(program, "uSeed");
-
   gl.useProgram(program);
   gl.enableVertexAttribArray(aPosition);
   gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
 
-  // Fresh noise-space / phase offset each load so the sky isn't identical.
-  gl.uniform2f(uSeed, Math.random() * 100, Math.random() * 100);
+  return {
+    program,
+    positionBuffer,
+    uResolution: gl.getUniformLocation(program, "uResolution"),
+    uTime: gl.getUniformLocation(program, "uTime"),
+    uScrollWarp: gl.getUniformLocation(program, "uScrollWarp"),
+    uSeed: gl.getUniformLocation(program, "uSeed"),
+    uSeedB: gl.getUniformLocation(program, "uSeedB"),
+    uTimeB: gl.getUniformLocation(program, "uTimeB"),
+    uBlend: gl.getUniformLocation(program, "uBlend"),
+  };
+}
+
+export type AuroraHandle = {
+  destroy: () => void;
+  setPaused: (paused: boolean) => void;
+  setSeed: (seed: AuroraSeed) => void;
+};
+
+export function initAurora(
+  canvas: HTMLCanvasElement,
+  seed: AuroraSeed,
+): AuroraHandle | null {
+  const gl = canvas.getContext("webgl", { antialias: true, alpha: false });
+  if (!gl) return null;
+
+  const setup = setupAuroraProgram(gl);
+  if (!setup) return null;
+  const {
+    program,
+    positionBuffer,
+    uResolution,
+    uTime,
+    uScrollWarp,
+    uSeed,
+    uSeedB,
+    uTimeB,
+    uBlend,
+  } = setup;
+
+  // Noise-space offset / animation phase derive from the persisted seed,
+  // so a visitor's sky is reproducible across reloads.
+  let uniforms = seedToUniforms(seed);
+  gl.uniform2f(uSeed, uniforms.x, uniforms.y);
+  gl.uniform1f(uBlend, 0);
+
+  // Crossfade state: while `incoming` is set the shader evaluates both skies
+  // and mixes them. `blendStart` is on the same pause-adjusted clock as the
+  // render loop, so a hidden tab freezes mid-fade instead of skipping it.
+  let incoming: { x: number; y: number; t: number } | null = null;
+  let blendStart = 0;
+  const FADE_SECONDS = 1;
 
   let rafId = 0;
   let paused = false;
   const startTime = performance.now();
-  const timeOffset = Math.random() * 200;
   let pauseOffset = 0;
   let pausedAt = 0;
 
@@ -229,17 +302,45 @@ export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
   resizeObserver.observe(canvas);
   resize();
 
+  // Seconds of animation actually played, i.e. wall time minus paused time.
+  const clockAt = (now: number) => (now - startTime - pauseOffset) / 1000;
+
+  // Slot B becomes the only sky; its phase carries over unchanged so the
+  // promoted sky doesn't jump at the moment the fade ends.
+  const promoteIncoming = () => {
+    if (!incoming) return;
+    uniforms = incoming;
+    incoming = null;
+    gl.uniform2f(uSeed, uniforms.x, uniforms.y);
+    gl.uniform1f(uBlend, 0);
+  };
+
+  const draw = (clock: number) => {
+    let blend = 0;
+    if (incoming) {
+      const progress = Math.min(1, (clock - blendStart) / FADE_SECONDS);
+      if (progress >= 1) {
+        promoteIncoming();
+      } else {
+        // smoothstep: no visible seam at either end of the fade.
+        blend = progress * progress * (3 - 2 * progress);
+        gl.uniform2f(uSeedB, incoming.x, incoming.y);
+        gl.uniform1f(uTimeB, clock + incoming.t);
+        gl.uniform1f(uBlend, blend);
+      }
+    }
+
+    gl.uniform2f(uResolution, canvas.width, canvas.height);
+    gl.uniform1f(uTime, clock + uniforms.t);
+    gl.uniform1f(uScrollWarp, scrollWarp);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  };
+
   const render = () => {
     if (paused) return;
 
     scrollWarp += (scrollWarpTarget - scrollWarp) * 0.08;
-
-    const elapsed =
-      (performance.now() - startTime - pauseOffset) / 1000 + timeOffset;
-    gl.uniform2f(uResolution, canvas.width, canvas.height);
-    gl.uniform1f(uTime, elapsed);
-    gl.uniform1f(uScrollWarp, scrollWarp);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    draw(clockAt(performance.now()));
 
     rafId = requestAnimationFrame(render);
   };
@@ -264,6 +365,21 @@ export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
         pauseOffset += performance.now() - pausedAt;
         rafId = requestAnimationFrame(render);
       }
+    },
+    setSeed: (next: AuroraSeed) => {
+      // Freeze at the moment of pausing - `performance.now()` keeps running
+      // while paused and would jump the animation forward.
+      const clock = clockAt(paused ? pausedAt : performance.now());
+      // Reseeding mid-fade shouldn't be reachable from the UI (the button is
+      // disabled for the duration), but if it happens, land the current fade
+      // first so the new one starts from a single, settled sky.
+      promoteIncoming();
+      incoming = seedToUniforms(next);
+      blendStart = clock;
+      // The animation loop picks the transition up on its next frame; if
+      // paused, draw one frame so the state is consistent - the fade itself
+      // resumes from 0 whenever the loop restarts.
+      if (paused) draw(clock);
     },
   };
 }

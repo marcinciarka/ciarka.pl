@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { initAurora, type AuroraHandle } from "../lib/aurora";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { getSeed, setWebglFailed, subscribe } from "../lib/skyStore";
 
 export function AuroraHero() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -25,9 +26,11 @@ export function AuroraHero() {
       ? window.cancelIdleCallback.bind(window)
       : (id: number) => clearTimeout(id);
 
+    let unsubscribeSeed = () => {};
+
     const idleId = schedule(() => {
       if (cancelled) return;
-      const created = initAurora(canvas);
+      const created = initAurora(canvas, getSeed());
       if (cancelled) {
         // Cleanup ran while init was in flight - tear down immediately
         // instead of leaking the WebGL context/animation loop.
@@ -35,7 +38,11 @@ export function AuroraHero() {
         return;
       }
       handle = created;
-      if (!created) setWebglOk(false);
+      if (!created) {
+        setWebglOk(false);
+        setWebglFailed();
+      }
+      unsubscribeSeed = subscribe((next) => handle?.setSeed(next));
     });
 
     const onVisibility = () => handle?.setPaused(document.hidden);
@@ -54,6 +61,7 @@ export function AuroraHero() {
     return () => {
       cancelled = true;
       cancelSchedule(idleId as never);
+      unsubscribeSeed();
       document.removeEventListener("visibilitychange", onVisibility);
       observer?.disconnect();
       handle?.destroy();

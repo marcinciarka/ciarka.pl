@@ -7,6 +7,7 @@ import { Work } from "./components/Work";
 import { ProtocolMatrix } from "./components/ProtocolMatrix";
 import { Skills } from "./components/Skills";
 import { Contact, Footer } from "./components/Contact";
+import { SkyControls } from "./components/SkyControls";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         Skip to content
       </a>
       <AuroraHero />
+      <SkyControls />
       <Nav />
       <header
         id="top"
