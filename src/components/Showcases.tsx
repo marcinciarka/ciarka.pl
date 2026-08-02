@@ -1,5 +1,5 @@
 import { showcases, type Showcase } from "../content";
-import { Motif } from "./Motif";
+import { RecordingPreview } from "./RecordingPreview";
 
 function ShowcaseLinks({ showcase }: { showcase: Showcase }) {
   if (showcase.status === "in-progress") {
@@ -92,15 +92,9 @@ function ShowcaseCard({
       <div
         className={`relative order-1 flex-1 ${reversed ? "" : "lg:order-2"}`}
       >
-        <Motif type={showcase.motif} />
-        {showcase.aside && (
-          <p
-            aria-hidden="true"
-            className={`absolute -bottom-3 -rotate-2 font-mono text-xs text-muted ${reversed ? "left-4" : "right-4"}`}
-          >
-            {showcase.aside}
-          </p>
-        )}
+        {showcase.recording ? (
+          <RecordingPreview src={showcase.recording} title={showcase.name} />
+        ) : null}
       </div>
     </div>
   );

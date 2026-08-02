@@ -54,10 +54,8 @@ export type Showcase = {
   liveUrl: string;
   repoUrl?: string;
   npm?: { pkg: string; url: string };
-  motif: "waveform" | "ticker" | "spark";
   status: "live" | "source-only" | "in-progress";
-  /** Short handwritten-style margin note shown next to the motif panel. */
-  aside?: string;
+  recording?: string;
 };
 
 export const showcases: Showcase[] = [
@@ -70,7 +68,7 @@ export const showcases: Showcase[] = [
     highlights: [
       "WebSocket event stream with keep-alive + broadcast (Bun server)",
       "TVL easing with BigNumber.js precision math",
-      "60fps Canvas/SVG animation (SunCore, BlobField)",
+      "60fps WebGL animation",
       "Web Audio API synthesis driven by on-chain events",
     ],
     tech: [
@@ -79,13 +77,12 @@ export const showcases: Showcase[] = [
       "Bun",
       "WebSockets",
       "Web Audio API",
-      "Canvas",
+      "WebGL",
     ],
     liveUrl: "https://resonance.summer.fi/",
     // repo is private - add repoUrl when/if it goes public
-    motif: "waveform",
     status: "live",
-    aside: "turn your sound on ♪",
+    recording: "/recordings/resonance_web.mp4",
   },
   {
     id: "chainvibe",
@@ -106,38 +103,8 @@ export const showcases: Showcase[] = [
       pkg: "@chainvibe/components",
       url: "https://www.npmjs.com/package/@chainvibe/components",
     },
-    motif: "ticker",
     status: "live",
-    aside: "real events, as they land",
-  },
-];
-
-// Hidden for now (demo not available) - move back into `showcases` to publish.
-export const hiddenShowcases: Showcase[] = [
-  {
-    id: "summer-roast",
-    name: "Summer Roast",
-    tagline: "An LLM reads your wallet. It is not kind.",
-    description:
-      "AI portfolio analytics with a sense of humor: reads wallet holdings, trade history and protocol exposure, verifies ownership with an EIP-712 signature, and streams a personalized roast from an LLM.",
-    highlights: [
-      "EIP-712 typed-signature ownership verification",
-      "Streaming LLM output over WebSockets",
-      "Protocol risk scoring fed into the prompt context",
-      "PostgreSQL + Prisma persistence",
-    ],
-    tech: [
-      "Next.js",
-      "TanStack Query",
-      "LLM APIs",
-      "EIP-712",
-      "PostgreSQL",
-      "Prisma",
-    ],
-    liveUrl: "https://roast.ciarka.pl",
-    repoUrl: "https://github.com/marcinciarka/summer-roast",
-    motif: "spark",
-    status: "in-progress",
+    recording: "/recordings/chainvibe_web.mp4",
   },
 ];
 
