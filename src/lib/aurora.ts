@@ -84,7 +84,7 @@ void main() {
 
   // Double domain warp (warp of a warp): the second field is sampled
   // through the first, folding the curtains into marbled, nebula-like
-  // structures. Scroll only scales that existing displacement — no
+  // structures. Scroll only scales that existing displacement - no
   // extra motion, just more of the same fold.
   float warpAmp = 1.0 + uScrollWarp * 0.85;
   float foldAmp = 1.8 + uScrollWarp * 0.55;
@@ -204,7 +204,7 @@ export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
   let pausedAt = 0;
 
   // Scroll scales domain-warp strength over the first 1000px. Ease-out
-  // quart: biggest change early, then tapering — holds at max past that.
+  // quart: biggest change early, then tapering - holds at max past that.
   let scrollWarpTarget = 0;
   let scrollWarp = 0;
   const onScroll = () => {

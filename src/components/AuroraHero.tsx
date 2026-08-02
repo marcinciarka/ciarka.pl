@@ -29,7 +29,7 @@ export function AuroraHero() {
       if (cancelled) return;
       const created = initAurora(canvas);
       if (cancelled) {
-        // Cleanup ran while init was in flight — tear down immediately
+        // Cleanup ran while init was in flight - tear down immediately
         // instead of leaking the WebGL context/animation loop.
         created?.destroy();
         return;

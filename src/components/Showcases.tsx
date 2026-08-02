@@ -5,7 +5,7 @@ function ShowcaseLinks({ showcase }: { showcase: Showcase }) {
   if (showcase.status === "in-progress") {
     return (
       <span className="rounded-full border border-glass-border bg-glass px-3 py-1 font-mono text-xs text-muted">
-        shipping soon — repos going public
+        shipping soon - repos going public
       </span>
     );
   }

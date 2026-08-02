@@ -68,7 +68,7 @@ export function Footer() {
   return (
     <footer className="mx-auto max-w-6xl px-6 pb-12 pt-6">
       <p className="text-xs text-muted">
-        hand-built with Vite, React and one hand-rolled WebGL shader — no
+        hand-built with Vite, React and one hand-rolled WebGL shader - no
         template, no UI kit · numbers straight from commit history, 2016–2026
       </p>
     </footer>

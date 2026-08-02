@@ -55,7 +55,7 @@ async function main() {
   const prev = JSON.parse(readFileSync(STATS_PATH, "utf8"));
   const fetched = await fetchStats();
 
-  // The API can undercount during outages/reindexing — never regress the numbers.
+  // The API can undercount during outages/reindexing - never regress the numbers.
   const next = {
     commits: Math.max(fetched.commits, prev.commits),
     pullRequests: Math.max(fetched.pullRequests, prev.pullRequests),

@@ -21,7 +21,7 @@ export function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Hidden nav must not be reachable by keyboard/AT — `inert` isn't in the
+  // Hidden nav must not be reachable by keyboard/AT - `inert` isn't in the
   // React 18 HTML attribute types, so set it imperatively on the DOM node.
   useEffect(() => {
     navRef.current?.toggleAttribute("inert", !visible);

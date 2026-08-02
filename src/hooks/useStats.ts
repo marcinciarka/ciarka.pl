@@ -33,7 +33,7 @@ export function useStats(): Stats {
       setStats((prev) => ({
         commits: Math.max(prev.commits, live.commits),
         pullRequests: Math.max(prev.pullRequests, live.pullRequests),
-        // defiYears is a curated fact, not a GitHub-derived count — it never
+        // defiYears is a curated fact, not a GitHub-derived count - it never
         // comes from stats.json, only from the baked fallback.
         defiYears: prev.defiYears,
         protocols: Math.max(prev.protocols, live.protocols),

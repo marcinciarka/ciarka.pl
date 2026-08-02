@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useStats } from "../hooks/useStats";
 import { useCountUp } from "../hooks/useCountUp";
 import { useReducedMotion } from "../hooks/useReducedMotion";
@@ -29,7 +30,7 @@ function StatCounter({
 }) {
   const animated = useCountUp(value, skip);
   return (
-    <div className="min-w-[6rem]">
+    <div className="min-w-24">
       <div className="tabular font-mono text-2xl font-medium text-text sm:text-3xl">
         {animated.toLocaleString("en-US")}
         {suffix}
@@ -44,12 +45,37 @@ function StatCounter({
 export function Stats() {
   const stats = useStats();
   const reducedMotion = useReducedMotion();
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let rafId = 0;
+    const update = () => {
+      rafId = 0;
+      const y = window.scrollY;
+      const opacity = y <= 100 ? 1 : y >= 400 ? 0 : 1 - (y - 100) / 300;
+      const el = rootRef.current;
+      if (!el) return;
+      el.style.opacity = String(opacity);
+      el.style.pointerEvents = opacity === 0 ? "none" : "";
+      el.setAttribute("aria-hidden", opacity === 0 ? "true" : "false");
+    };
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   const isStale =
     Date.now() - new Date(stats.updatedAt).getTime() > STALE_AFTER_MS;
 
   return (
-    <div>
+    <div ref={rootRef}>
       <div className="grid grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:gap-10">
         {FIELDS.map((f) => (
           <StatCounter

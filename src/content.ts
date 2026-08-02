@@ -1,4 +1,4 @@
-// All site copy and data in one place. Numbers are commit-verified —
+// All site copy and data in one place. Numbers are commit-verified -
 // extracted from GitHub history (2016–2026), see /output research docs.
 
 // Single source of truth for baked stats: the same JSON the scheduled
@@ -25,12 +25,12 @@ export const identity: Identity = {
   name: "Marcin Ciarka",
   role: "Senior Web3 Full-Stack Engineer",
   pitch:
-    "Ten years shipping for the web, four of them building production DeFi at Summer.fi — core contributor on the multi-protocol frontend for Maker, Aave, Spark, Morpho and Ajna, protocols holding billions in combined TVL. Now leading DApp frontend at Aphelion.",
+    "Ten years shipping for the web, four of them building production DeFi at Summer.fi - core contributor on the multi-protocol frontend for Maker, Aave, Spark, Morpho and Ajna, protocols holding billions in combined TVL.",
   location: "Poland · remote (CET)",
   availability: "Open to senior Web3 full-stack roles",
   contactNote:
-    "No contact form, no scheduling link — email works, and I actually answer.",
-  email: "marcin@plamka.net",
+    "No contact form, no scheduling link - email works, and I actually answer.",
+  email: "cv@plamka.net",
   github: "https://github.com/marcinciarka",
   githubHandle: "marcinciarka",
   // TODO(marcin): add LinkedIn profile URL when ready
@@ -40,7 +40,7 @@ export const identity: Identity = {
 };
 
 // Baked fallback for the live stats.json (updated by scheduled workflow).
-// Derived from the same public/stats.json the client fetches at runtime —
+// Derived from the same public/stats.json the client fetches at runtime -
 // no hand-maintained duplicate numbers.
 export const bakedStats = baked;
 
@@ -66,7 +66,7 @@ export const showcases: Showcase[] = [
     name: "Summer Resonance",
     tagline: "Live DeFi telemetry you can hear",
     description:
-      "A real-time dashboard streaming deposit and withdraw events and TVL movement from the Lazy Summer Protocol — then mapping that telemetry to a generative Web Audio soundscape.",
+      "A real-time dashboard streaming deposit and withdraw events and TVL movement from the Lazy Summer Protocol - then mapping that telemetry to a generative Web Audio soundscape.",
     highlights: [
       "WebSocket event stream with keep-alive + broadcast (Bun server)",
       "TVL easing with BigNumber.js precision math",
@@ -82,7 +82,7 @@ export const showcases: Showcase[] = [
       "Canvas",
     ],
     liveUrl: "https://resonance.summer.fi/",
-    // repo is private — add repoUrl when/if it goes public
+    // repo is private - add repoUrl when/if it goes public
     motif: "waveform",
     status: "live",
     aside: "turn your sound on ♪",
@@ -101,7 +101,7 @@ export const showcases: Showcase[] = [
     ],
     tech: ["React", "TypeScript", "Bun", "WebSockets", "npm library"],
     liveUrl: "https://chainvi.be/",
-    // repo is private — add repoUrl when/if it goes public
+    // repo is private - add repoUrl when/if it goes public
     npm: {
       pkg: "@chainvibe/components",
       url: "https://www.npmjs.com/package/@chainvibe/components",
@@ -112,7 +112,7 @@ export const showcases: Showcase[] = [
   },
 ];
 
-// Hidden for now (demo not available) — move back into `showcases` to publish.
+// Hidden for now (demo not available) - move back into `showcases` to publish.
 export const hiddenShowcases: Showcase[] = [
   {
     id: "summer-roast",
@@ -151,11 +151,11 @@ export type WorkEntry = {
 
 export const work: WorkEntry[] = [
   {
-    period: "2025 — present",
+    period: "2025 - present",
     company: "Aphelion",
     role: "Lead DApp Frontend Engineer",
     summary:
-      "Institutional Web3 trading and asset-management platform — low-latency reactive position views, earn conversion rates, liquidation risk monitors.",
+      "Institutional Web3 trading and asset-management platform - low-latency reactive position views, earn conversion rates, liquidation risk monitors.",
     details: [
       "EIP-712 typed-data signature workflows for institutional flows",
       "Multi-wallet connectivity (MetaMask, WalletConnect, Coinbase Wallet)",
@@ -164,11 +164,11 @@ export const work: WorkEntry[] = [
     ],
   },
   {
-    period: "2022 — present",
+    period: "2022 - present",
     company: "Summer.fi (Oasis.app)",
     role: "Senior DeFi Full-Stack Engineer",
     summary:
-      "Core contributor on the multi-protocol Borrow / Multiply / Earn suite — Maker, Aave v2/v3, Spark, Morpho Blue and Ajna unified behind one frontend.",
+      "Core contributor on the multi-protocol Borrow / Multiply / Earn suite - Maker, Aave v2/v3, Spark, Morpho Blue and Ajna unified behind one frontend.",
     details: [
       "DeFi Position Manager (DPM) smart-proxy flows: flash-loan leverage, debt refinance and protocol migration in one atomic transaction",
       "Automated risk engine UIs: Stop-Loss, Take-Profit, Auto-Buy/Sell, Trailing Stop-Loss",
@@ -178,7 +178,7 @@ export const work: WorkEntry[] = [
     ],
   },
   {
-    period: "2016 — 2022",
+    period: "2016 - 2022",
     company: "Earlier",
     role: "Full-Stack Engineer",
     summary:
@@ -199,7 +199,7 @@ export type ProtocolActivity = {
 };
 
 // Commit + PR counts per protocol/domain, from the verified footprint matrix.
-// TODO(marcin): confirm pre-2022 Maker/Oasis work — the earlier aggregation date was unverified.
+// TODO(marcin): confirm pre-2022 Maker/Oasis work - the earlier aggregation date was unverified.
 export const protocolMatrix: ProtocolActivity[] = [
   {
     name: "MakerDAO / Oasis",
@@ -257,7 +257,7 @@ export const protocolMatrix: ProtocolActivity[] = [
   },
 ];
 
-// Closing note folded in after the bars — keeps 1inch mentioned without a
+// Closing note folded in after the bars - keeps 1inch mentioned without a
 // standalone low-activity row damaging the credibility of the matrix.
 export const protocolMatrixFootnote =
   "also shipped against 1inch and other swap aggregators.";

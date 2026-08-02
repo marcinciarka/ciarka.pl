@@ -1,6 +1,6 @@
 # ciarka.pl
 
-Personal site of Marcin Ciarka — Senior Web3 Full-Stack Engineer.
+Personal site of Marcin Ciarka - Senior Web3 Full-Stack Engineer.
 Vite + React + TypeScript + Tailwind CSS v4, with a hand-rolled WebGL aurora shader.
 
 ## Develop
@@ -15,7 +15,7 @@ npm run preview    # serve the production build
 
 ## Live stats
 
-`public/stats.json` is the single source of truth for the hero counters —
+`public/stats.json` is the single source of truth for the hero counters -
 baked into the bundle at build time and re-fetched client-side.
 `.github/workflows/stats.yml` refreshes it from the GitHub API every 10 minutes,
 commits only when values change, and triggers a Pages redeploy.
@@ -25,7 +25,7 @@ commits only when values change, and triggers a Pages redeploy.
 Pushes to `main` build and deploy to GitHub Pages (`.github/workflows/deploy.yml`).
 Custom domain via `public/CNAME` → ciarka.pl.
 
-## Before going live — open TODOs
+## Before going live - open TODOs
 
 Search `TODO(marcin)` in `src/content.ts`:
 

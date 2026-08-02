@@ -40,7 +40,7 @@ export function ProtocolMatrix() {
                 type="button"
                 aria-expanded={isActive}
                 aria-controls={noteId}
-                aria-label={`${p.name} — ${p.activity.toLocaleString("en-US")} commits and PRs since ${p.since}`}
+                aria-label={`${p.name} - ${p.activity.toLocaleString("en-US")} commits and PRs since ${p.since}`}
                 onClick={() =>
                   setActive((cur) => (cur === p.name ? null : p.name))
                 }
