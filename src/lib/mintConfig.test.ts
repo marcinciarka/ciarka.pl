@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { CONTRACT_ADDRESS, CONTRACT_DEPLOYED, MAX_IMAGE_BYTES, dataUrlToBytes, openSeaUrl } from "./mintConfig";
+import {
+  CONTRACT_ADDRESS,
+  CONTRACT_DEPLOYED,
+  MAX_IMAGE_BYTES,
+  computeTotalUsd,
+  dataUrlToBytes,
+  explorerContractUrl,
+  formatScaledUsd,
+  hexBytesToDataUrl,
+  hexToBase64,
+  openSeaUrl,
+  pageTokenIds,
+} from "./mintConfig";
 
 describe("dataUrlToBytes", () => {
   it("decodes mime and payload from a data URL", () => {
@@ -40,5 +52,119 @@ describe("MAX_IMAGE_BYTES", () => {
   it("is a positive byte cap", () => {
     expect(MAX_IMAGE_BYTES).toBeGreaterThan(0);
     expect(MAX_IMAGE_BYTES).toBe(16_000);
+  });
+});
+
+describe("explorerContractUrl", () => {
+  it("points at the contract's Basescan address page", () => {
+    expect(explorerContractUrl()).toBe(
+      `https://basescan.org/address/${CONTRACT_ADDRESS}`,
+    );
+  });
+});
+
+describe("formatScaledUsd", () => {
+  it("formats a 1e4-scaled integer to exactly 4 decimals", () => {
+    expect(formatScaledUsd(30_000n)).toBe("3.0000");
+    expect(formatScaledUsd(0n)).toBe("0.0000");
+    expect(formatScaledUsd(5n)).toBe("0.0005");
+    expect(formatScaledUsd(123_456_789n)).toBe("12345.6789");
+  });
+
+  it("keeps the sign and pads the fraction for negative values", () => {
+    expect(formatScaledUsd(-5n)).toBe("-0.0005");
+  });
+});
+
+describe("computeTotalUsd", () => {
+  it("converts wei spent + an 8-decimal ETH/USD answer to a 4-decimal string", () => {
+    // 0.001 ETH at $3000/ETH = $3 exactly.
+    const weiSpent = 1_000_000_000_000_000n; // 0.001 ETH
+    const answer = 300_000_000_000n; // $3000.00000000 (8 decimals)
+    expect(computeTotalUsd(weiSpent, answer, 8)).toBe("3.0000");
+  });
+
+  it("floors instead of rounding, keeping exactly 4 decimals", () => {
+    // 1 wei is far below a cent's worth of precision — must floor to 0, not
+    // throw or produce a longer string.
+    expect(computeTotalUsd(1n, 300_000_000_000n, 8)).toBe("0.0000");
+  });
+
+  it("handles a realistic Base gas-mint total", () => {
+    // ~0.0000005 ETH gas cost at $3200/ETH.
+    const weiSpent = 500_000_000_000n; // 5e11 wei
+    const answer = 320_000_000_000n; // $3200 at 8 decimals
+    // 5e11 * 3.2e11 * 1e4 / 1e26 = 1.6e27 / 1e26 = 16 -> 0.0016
+    expect(computeTotalUsd(weiSpent, answer, 8)).toBe("0.0016");
+  });
+});
+
+describe("pageTokenIds", () => {
+  it("returns the newest pageSize ids for page 0", () => {
+    expect(pageTokenIds(25, 0, 12)).toEqual(
+      Array.from({ length: 12 }, (_, i) => BigInt(25 - i)),
+    );
+  });
+
+  it("returns the next older page on page 1", () => {
+    expect(pageTokenIds(25, 1, 12)).toEqual(
+      Array.from({ length: 12 }, (_, i) => BigInt(13 - i)),
+    );
+  });
+
+  it("clamps the final partial page at token id 1", () => {
+    expect(pageTokenIds(25, 2, 12)).toEqual([1n]);
+  });
+
+  it("returns an empty page once past the end", () => {
+    expect(pageTokenIds(25, 3, 12)).toEqual([]);
+  });
+
+  it("returns an empty array when nothing has been minted", () => {
+    expect(pageTokenIds(0, 0, 12)).toEqual([]);
+  });
+
+  it("returns every id when total is smaller than one page", () => {
+    expect(pageTokenIds(5, 0, 12)).toEqual([5n, 4n, 3n, 2n, 1n]);
+  });
+
+  it("rejects a negative page or non-positive pageSize defensively", () => {
+    expect(pageTokenIds(25, -1, 12)).toEqual([]);
+    expect(pageTokenIds(25, 0, 0)).toEqual([]);
+  });
+});
+
+describe("hexToBase64 / hexBytesToDataUrl", () => {
+  it("matches a direct btoa for small input", () => {
+    // "hi!" -> 0x686921 -> base64 "aGkh"
+    expect(hexToBase64("0x686921")).toBe("aGkh");
+  });
+
+  it("round-trips through atob back to the original bytes", () => {
+    const bytes = Uint8Array.from({ length: 50 }, (_, i) => i % 256);
+    const hex = "0x" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    const b64 = hexToBase64(hex);
+    const decoded = atob(b64);
+    const decodedBytes = Uint8Array.from(decoded, (c) => c.charCodeAt(0));
+    expect(Array.from(decodedBytes)).toEqual(Array.from(bytes));
+  });
+
+  it("produces identical output regardless of chunk size (chunk-boundary correctness)", () => {
+    // A byte length that isn't a clean multiple of small chunk sizes, so a
+    // chunking bug at a boundary would show up as a mismatch here.
+    const bytes = Uint8Array.from({ length: 137 }, (_, i) => (i * 7) % 256);
+    const hex = "0x" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    const wholeAtOnce = hexToBase64(hex, 1_000_000);
+    const tinyChunks = hexToBase64(hex, 3);
+    const defaultChunk = hexToBase64(hex);
+    expect(tinyChunks).toBe(wholeAtOnce);
+    expect(defaultChunk).toBe(wholeAtOnce);
+  });
+
+  it("builds a data URL with the given mime type", () => {
+    expect(hexBytesToDataUrl("0x686921")).toBe("data:image/webp;base64,aGkh");
+    expect(hexBytesToDataUrl("0x686921", "image/png")).toBe(
+      "data:image/png;base64,aGkh",
+    );
   });
 });

@@ -108,6 +108,48 @@ describe("skyStore", () => {
     });
   });
 
+  describe("applySeed", () => {
+    it("changes the seed, persists it, and notifies subscribers", async () => {
+      const { getSeed, applySeed } = await import("./skyStore");
+      const before = getSeed();
+      const target = before + 1;
+      const listener = vi.fn();
+      const { subscribe } = await import("./skyStore");
+      subscribe(listener);
+      applySeed(target);
+      expect(getSeed()).toBe(target);
+      expect(localStorage.getItem("aurora-seed")).toBe(String(target));
+      expect(listener).toHaveBeenCalledWith(target);
+    });
+
+    it("is a no-op when applying the current seed (no notify, no re-persist)", async () => {
+      const { getSeed, applySeed, subscribe } = await import("./skyStore");
+      const current = getSeed();
+      localStorage.removeItem("aurora-seed");
+      const listener = vi.fn();
+      subscribe(listener);
+      applySeed(current);
+      expect(listener).not.toHaveBeenCalled();
+      expect(localStorage.getItem("aurora-seed")).toBeNull();
+    });
+
+    it("drops ?seed= from the address bar like reseed does", async () => {
+      const replaceState = vi.fn();
+      globalThis.location = {
+        href: "https://ciarka.pl/?seed=12345",
+        search: "?seed=12345",
+      } as Location;
+      globalThis.history = { replaceState } as unknown as History;
+      const { getSeed, applySeed } = await import("./skyStore");
+      expect(getSeed()).toBe(12345);
+      applySeed(999);
+      expect(replaceState).toHaveBeenCalledTimes(1);
+      expect(replaceState.mock.calls[0][2]).toBe("/");
+      // @ts-expect-error - restore the node-like default for other tests
+      delete globalThis.history;
+    });
+  });
+
   describe("capture registration", () => {
     it("captureNow returns null when nothing is registered", async () => {
       const { captureNow } = await import("./skyStore");

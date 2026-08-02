@@ -2,24 +2,63 @@ import type { AuroraSeed } from "./seed";
 import { isWebpDataUrl, type AuroraSnapshot } from "./capture";
 import {
   AURORA_SKY_ABI,
+  CHAINLINK_AGGREGATOR_ABI,
+  CHAINLINK_ETH_USD,
+  CHAINLINK_ETH_USD_DECIMALS,
   CONTRACT_ADDRESS,
   EXPLORER_BASE,
   MAX_IMAGE_BYTES,
   MINT_CHAIN,
+  computeTotalUsd,
   dataUrlToBytes,
+  hexBytesToDataUrl,
   openSeaUrl as buildOpenSeaUrl,
+  pageTokenIds,
 } from "./mintConfig";
 // mint.ts is only ever reached via a dynamic `import("../lib/mint")`
 // (see MintButton), so a static import of viem here is safe — it never
 // touches the entry chunk, it just makes viem load as soon as mint.ts
 // does instead of only inside each function's own `await import("viem")`.
 import { BaseError } from "viem";
+import type { PublicClient } from "viem";
+
+// Public Base RPCs used as fallbacks behind the chain's default
+// (mainnet.base.org), which has been returning 429s under load. viem's
+// fallback transport moves to the next URL on failure — including rate
+// limits — so a single throttled provider no longer breaks reads.
+const FALLBACK_RPC_URLS = [
+  "https://base-rpc.publicnode.com",
+  "https://base.drpc.org",
+  "https://base.llamarpc.com",
+  "https://base.meowrpc.com",
+  "https://gateway.tenderly.co/public/base",
+  "https://base.lava.build",
+];
+
+// One shared read client for the whole module: every read path used to
+// build its own client on the bare default transport, multiplying requests
+// against the one rate-limited endpoint.
+let publicClientPromise: Promise<PublicClient> | null = null;
+
+function getPublicClient(): Promise<PublicClient> {
+  publicClientPromise ??= (async () => {
+    const { createPublicClient, fallback, http } = await import("viem");
+    return createPublicClient({
+      chain: MINT_CHAIN,
+      transport: fallback([
+        http(), // chain default first: mainnet.base.org
+        ...FALLBACK_RPC_URLS.map((url) => http(url)),
+      ]),
+    }) as PublicClient;
+  })();
+  return publicClientPromise;
+}
 
 // Re-exported so callers (MintButton) can reach `openSeaUrl` through the
 // same dynamic `import("../lib/mint")` used for minting, instead of
 // statically importing mintConfig.ts — which pulls in `viem/chains` and
 // would otherwise land that weight in the entry chunk.
-export { openSeaUrl } from "./mintConfig";
+export { openSeaUrl, explorerContractUrl } from "./mintConfig";
 
 export class NoWalletError extends Error {
   constructor() {
@@ -121,8 +160,7 @@ export async function checkMintable(
   account: `0x${string}`,
   seed: AuroraSeed,
 ): Promise<"ok" | "seed-taken" | "wallet-minted"> {
-  const { createPublicClient, http } = await import("viem");
-  const publicClient = createPublicClient({ chain: MINT_CHAIN, transport: http() });
+  const publicClient = await getPublicClient();
 
   // allSettled, not all: these are two independent guards, and one RPC
   // failing must not throw away the other's answer. Promise.all would reject
@@ -152,6 +190,116 @@ export async function checkMintable(
   return "ok";
 }
 
+// Multicall3 (which Base has, and viem's `multicall` uses automatically)
+// caps calldata/return size well before 100 `ownerOf`/`seedOf`/`imageOf`
+// reads would hit it, but batching defensively here also bounds how much
+// work a single round trip does as the collection grows.
+const MULTICALL_BATCH = 100n;
+
+// Wallet-token recall for the mint modal: does this account already own a
+// minted aurora? totalMinted → ownerOf batched newest-first (most likely to
+// be the wallet's own recent mint, and matches the gallery's ordering) →
+// seedOf for whichever token matches. Read-only, no wallet prompt.
+export async function findMintedToken(
+  account: `0x${string}`,
+): Promise<{ tokenId: bigint; seed: number } | null> {
+  const publicClient = await getPublicClient();
+
+  const total = await publicClient.readContract({
+    address: CONTRACT_ADDRESS,
+    abi: AURORA_SKY_ABI,
+    functionName: "totalMinted",
+  });
+  if (total === 0n) return null;
+
+  const wanted = account.toLowerCase();
+  for (let end = total; end >= 1n; end -= MULTICALL_BATCH) {
+    const start = end - MULTICALL_BATCH + 1n > 1n ? end - MULTICALL_BATCH + 1n : 1n;
+    const ids: bigint[] = [];
+    for (let id = end; id >= start; id--) ids.push(id);
+
+    const owners = await publicClient.multicall({
+      contracts: ids.map((tokenId) => ({
+        address: CONTRACT_ADDRESS,
+        abi: AURORA_SKY_ABI,
+        functionName: "ownerOf",
+        args: [tokenId],
+      })),
+      allowFailure: true,
+    });
+
+    const matchIndex = owners.findIndex(
+      (r) => r.status === "success" && (r.result as unknown as string).toLowerCase() === wanted,
+    );
+    if (matchIndex !== -1) {
+      const tokenId = ids[matchIndex];
+      const seed = await publicClient.readContract({
+        address: CONTRACT_ADDRESS,
+        abi: AURORA_SKY_ABI,
+        functionName: "seedOf",
+        args: [tokenId],
+      });
+      return { tokenId, seed: Number(seed) };
+    }
+    if (start === 1n) break;
+  }
+  return null;
+}
+
+// One page of the "all minted auroras" gallery: newest-first, `imageOf` +
+// `seedOf` multicalled together for the page's token ids. Images run ~9KB
+// each, hence the 12/page default — big enough to feel like a gallery,
+// small enough that a page of multicalls stays a single reasonable RPC
+// round trip.
+export async function fetchMintedAuroras(
+  page: number,
+  pageSize = 12,
+): Promise<{
+  items: { tokenId: bigint; seed: number; dataUrl: string; openSeaUrl: string }[];
+  total: number;
+}> {
+  const publicClient = await getPublicClient();
+
+  const totalBig = await publicClient.readContract({
+    address: CONTRACT_ADDRESS,
+    abi: AURORA_SKY_ABI,
+    functionName: "totalMinted",
+  });
+  const total = Number(totalBig);
+  const ids = pageTokenIds(total, page, pageSize);
+  if (ids.length === 0) return { items: [], total };
+
+  const [seeds, images] = await Promise.all([
+    publicClient.multicall({
+      contracts: ids.map((tokenId) => ({
+        address: CONTRACT_ADDRESS,
+        abi: AURORA_SKY_ABI,
+        functionName: "seedOf",
+        args: [tokenId],
+      })),
+      allowFailure: false,
+    }),
+    publicClient.multicall({
+      contracts: ids.map((tokenId) => ({
+        address: CONTRACT_ADDRESS,
+        abi: AURORA_SKY_ABI,
+        functionName: "imageOf",
+        args: [tokenId],
+      })),
+      allowFailure: false,
+    }),
+  ]);
+
+  const items = ids.map((tokenId, i) => ({
+    tokenId,
+    seed: Number(seeds[i]),
+    dataUrl: hexBytesToDataUrl(images[i] as unknown as string),
+    openSeaUrl: buildOpenSeaUrl(tokenId),
+  }));
+
+  return { items, total };
+}
+
 // Gas estimate for the mint the modal is about to offer, so the user sees a
 // cost before signing. Runs the same snapshot guard as mintSky, before any
 // network access, so a rejected snapshot never reaches estimateContractGas.
@@ -159,14 +307,18 @@ export async function estimateMint(
   account: `0x${string}`,
   seed: AuroraSeed,
   snapshot: AuroraSnapshot,
-): Promise<{ gas: bigint; gasPriceWei: bigint; totalEth: string }> {
+): Promise<{ gas: bigint; gasPriceWei: bigint; totalEth: string; totalUsd: string | null }> {
   validateSnapshot(snapshot);
 
-  const { createPublicClient, http, formatEther } = await import("viem");
-  const publicClient = createPublicClient({ chain: MINT_CHAIN, transport: http() });
+  const { formatEther } = await import("viem");
+  const publicClient = await getPublicClient();
   const { hex } = dataUrlToBytes(snapshot.dataUrl);
 
-  const [gas, gasPriceWei] = await Promise.all([
+  // The oracle read runs alongside the gas estimate/price, not after: it's
+  // independent of both, and a slow or failing oracle must never delay (or
+  // fail) the ETH estimate the modal's already showing. Failure degrades to
+  // `null` via .catch rather than Promise.all's fail-everything behavior.
+  const [gas, gasPriceWei, oracleResult] = await Promise.all([
     publicClient.estimateContractGas({
       account,
       address: CONTRACT_ADDRESS,
@@ -175,9 +327,23 @@ export async function estimateMint(
       args: [hex, seed],
     }),
     publicClient.getGasPrice(),
+    publicClient
+      .readContract({
+        address: CHAINLINK_ETH_USD,
+        abi: CHAINLINK_AGGREGATOR_ABI,
+        functionName: "latestRoundData",
+      })
+      .catch(() => null),
   ]);
 
-  return { gas, gasPriceWei, totalEth: formatCostEth(formatEther(gas * gasPriceWei)) };
+  const weiSpent = gas * gasPriceWei;
+  const answer = oracleResult?.[1] ?? null;
+  const totalUsd =
+    answer !== null && answer > 0n
+      ? computeTotalUsd(weiSpent, answer, CHAINLINK_ETH_USD_DECIMALS)
+      : null;
+
+  return { gas, gasPriceWei, totalEth: formatCostEth(formatEther(weiSpent)), totalUsd };
 }
 
 // Base's gas prices routinely put a mint well under 1e-6 ETH, where a plain
@@ -203,13 +369,9 @@ export async function mintSky(
   const ethereum = getEthereum();
   if (!ethereum) throw new NoWalletError();
 
-  const { createWalletClient, createPublicClient, custom, http, parseEventLogs } =
-    await import("viem");
+  const { createWalletClient, custom, parseEventLogs } = await import("viem");
 
-  const publicClient = createPublicClient({
-    chain: MINT_CHAIN,
-    transport: http(),
-  });
+  const publicClient = await getPublicClient();
 
   const taken = await publicClient.readContract({
     address: CONTRACT_ADDRESS,

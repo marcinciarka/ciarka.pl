@@ -207,3 +207,216 @@ describe("checkMintable degradation (I1)", () => {
     expect(await withReads(false, false)).toBe("ok");
   });
 });
+
+describe("findMintedToken", () => {
+  afterEach(() => {
+    vi.doUnmock("viem");
+    vi.resetModules();
+  });
+
+  async function withClient(client: {
+    readContract: (args: { functionName: string }) => unknown;
+    multicall: (args: { contracts: { args: readonly [bigint] }[] }) => unknown;
+  }) {
+    vi.resetModules();
+    const actual = await vi.importActual<typeof import("viem")>("viem");
+    vi.doMock("viem", () => ({
+      ...actual,
+      createPublicClient: () => client,
+      http: () => undefined,
+    }));
+    return import("./mint");
+  }
+
+  it("returns null when nothing has been minted", async () => {
+    const { findMintedToken } = await withClient({
+      readContract: ({ functionName }) =>
+        functionName === "totalMinted" ? Promise.resolve(0n) : Promise.resolve(null),
+      multicall: () => Promise.resolve([]),
+    });
+    const result = await findMintedToken(
+      "0x1111111111111111111111111111111111111111",
+    );
+    expect(result).toBeNull();
+  });
+
+  it("finds the matching token and reads its seed", async () => {
+    const account = "0xAAAA111111111111111111111111111111111111";
+    const { findMintedToken } = await withClient({
+      readContract: ({ functionName }: { functionName: string }) => {
+        if (functionName === "totalMinted") return Promise.resolve(3n);
+        if (functionName === "seedOf") return Promise.resolve(777);
+        return Promise.resolve(null);
+      },
+      multicall: ({ contracts }) =>
+        Promise.resolve(
+          contracts.map((c) => ({
+            status: "success",
+            // Token 2 belongs to `account`; others belong to someone else.
+            result: c.args[0] === 2n ? account : "0xdead000000000000000000000000000000dead",
+          })),
+        ),
+    });
+    const result = await findMintedToken(account.toLowerCase() as `0x${string}`);
+    expect(result).toEqual({ tokenId: 2n, seed: 777 });
+  });
+
+  it("is case-insensitive when matching the owner address", async () => {
+    const owner = "0xAAAA111111111111111111111111111111111111";
+    const { findMintedToken } = await withClient({
+      readContract: ({ functionName }: { functionName: string }) =>
+        functionName === "totalMinted" ? Promise.resolve(1n) : Promise.resolve(42),
+      multicall: ({ contracts }) =>
+        Promise.resolve(contracts.map(() => ({ status: "success", result: owner }))),
+    });
+    const result = await findMintedToken(owner.toLowerCase() as `0x${string}`);
+    expect(result).toEqual({ tokenId: 1n, seed: 42 });
+  });
+
+  it("returns null when no owned token matches", async () => {
+    const { findMintedToken } = await withClient({
+      readContract: ({ functionName }: { functionName: string }) =>
+        functionName === "totalMinted" ? Promise.resolve(2n) : Promise.resolve(null),
+      multicall: ({ contracts }) =>
+        Promise.resolve(
+          contracts.map(() => ({
+            status: "success",
+            result: "0xdead000000000000000000000000000000dead",
+          })),
+        ),
+    });
+    const result = await findMintedToken(
+      "0x1111111111111111111111111111111111111111",
+    );
+    expect(result).toBeNull();
+  });
+});
+
+describe("fetchMintedAuroras", () => {
+  afterEach(() => {
+    vi.doUnmock("viem");
+    vi.resetModules();
+  });
+
+  it("returns an empty page with the correct total when nothing is minted", async () => {
+    vi.resetModules();
+    const actual = await vi.importActual<typeof import("viem")>("viem");
+    vi.doMock("viem", () => ({
+      ...actual,
+      createPublicClient: () => ({
+        readContract: () => Promise.resolve(0n),
+        multicall: () => Promise.resolve([]),
+      }),
+      http: () => undefined,
+    }));
+    const { fetchMintedAuroras } = await import("./mint");
+    expect(await fetchMintedAuroras(0)).toEqual({ items: [], total: 0 });
+  });
+
+  it("builds gallery items newest-first with dataUrl and openSeaUrl", async () => {
+    vi.resetModules();
+    const actual = await vi.importActual<typeof import("viem")>("viem");
+    vi.doMock("viem", () => ({
+      ...actual,
+      createPublicClient: () => ({
+        readContract: () => Promise.resolve(2n), // totalMinted
+        multicall: ({
+          contracts,
+        }: {
+          contracts: { functionName: string; args: readonly [bigint] }[];
+        }) =>
+          Promise.resolve(
+            contracts.map(({ functionName, args }) => {
+              if (functionName === "seedOf") return Number(args[0]) * 100;
+              // imageOf: distinct tiny payload per token so items are distinguishable.
+              return "0x686921"; // "hi!"
+            }),
+          ),
+      }),
+      http: () => undefined,
+    }));
+    const { fetchMintedAuroras } = await import("./mint");
+    const { items, total } = await fetchMintedAuroras(0, 12);
+    expect(total).toBe(2);
+    expect(items).toEqual([
+      {
+        tokenId: 2n,
+        seed: 200,
+        dataUrl: "data:image/webp;base64,aGkh",
+        openSeaUrl: expect.stringContaining("/2"),
+      },
+      {
+        tokenId: 1n,
+        seed: 100,
+        dataUrl: "data:image/webp;base64,aGkh",
+        openSeaUrl: expect.stringContaining("/1"),
+      },
+    ]);
+  });
+});
+
+describe("estimateMint totalUsd", () => {
+  afterEach(() => {
+    vi.doUnmock("viem");
+    vi.resetModules();
+  });
+
+  const snapshot = {
+    dataUrl: "data:image/webp;base64,aGkh",
+    mime: "image/webp",
+    bytes: 3,
+  };
+  const account = "0x0000000000000000000000000000000000dEaD" as const;
+
+  async function withOracle(
+    answer: bigint | Error,
+    gas = 21_000n,
+    gasPriceWei = 1_000_000_000n,
+  ) {
+    vi.resetModules();
+    const actual = await vi.importActual<typeof import("viem")>("viem");
+    vi.doMock("viem", () => ({
+      ...actual,
+      createPublicClient: () => ({
+        estimateContractGas: () => Promise.resolve(gas),
+        getGasPrice: () => Promise.resolve(gasPriceWei),
+        readContract: () =>
+          answer instanceof Error
+            ? Promise.reject(answer)
+            : Promise.resolve([0n, answer, 0n, 0n, 0n]),
+      }),
+      http: () => undefined,
+    }));
+    return import("./mint");
+  }
+
+  it("computes totalUsd from a healthy oracle read", async () => {
+    const { estimateMint } = await withOracle(
+      300_000_000_000n, // $3000 at 8 decimals
+      21_000n,
+      1_000_000_000n, // 1 gwei -> 21000 gwei = 0.000021 ETH
+    );
+    const { totalUsd } = await estimateMint(account, 12345, snapshot);
+    // 0.000021 ETH * $3000 = $0.063 exactly.
+    expect(totalUsd).toBe("0.0630");
+  });
+
+  it("degrades to null when the oracle read throws", async () => {
+    const { estimateMint } = await withOracle(new Error("rpc down"));
+    const { totalEth, totalUsd } = await estimateMint(account, 12345, snapshot);
+    expect(totalUsd).toBeNull();
+    expect(totalEth).not.toBe(""); // ETH row is still computed
+  });
+
+  it("degrades to null when the oracle answer is non-positive", async () => {
+    const { estimateMint } = await withOracle(0n);
+    const { totalUsd } = await estimateMint(account, 12345, snapshot);
+    expect(totalUsd).toBeNull();
+  });
+
+  it("degrades to null on a negative oracle answer", async () => {
+    const { estimateMint } = await withOracle(-1n);
+    const { totalUsd } = await estimateMint(account, 12345, snapshot);
+    expect(totalUsd).toBeNull();
+  });
+});

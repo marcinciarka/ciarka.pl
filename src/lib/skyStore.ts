@@ -82,6 +82,19 @@ export function reseed(): AuroraSeed {
   return next;
 }
 
+// Loads a specific seed into the view — e.g. a wallet's already-minted
+// aurora recalled by the mint modal — rather than drawing a new random one.
+// Same persist/notify shape as reseed(), just with a caller-supplied value
+// instead of randomSeed(), and a no-op if it's already the current sky (so
+// re-clicking "load this aurora" doesn't re-notify subscribers for nothing).
+export function applySeed(next: AuroraSeed): void {
+  if (getSeed() === next) return;
+  seed = next;
+  saveSeed(next);
+  dropSeedParam();
+  for (const listener of listeners) listener(next);
+}
+
 export function subscribe(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
