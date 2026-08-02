@@ -15,7 +15,7 @@ function WorkItem({
     <li className="relative pl-8">
       <span
         aria-hidden="true"
-        className="absolute left-0 top-2 h-2.5 w-2.5 rounded-full bg-ember"
+        className="absolute -left-1.25 top-2 h-2.5 w-2.5 rounded-full bg-ember"
       />
       <div className="glass rounded-2xl p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">

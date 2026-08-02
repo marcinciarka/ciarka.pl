@@ -20,9 +20,7 @@ export default function App() {
         id="top"
         className="relative flex min-h-svh flex-col justify-between px-6 py-8 sm:px-10"
       >
-        <span className="font-display text-sm font-medium tracking-tight text-muted">
-          ciarka.pl
-        </span>
+        <span />
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-0 z-[-1] w-full max-w-3xl bg-[radial-gradient(ellipse_95%_100%_at_0%_50%,rgba(3,6,12,0.75),rgba(3,6,12,0.5)_60%,transparent_85%)] mask-[linear-gradient(to_bottom,black_55%,transparent_96%)] sm:max-w-4xl"
@@ -100,8 +98,8 @@ export default function App() {
         </div>
       </header>
       <main id="main" className="relative">
-        <Showcases />
         <Work />
+        <Showcases />
         <ProtocolMatrix />
         <Skills />
         <Contact />
