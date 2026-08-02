@@ -13,17 +13,20 @@ const STATS_PATH = join(
   "stats.json",
 );
 
-// Protocol count and years-in-DeFi move rarely and need deep history analysis,
-// so they stay as curated baselines; commits/PRs are fetched live.
-const BASELINE = { defiYears: 4, protocols: 10 };
+// Years-in-DeFi moves rarely and needs deep history analysis, so it stays a
+// curated baseline; commits/PRs are fetched live.
+const BASELINE = { defiYears: 4 };
+
+// The Actions-issued GITHUB_TOKEN is scoped to this repo only, so search
+// results exclude every other repo the author contributes to and undercount
+// badly. STATS_TOKEN (a user PAT with repo + read:user) sees the real history.
+const TOKEN = process.env.STATS_TOKEN || process.env.GITHUB_TOKEN;
 
 async function ghSearchCount(url) {
   const res = await fetch(url, {
     headers: {
       Accept: "application/vnd.github+json",
-      ...(process.env.GITHUB_TOKEN
-        ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
-        : {}),
+      ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
     },
   });
   if (!res.ok) throw new Error(`GitHub API ${res.status} for ${url}`);
@@ -46,7 +49,7 @@ export async function fetchStats() {
 }
 
 export function statsChanged(prev, next) {
-  return ["commits", "pullRequests", "defiYears", "protocols"].some(
+  return ["commits", "pullRequests", "defiYears"].some(
     (k) => prev[k] !== next[k],
   );
 }
@@ -60,8 +63,8 @@ async function main() {
     commits: Math.max(fetched.commits, prev.commits),
     pullRequests: Math.max(fetched.pullRequests, prev.pullRequests),
     defiYears: fetched.defiYears,
-    protocols: fetched.protocols,
   };
+  console.log("fetched:", fetched, "-> after floor:", next);
 
   if (!statsChanged(prev, next)) {
     console.log("stats unchanged, skipping write");

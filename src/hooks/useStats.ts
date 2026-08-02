@@ -11,7 +11,6 @@ async function fetchStats(): Promise<Stats | null> {
     if (
       typeof data.commits !== "number" ||
       typeof data.pullRequests !== "number" ||
-      typeof data.protocols !== "number" ||
       typeof data.updatedAt !== "string"
     ) {
       return null;
@@ -36,7 +35,6 @@ export function useStats(): Stats {
         // defiYears is a curated fact, not a GitHub-derived count - it never
         // comes from stats.json, only from the baked fallback.
         defiYears: prev.defiYears,
-        protocols: Math.max(prev.protocols, live.protocols),
         updatedAt: live.updatedAt,
       }));
     });

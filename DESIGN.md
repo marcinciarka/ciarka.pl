@@ -50,8 +50,8 @@ heavily damped). Everything else on the page stays quiet and disciplined.
 ## Layout (single page, max-w ~72rem center column)
 
 1. **Hero** (100svh): top-left small wordmark `ciarka.pl`; center-left name +
-   role + 3-line pitch; bottom: four stat counters (commits / PRs / repos /
-   protocols) in JetBrains Mono with count-up animation on load, caption
+   role + 3-line pitch; bottom: three stat counters (commits / PRs / yrs
+   production DeFi) in JetBrains Mono with count-up animation on load, caption
    "live from commit history · updated <relative time>" from stats.json fetch.
 2. **Showcases** - heading "Proof, running live". Three full-width alternating
    feature panels (NOT a 3-card grid): left = copy (name, tagline, description,

@@ -7,14 +7,13 @@ import { relativeTime } from "../lib/relativeTime";
 const STALE_AFTER_MS = 14 * 24 * 60 * 60 * 1000;
 
 const FIELDS: {
-  key: "commits" | "pullRequests" | "defiYears" | "protocols";
+  key: "commits" | "pullRequests" | "defiYears";
   label: string;
   suffix?: string;
 }[] = [
   { key: "commits", label: "commits" },
   { key: "pullRequests", label: "pull requests" },
   { key: "defiYears", label: "yrs production DeFi", suffix: "+" },
-  { key: "protocols", label: "protocols" },
 ];
 
 function StatCounter({

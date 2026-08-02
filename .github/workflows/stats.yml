@@ -23,6 +23,9 @@ jobs:
           node-version: 20
       - name: Refresh stats.json
         env:
+          # STATS_TOKEN is a user PAT (repo + read:user). Without it the search
+          # API only sees this repo and the counts never move.
+          STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/update-stats.mjs
       - name: Commit if changed

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { statsChanged } from "./update-stats.mjs";
 
-const base = { commits: 100, pullRequests: 50, defiYears: 4, protocols: 10 };
+const base = { commits: 100, pullRequests: 50, defiYears: 4 };
 
 describe("statsChanged", () => {
   it("returns false for identical stats", () => {
