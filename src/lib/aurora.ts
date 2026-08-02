@@ -10,9 +10,10 @@ precision highp float;
 
 uniform vec2 uResolution;
 uniform float uTime;
-uniform vec2 uPointer;
-// 0..1: extra domain-warp intensity driven by scroll position.
+// 0..1: scales the existing domain-warp displacement on scroll.
 uniform float uScrollWarp;
+// Per-load random offset into the noise field / animation phase.
+uniform vec2 uSeed;
 
 vec3 aurora1 = vec3(0.208, 0.878, 0.761);
 vec3 aurora2 = vec3(0.486, 0.424, 0.965);
@@ -79,35 +80,27 @@ void main() {
   uv.x *= aspect;
 
   float t = uTime * 0.06;
-  vec2 lean = uPointer * 0.04;
-
-  // Scrolling translates the warp field. The direction swings along an arc
-  // as the shift grows, and a noise field varies how far each part of the
-  // sky travels — a current flowing through the clouds, not a rigid slide.
-  float flow = 0.6 + 0.8 * noise(uv * 1.5 + 3.3);
-  float shiftAng = 2.2 + uScrollWarp * 0.5;
-  vec2 scrollShift = uScrollWarp * 0.3 * vec2(cos(shiftAng), sin(shiftAng)) * flow;
+  vec2 so = uSeed;
 
   // Double domain warp (warp of a warp): the second field is sampled
   // through the first, folding the curtains into marbled, nebula-like
-  // structures instead of merely rippling them.
+  // structures. Scroll only scales that existing displacement — no
+  // extra motion, just more of the same fold.
+  float warpAmp = 1.0 + uScrollWarp * 0.85;
+  float foldAmp = 1.8 + uScrollWarp * 0.55;
   vec2 q = vec2(
-    fbm(uv * 1.8 + vec2(t * 0.6, 0.0) + scrollShift),
-    fbm(uv * 1.8 - vec2(0.0, t * 0.5) + scrollShift * 0.7)
+    fbm(uv * 1.8 + vec2(t * 0.6, 0.0) + so),
+    fbm(uv * 1.8 - vec2(0.0, t * 0.5) + so.yx)
   );
   vec2 r = vec2(
-    fbm(uv * 2.4 + q * 1.8 + vec2(4.7, 9.2) + t * 0.35 + scrollShift * 1.3),
-    fbm(uv * 2.4 + q * 1.8 + vec2(8.3, 2.8) - t * 0.28 + scrollShift * 1.3)
+    fbm(uv * 2.4 + q * foldAmp + vec2(4.7, 9.2) + t * 0.35 + so * 1.7),
+    fbm(uv * 2.4 + q * foldAmp + vec2(8.3, 2.8) - t * 0.28 - so.yx * 1.3)
   );
-  vec2 auroraUv = uv + (q - 0.5) * 0.3 + (r - 0.5) * 0.34 + scrollShift * 0.25;
+  vec2 auroraUv = uv + (q - 0.5) * 0.3 * warpAmp + (r - 0.5) * 0.34 * warpAmp;
 
-  vec2 uvA = auroraUv + lean * 1.0;
-  vec2 uvB = auroraUv + lean * 0.6;
-  vec2 uvC = auroraUv + lean * 1.4;
-
-  float c1 = curtain(uvA, t, 1.1, 0.6, 0.62);
-  float c2 = curtain(uvB, t + 12.0, 0.7, 0.4, 0.48);
-  float c3 = curtain(uvC, t + 31.0, 1.6, 0.5, 0.7);
+  float c1 = curtain(auroraUv, t + so.x, 1.1, 0.6, 0.62);
+  float c2 = curtain(auroraUv, t + 12.0 + so.y, 0.7, 0.4, 0.48);
+  float c3 = curtain(auroraUv, t + 31.0 + so.x + so.y, 1.6, 0.5, 0.7);
 
   vec3 color = ink;
   color = mix(color, aurora1, c2 * 0.55);
@@ -121,9 +114,9 @@ void main() {
 
   // Drifting dust: three parallax layers, brighter where the aurora is.
   float glow = c1 + c2 + c3;
-  float dust = particles(uv, uTime, 22.0, 0.045, 0.045) * 0.6;
-  dust += particles(uv * 1.3 + 13.7, uTime, 38.0, 0.085, 0.035) * 0.4;
-  dust += particles(uv * 1.9 + 41.2, uTime, 60.0, 0.13, 0.028) * 0.25;
+  float dust = particles(uv + so * 0.15, uTime, 22.0, 0.045, 0.045) * 0.6;
+  dust += particles(uv * 1.3 + 13.7 + so.yx, uTime, 38.0, 0.085, 0.035) * 0.4;
+  dust += particles(uv * 1.9 + 41.2 - so, uTime, 60.0, 0.13, 0.028) * 0.25;
   color += dust * mix(vec3(0.75, 0.85, 0.9), aurora1, 0.4) * (0.25 + glow * 0.45);
 
 
@@ -193,37 +186,33 @@ export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
   const aPosition = gl.getAttribLocation(program, "aPosition");
   const uResolution = gl.getUniformLocation(program, "uResolution");
   const uTime = gl.getUniformLocation(program, "uTime");
-  const uPointer = gl.getUniformLocation(program, "uPointer");
   const uScrollWarp = gl.getUniformLocation(program, "uScrollWarp");
+  const uSeed = gl.getUniformLocation(program, "uSeed");
 
   gl.useProgram(program);
   gl.enableVertexAttribArray(aPosition);
   gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
 
+  // Fresh noise-space / phase offset each load so the sky isn't identical.
+  gl.uniform2f(uSeed, Math.random() * 100, Math.random() * 100);
+
   let rafId = 0;
   let paused = false;
   const startTime = performance.now();
+  const timeOffset = Math.random() * 200;
   let pauseOffset = 0;
   let pausedAt = 0;
-  const pointer = { x: 0, y: 0 };
-  const dampedPointer = { x: 0, y: 0 };
 
-  const onPointerMove = (e: PointerEvent) => {
-    const rect = canvas.getBoundingClientRect();
-    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    pointer.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-  };
-
-  // Scroll-driven warp shift: eases from 0 to full strength across the
-  // first 500px of scroll (smoothstep — no kink), then holds at max.
+  // Scroll scales domain-warp strength over the first 1000px. Ease-out
+  // quart: biggest change early, then tapering — holds at max past that.
   let scrollWarpTarget = 0;
   let scrollWarp = 0;
   const onScroll = () => {
-    const t = Math.min(1, window.scrollY / 500);
-    scrollWarpTarget = t * t * (3 - 2 * t);
+    const t = Math.min(1, window.scrollY / 3000);
+    const u = 1 - t;
+    scrollWarpTarget = 1 - u * u * u * u;
   };
   window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("pointermove", onPointerMove, { passive: true });
 
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -243,14 +232,12 @@ export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
   const render = () => {
     if (paused) return;
 
-    dampedPointer.x += (pointer.x - dampedPointer.x) * 0.03;
-    dampedPointer.y += (pointer.y - dampedPointer.y) * 0.03;
     scrollWarp += (scrollWarpTarget - scrollWarp) * 0.08;
 
-    const elapsed = (performance.now() - startTime - pauseOffset) / 1000;
+    const elapsed =
+      (performance.now() - startTime - pauseOffset) / 1000 + timeOffset;
     gl.uniform2f(uResolution, canvas.width, canvas.height);
     gl.uniform1f(uTime, elapsed);
-    gl.uniform2f(uPointer, dampedPointer.x, dampedPointer.y);
     gl.uniform1f(uScrollWarp, scrollWarp);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
@@ -263,7 +250,6 @@ export function initAurora(canvas: HTMLCanvasElement): AuroraHandle | null {
     destroy: () => {
       cancelAnimationFrame(rafId);
       resizeObserver.disconnect();
-      window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("scroll", onScroll);
       gl.deleteProgram(program);
       gl.deleteBuffer(positionBuffer);
