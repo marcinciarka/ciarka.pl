@@ -119,40 +119,63 @@ export type WorkEntry = {
 export const work: WorkEntry[] = [
   {
     period: "2025 - present",
-    company: "Aphelion",
-    role: "Lead DApp Frontend Engineer",
+    company: "(Unnamed) DeFi App",
+    role: "Technical Advisor",
     summary:
-      "Institutional Web3 trading and asset-management platform - low-latency reactive position views, earn conversion rates, liquidation risk monitors.",
+      "An all-in-one, 100% self-custodial DeFi app - earn, borrow, multiply, loop yields and trade perps, with every position held in the user's own Safe smart account.",
     details: [
-      "EIP-712 typed-data signature workflows for institutional flows",
-      "Multi-wallet connectivity (MetaMask, WalletConnect, Coinbase Wallet)",
-      "Reactive state sync against custom EVM RPC providers",
-      "Owning the frontend end-to-end: signing flows, position and risk views, RPC-backed application state",
+      "Set the platform architecture from an empty repository: Turborepo workspace, Next.js application, Tailwind design layer",
+      "Designed the data layer end to end - database schema plus a deployed on-chain indexer feeding the app",
+      "Advisory backed by shipped code: hands-on delivery across a large part of the product surface",
     ],
   },
   {
-    period: "2022 - present",
-    company: "Summer.fi (Oasis.app)",
-    role: "Senior DeFi Full-Stack Engineer",
+    period: "2024 — 2026",
+    company: "Lazy Summer Protocol · Summer.fi",
+    role: "Senior Full-Stack Engineer",
     summary:
-      "Core contributor on the multi-protocol Borrow / Multiply / Earn suite - Maker, Aave v2/v3, Spark, Morpho Blue and Ajna unified behind one frontend.",
+      "Built from an empty repository to production - the app, its data layer, and the institutional dashboard behind it.",
     details: [
-      "DeFi Position Manager (DPM) smart-proxy flows: flash-loan leverage, debt refinance and protocol migration in one atomic transaction",
-      "Automated risk engine UIs: Stop-Loss, Take-Profit, Auto-Buy/Sell, Trailing Stop-Loss",
-      "Led monolith → Turborepo monorepo migration; Ethers.js → Viem/Wagmi modernization",
-      "Caching layers (client + Lambda) cutting APY/portfolio latency; lazy wallet loading for LCP",
-      "2,100+ commits and 1,390+ PRs across oasis-borrow and summerfi-monorepo",
+      "90% of the institutional dashboard, with two-layer auth: AWS Cognito for web2 roles, wallet connection for the web3 role",
+      "Next.js application and supporting databases taken from scaffold to production",
+      "Interactive charts for protocol and position data",
+      "Lambda helper functions moving aggregation work off the request path",
+      "Cut build times through Turborepo cache tuning and reworked CI workflows",
+    ],
+  },
+  {
+    period: "2023 — 2025",
+    company: "Summer.fi Pro",
+    role: "Senior Full-Stack Engineer",
+    summary:
+      "The 2023 rebrand - taking the multi-protocol Borrow / Multiply / Earn suite onto Layer 2 and keeping the shared foundations underneath it healthy.",
+    details: [
+      "Layer 2 network integrations across Maker, Aave v2/v3, Spark, Morpho Blue and Ajna",
+      "Maintained the shared libraries and databases every protocol integration depends on",
+      "2,100+ commits and 500+ PRs across oasis-borrow and summerfi-monorepo",
+    ],
+  },
+  {
+    period: "2022 — 2023",
+    company: "Oasis.app",
+    role: "DeFi Frontend Engineer",
+    summary:
+      "Widening a Maker-native vault product into a multi-protocol one, and giving positions the automation to defend themselves.",
+    details: [
+      "Aave UI integration - a second lending protocol inside a Maker-native product",
+      "Automation UI and transaction flows: stop-loss, take-profit, auto-buy/sell",
     ],
   },
   {
     period: "2016 - 2022",
-    company: "Earlier",
+    company: "Softax",
     role: "Full-Stack Engineer",
     summary:
-      "A decade of shipping: real-time WebSocket tickers since 2016, React Native tooling contributions, LLM experiments since 2020, and a long tail of side projects.",
+      "Six years delivering software for automotive and banking clients - regulated, integration-heavy work where correctness and long-term maintenance mattered more than novelty.",
     details: [
+      "Built and shipped client applications for enterprise automotive and banking customers",
       "Contributed to react-native-community/cli",
-      "Built real-time audio/DSP experiments (noise-monitor: client-side FFT analysis)",
+      "Real-time audio/DSP experiments (noise-monitor: client-side FFT analysis)",
       "Shipped LLM-backed apps from 2020, three years before the current wave",
     ],
   },

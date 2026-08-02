@@ -101,8 +101,6 @@ function ShowcaseCard({
 }
 
 export function Showcases() {
-  const hasLive = showcases.some((s) => s.status === "live");
-
   return (
     <section
       id="showcases"
@@ -113,7 +111,7 @@ export function Showcases() {
         id="showcases-heading"
         className="font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium tracking-tight text-text"
       >
-        {hasLive ? "Proof, running live" : "Built in the open"}
+        Side Projects
       </h2>
       <div className="mt-16 space-y-24">
         {showcases.map((showcase, i) => (

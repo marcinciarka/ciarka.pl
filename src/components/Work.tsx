@@ -33,7 +33,7 @@ function WorkItem({
           onClick={() => setOpen((v) => !v)}
           className="mt-4 text-sm font-medium text-ember transition-opacity hover:opacity-80"
         >
-          {open ? "Show less −" : "Show details +"}
+          {open ? null : "Show details"}
         </button>
         {open && (
           <ul
@@ -70,7 +70,7 @@ export function Work() {
       </h2>
       <ol className="mt-16 space-y-6 border-l border-glass-border">
         {work.map((entry, i) => (
-          <WorkItem key={entry.company} entry={entry} defaultOpen={i < 2} />
+          <WorkItem key={entry.company} entry={entry} defaultOpen={i < 1} />
         ))}
       </ol>
     </section>
