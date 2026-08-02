@@ -1,5 +1,8 @@
-import { setupAuroraProgram } from "./aurora";
-import { seedToUniforms, type AuroraSeed } from "./seed";
+// Capture *policy* only. The pixels come from the live hero canvas
+// (`AuroraHandle.captureFrame` in ./aurora) so a snapshot is exactly the sky
+// the visitor is looking at - WYSIWYG. This module is deliberately
+// DOM-light and dependency-free so mint.ts can import the type and the
+// checks without pulling the renderer in.
 
 export type AuroraSnapshot = {
   dataUrl: string;
@@ -7,53 +10,33 @@ export type AuroraSnapshot = {
   bytes: number; // decoded binary size — what on-chain storage would hold
 };
 
-// Renders one deterministic frame of the aurora offscreen at size × size.
-// Side-effect free so Phase 2 (minting) can import it directly.
-export function captureAurora(
-  seed: AuroraSeed,
-  size: number,
-): AuroraSnapshot | null {
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
+export function isWebpDataUrl(dataUrl: string): boolean {
+  return dataUrl.startsWith("data:image/webp;");
+}
 
-  // preserveDrawingBuffer so toDataURL reads the frame we just drew.
-  const gl = canvas.getContext("webgl", {
-    antialias: true,
-    alpha: false,
-    preserveDrawingBuffer: true,
-  });
-  if (!gl) return null;
+let webpProbe: boolean | null = null;
 
-  const setup = setupAuroraProgram(gl);
-  if (!setup) return null;
+// Policy: an aurora NFT is a WebP or nothing. Safari's toDataURL
+// silently falls back to PNG, so probe the actual encoder output once.
+export function supportsWebpCapture(): boolean {
+  if (webpProbe !== null) return webpProbe;
+  if (typeof document === "undefined") return (webpProbe = false);
+  try {
+    const probe = document.createElement("canvas");
+    probe.width = 1;
+    probe.height = 1;
+    webpProbe = isWebpDataUrl(probe.toDataURL("image/webp"));
+  } catch {
+    webpProbe = false;
+  }
+  return webpProbe;
+}
 
-  const u = seedToUniforms(seed);
-  gl.viewport(0, 0, size, size);
-  gl.uniform2f(setup.uSeed, u.x, u.y);
-  gl.uniform2f(setup.uResolution, size, size);
-  // Freeze the sky at its seed-derived phase; no scroll warp.
-  gl.uniform1f(setup.uTime, u.t);
-  gl.uniform1f(setup.uScrollWarp, 0);
-  // No crossfade in a snapshot: slot B is never evaluated, so its seed and
-  // time are irrelevant - pinned anyway to keep the frame fully determined.
-  gl.uniform1f(setup.uBlend, 0);
-  gl.uniform2f(setup.uSeedB, 0, 0);
-  gl.uniform1f(setup.uTimeB, 0);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-  // Safari's toDataURL ignores image/webp and returns PNG — detect from
-  // the result, don't assume.
-  const dataUrl = canvas.toDataURL("image/webp", 0.85);
-  const mime = dataUrl.slice(5, dataUrl.indexOf(";"));
-  const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
-  const bytes = base64Bytes(base64);
-
-  gl.deleteProgram(setup.program);
-  gl.deleteBuffer(setup.positionBuffer);
-  gl.getExtension("WEBGL_lose_context")?.loseContext();
-
-  return { dataUrl, mime, bytes };
+// Decoded byte size of a data URL's payload - what on-chain storage holds,
+// which is what the 16kB cap is actually about (the base64 text is ~4/3 of
+// it and never leaves the browser).
+export function dataUrlBytes(dataUrl: string): number {
+  return base64Bytes(dataUrl.slice(dataUrl.indexOf(",") + 1));
 }
 
 // Decoded length of a base64 payload: 3 bytes per 4 chars, minus padding.

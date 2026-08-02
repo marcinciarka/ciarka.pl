@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { initAurora, type AuroraHandle } from "../lib/aurora";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { getSeed, setWebglFailed, subscribe } from "../lib/skyStore";
+import {
+  getSeed,
+  registerCapture,
+  setWebglFailed,
+  subscribe,
+} from "../lib/skyStore";
 
 export function AuroraHero() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -41,6 +46,10 @@ export function AuroraHero() {
       if (!created) {
         setWebglOk(false);
         setWebglFailed();
+      } else {
+        // Mint snapshots come from this canvas, so capture only exists
+        // while it does (cleared in the cleanup below).
+        registerCapture(created.captureFrame);
       }
       unsubscribeSeed = subscribe((next) => handle?.setSeed(next));
     });
@@ -61,6 +70,7 @@ export function AuroraHero() {
     return () => {
       cancelled = true;
       cancelSchedule(idleId as never);
+      registerCapture(null);
       unsubscribeSeed();
       document.removeEventListener("visibilitychange", onVisibility);
       observer?.disconnect();

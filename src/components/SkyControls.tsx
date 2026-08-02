@@ -1,11 +1,22 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { getSeed, isWebglFailed, reseed, subscribeWebglFailed } from "../lib/skyStore";
-import { captureAurora } from "../lib/capture";
+import {
+  isMintActive,
+  isWebglFailed,
+  reseed,
+  subscribeMintActive,
+  subscribeWebglFailed,
+} from "../lib/skyStore";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { MintButton } from "./MintButton";
 
 export function SkyControls() {
   const reducedMotion = useReducedMotion();
   const webglFailed = useSyncExternalStore(subscribeWebglFailed, isWebglFailed);
+  // C1 belt-and-braces: a mint flow past "idle" has frozen a snapshot to a
+  // specific seed (see MintButton's MintState comment) — reseeding here
+  // while that's in flight would let a mint go through against the wrong
+  // seed. Disable "new sky" for the duration.
+  const mintActive = useSyncExternalStore(subscribeMintActive, isMintActive);
   // Matches the shader crossfade length in src/lib/aurora.ts.
   const FADE_MS = 1000;
   const [spinning, setSpinning] = useState(false);
@@ -18,12 +29,15 @@ export function SkyControls() {
   if (reducedMotion || webglFailed) return null;
 
   return (
-    <div className="fixed right-4 bottom-4 z-20 flex items-center gap-2">
+    // Top-right, clear of the nav (fixed top-0 z-50) at every width; z-40
+    // keeps it under the nav so a scrolled-in nav bar wins any overlap.
+    <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
       <button
         type="button"
-        // Locked out for the length of the crossfade: a second click mid-fade
-        // would cut the transition short.
-        disabled={spinning}
+        // Locked out for the length of the crossfade (a second click mid-fade
+        // would cut the transition short) and for the duration of a mint
+        // flow past idle (see C1 above).
+        disabled={spinning || mintActive}
         onClick={() => {
           reseed();
           setSpinning(true);
@@ -33,7 +47,7 @@ export function SkyControls() {
             FADE_MS,
           );
         }}
-        className="flex items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 font-mono text-xs text-muted backdrop-blur-xl transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted"
+        className="flex items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 font-mono text-xs text-muted backdrop-blur-xl transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted cursor-pointer"
       >
         <span
           aria-hidden="true"
@@ -41,31 +55,11 @@ export function SkyControls() {
         >
           ✦
         </span>
-        new sky
+        new aurora
       </button>
-      {import.meta.env.DEV && (
-        <button
-          type="button"
-          title="DEV: log snapshot sizes for the current seed"
-          className="rounded-full border border-glass-border bg-glass px-3 py-1.5 font-mono text-xs text-muted backdrop-blur-xl transition-colors hover:border-ember/60 hover:text-text"
-          onClick={() => {
-            const seed = getSeed();
-            for (const size of [128, 256, 512]) {
-              const snap = captureAurora(seed, size);
-              if (!snap) {
-                console.warn(`capture failed at ${size}`);
-                continue;
-              }
-              console.log(
-                `aurora ${size}px ${snap.mime}: ${snap.bytes} bytes (base64 ${snap.dataUrl.length} chars)`,
-              );
-              if (size === 256) window.open(snap.dataUrl, "_blank");
-            }
-          }}
-        >
-          capture
-        </button>
-      )}
+      {/* Minting mid-crossfade would capture a blend of two skies against a
+          single seed, so the mint control shares "new aurora"'s lockout. */}
+      <MintButton disabled={spinning} />
     </div>
   );
 }

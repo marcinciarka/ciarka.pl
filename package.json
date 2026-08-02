@@ -8,13 +8,15 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "stats:update": "node scripts/update-stats.mjs"
+    "stats:update": "node scripts/update-stats.mjs",
+    "postinstall": "node scripts/setup-contracts.mjs"
   },
   "dependencies": {
     "@fontsource/instrument-sans": "5.3.0",
     "@fontsource/jetbrains-mono": "5.3.0",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "viem": "^2.55.10"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",

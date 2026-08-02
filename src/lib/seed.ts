@@ -18,13 +18,36 @@ function mulberry32(a: number): () => number {
   };
 }
 
+export type AuroraColor = [number, number, number];
+
+// Aurora-plausible hues against the ink background. The first two are the
+// colors the sky shipped with, so they stay in rotation.
+export const AURORA_PALETTE: AuroraColor[] = [
+  [0.208, 0.878, 0.761], // teal
+  [0.486, 0.424, 0.965], // violet
+  [0.322, 0.914, 0.467], // emerald
+  [0.937, 0.412, 0.714], // rose
+  [0.416, 0.76, 0.984], // ice blue
+];
+
 export function seedToUniforms(seed: AuroraSeed): {
   x: number;
   y: number;
   t: number;
+  colorA: AuroraColor;
+  colorB: AuroraColor;
 } {
   const rng = mulberry32(seed);
-  return { x: rng() * 100, y: rng() * 100, t: rng() * 200 };
+  // Order matters: x/y/t are drawn first so existing seeds keep the exact
+  // noise offset and animation phase they had before colors existed.
+  const x = rng() * 100;
+  const y = rng() * 100;
+  const t = rng() * 200;
+  const n = AURORA_PALETTE.length;
+  const ia = Math.floor(rng() * n);
+  // One extra draw, guaranteed distinct: pick an offset of 1..n-1.
+  const ib = (ia + 1 + Math.floor(rng() * (n - 1))) % n;
+  return { x, y, t, colorA: AURORA_PALETTE[ia], colorB: AURORA_PALETTE[ib] };
 }
 
 function storage(): Storage | null {
@@ -52,13 +75,35 @@ function readStoredSeed(): string | null | undefined {
   }
 }
 
+// The one validity rule for a seed, shared by the storage and URL paths.
+function isValidSeed(value: number): boolean {
+  return Number.isInteger(value) && value >= 0 && value < 2 ** 32;
+}
+
 export function loadSeed(): AuroraSeed {
   const raw = readStoredSeed();
   const parsed = raw === null || raw === undefined ? NaN : Number(raw);
-  if (Number.isInteger(parsed) && parsed >= 0 && parsed < 2 ** 32) {
-    return parsed;
-  }
+  if (isValidSeed(parsed)) return parsed;
   const seed = randomSeed();
   saveSeed(seed);
   return seed;
+}
+
+// Shareable skies: `?seed=N` pins this page load to someone else's sky.
+// Pure on purpose - the caller supplies location.search, so this is testable
+// in node and the "is there a location at all?" guard lives in one place.
+// Deliberately NOT persisted by the caller: a visitor following a shared
+// link still finds their own sky waiting on the next visit.
+export function seedFromSearch(search: string): AuroraSeed | null {
+  let raw: string | null;
+  try {
+    raw = new URLSearchParams(search).get("seed");
+  } catch {
+    return null;
+  }
+  // Number("") and Number(" ") are both 0, which would silently pass the
+  // uint32 check - reject empty/blank explicitly.
+  if (raw === null || raw.trim() === "") return null;
+  const parsed = Number(raw);
+  return isValidSeed(parsed) ? parsed : null;
 }

@@ -2,3 +2,8 @@ toolkit
 node_modules
 dist
 docs
+
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/
