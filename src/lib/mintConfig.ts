@@ -1,14 +1,14 @@
-import { baseSepolia } from "viem/chains";
+import { base } from "viem/chains";
 import { CONTRACT_ADDRESS, CONTRACT_DEPLOYED, MAX_IMAGE_BYTES } from "./contractAddress";
 
-// Task 10 flips this to `base` + the mainnet address.
-export const MINT_CHAIN = baseSepolia;
+// Base mainnet. The CREATE2 vanity address is identical on Base Sepolia,
+// so only the chain/URLs change between environments.
+export const MINT_CHAIN = base;
 // Re-exported from the dependency-free contractAddress.ts, which is the one
 // place MintButton is allowed to statically import (no viem/chains there).
 export { CONTRACT_ADDRESS, CONTRACT_DEPLOYED, MAX_IMAGE_BYTES };
-export const OPENSEA_BASE = "https://testnets.opensea.io/assets/base_sepolia";
-// Task 10 flips this to the mainnet explorer.
-export const EXPLORER_BASE = "https://sepolia.basescan.org";
+export const OPENSEA_BASE = "https://opensea.io/assets/base";
+export const EXPLORER_BASE = "https://basescan.org";
 
 export const AURORA_SKY_ABI = [
   {
