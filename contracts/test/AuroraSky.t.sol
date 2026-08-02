@@ -48,6 +48,7 @@ contract AuroraSkyTest is Test {
         // decode manually with a small local Base64 decoder (see below).
         string memory json = string(_base64Decode(_suffix(uri, 29)));
         assertTrue(vm.contains(json, '"name":"CRKAurora #1"'));
+        assertTrue(vm.contains(json, "See this sky alive: https://ciarka.pl/?seed=12345"));
         assertTrue(vm.contains(json, '"external_url":"https://ciarka.pl/?seed=12345"'));
         assertTrue(vm.contains(json, '"image":"data:image/webp;base64,'));
         assertTrue(

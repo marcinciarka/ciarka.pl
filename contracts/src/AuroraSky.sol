@@ -106,16 +106,19 @@ contract AuroraSky is ERC721 {
         uint256 tokenId
     ) public view override returns (string memory) {
         _requireOwned(tokenId);
+        string memory seedStr = Strings.toString(_seeds[tokenId]);
         string memory json = string.concat(
             '{"name":"CRKAurora #',
             Strings.toString(tokenId),
-            '","description":"A one-of-a-kind aurora captured live from ciarka.pl. Image and seed stored fully on-chain.",',
+            '","description":"A one-of-a-kind aurora captured live from ciarka.pl - fully on-chain, one per wallet, 100 ever. See this sky alive: https://ciarka.pl/?seed=',
+            seedStr,
+            '",',
             '"external_url":"https://ciarka.pl/?seed=',
-            Strings.toString(_seeds[tokenId]),
+            seedStr,
             '","image":"data:image/webp;base64,',
             Base64.encode(_images[tokenId]),
             '","attributes":[{"trait_type":"Seed","value":"',
-            Strings.toString(_seeds[tokenId]),
+            seedStr,
             '"}]}'
         );
         return
