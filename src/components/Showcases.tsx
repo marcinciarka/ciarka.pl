@@ -67,8 +67,11 @@ function ShowcaseCard({
         <p className="mt-4 text-muted">{showcase.description}</p>
         <ul className="mt-5 space-y-2">
           {showcase.highlights.map((h) => (
-            <li key={h} className="flex gap-2 text-sm text-text/90">
-              <span aria-hidden="true" className="mt-1 text-ember">
+            <li
+              key={h}
+              className="flex gap-2 items-center text-sm text-text/90"
+            >
+              <span aria-hidden="true" className="my-1 text-ember">
                 ▸
               </span>
               <span>{h}</span>

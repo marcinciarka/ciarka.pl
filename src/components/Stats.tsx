@@ -70,12 +70,12 @@ export function Stats() {
     };
   }, []);
 
-  const isStale =
-    Date.now() - new Date(stats.updatedAt).getTime() > STALE_AFTER_MS;
-
   return (
     <div ref={rootRef}>
-      <div className="grid grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:gap-10">
+      <div
+        className="grid grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:gap-10"
+        title={`Updated ${relativeTime(stats.updatedAt)}`}
+      >
         {FIELDS.map((f) => (
           <StatCounter
             key={f.key}
@@ -86,11 +86,6 @@ export function Stats() {
           />
         ))}
       </div>
-      <p className="mt-4 font-mono text-xs text-muted">
-        {isStale
-          ? "from commit history, 2016–2026"
-          : `live from commit history · updated ${relativeTime(stats.updatedAt)}`}
-      </p>
     </div>
   );
 }

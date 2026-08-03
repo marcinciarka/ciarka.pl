@@ -51,8 +51,7 @@ heavily damped). Everything else on the page stays quiet and disciplined.
 
 1. **Hero** (100svh): top-left small wordmark `ciarka.pl`; center-left name +
    role + 3-line pitch; bottom: three stat counters (commits / PRs / yrs
-   production DeFi) in JetBrains Mono with count-up animation on load, caption
-   "live from commit history · updated <relative time>" from stats.json fetch.
+   production DeFi) in JetBrains Mono with count-up animation on load.
 2. **Showcases** - heading "Proof, running live". Three full-width alternating
    feature panels (NOT a 3-card grid): left = copy (name, tagline, description,
    highlight bullets, tech chips, Live demo → ember link + GitHub link),
@@ -61,13 +60,10 @@ heavily damped). Everything else on the page stays quiet and disciplined.
    - ticker (chainvibe): scrolling feed of small event rows
    - spark (summer-roast): typing/spark pulse
      Motifs pause when off-viewport (IntersectionObserver) and respect reduced motion.
-3. **Work** - heading "Twelve years of shipping". Vertical timeline, each entry
+3. **Work** - heading "Where the commits went" (from `workHeading` in
+   content.ts; avoids the ubiquitous "N years of shipping"). Vertical timeline, each entry
    expandable (details list). Period in JetBrains Mono, company in display face.
-4. **Protocol matrix** - heading "Protocol footprint". Horizontal bars,
-   sqrt/log-scaled to activity count, gradient teal→violet fill, name + since +
-   activity number, note revealed on hover/tap. This is data-viz: aurora hues OK.
-5. **Skills** - compact four-column (stack on mobile) chip groups.
-6. **Contact** - big display-face line "Let's build something." + email
+4. **Contact** - big display-face line "Let's build something." + email
    (mailto), GitHub, availability line. Footer: "numbers from commit history,
    2016–2026 · built with Vite + React + a hand-rolled shader".
 
@@ -88,6 +84,6 @@ no hamburger complexity.
 
 - `src/main.tsx`, `src/App.tsx`, `src/index.css` (Tailwind v4 `@import "tailwindcss"` + `@theme` tokens)
 - `src/components/AuroraHero.tsx` + `src/lib/aurora.ts` (shader setup)
-- `src/components/{Nav,Stats,Showcases,Motif,Work,ProtocolMatrix,Skills,Contact}.tsx`
+- `src/components/{Nav,Stats,Showcases,Motif,Work,Contact}.tsx`
 - `src/hooks/{useStats,useInView,useReducedMotion}.ts`
 - `public/favicon.svg` - simple aurora-gradient "C" mark

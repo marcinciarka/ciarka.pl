@@ -4,8 +4,6 @@ import { Nav } from "./components/Nav";
 import { Stats } from "./components/Stats";
 import { Showcases } from "./components/Showcases";
 import { Work } from "./components/Work";
-import { ProtocolMatrix } from "./components/ProtocolMatrix";
-import { Skills } from "./components/Skills";
 import { Contact, Footer } from "./components/Contact";
 import { SkyControls } from "./components/SkyControls";
 
@@ -102,8 +100,6 @@ export default function App() {
       <main id="main" className="relative">
         <Work />
         <Showcases />
-        <ProtocolMatrix />
-        <Skills />
         <Contact />
       </main>
       <Footer />

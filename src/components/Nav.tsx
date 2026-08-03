@@ -4,8 +4,6 @@ import { identity } from "../content";
 const SECTIONS = [
   { id: "showcases", label: "Live demos" },
   { id: "work", label: "Experience" },
-  { id: "protocols", label: "Protocols" },
-  { id: "skills", label: "Toolbox" },
   { id: "contact", label: "Contact" },
 ];
 
