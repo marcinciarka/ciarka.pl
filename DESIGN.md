@@ -65,7 +65,7 @@ heavily damped). Everything else on the page stays quiet and disciplined.
    expandable (details list). Period in JetBrains Mono, company in display face.
 4. **Contact** - big display-face line "Let's build something." + email
    (mailto), GitHub, availability line. Footer: "numbers from commit history,
-   2016–2026 · built with Vite + React + a hand-rolled shader".
+   2022–<current year> · built with Vite + React + a hand-rolled shader".
 
 Sticky minimal nav (wordmark + section anchors + GitHub icon) appearing after
 scrolling past hero. Mobile: anchors collapse to a simple row or disappear;

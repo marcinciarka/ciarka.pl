@@ -62,8 +62,13 @@ function absolute(url: string): string {
   return url.startsWith("/") ? `${ORIGIN}${url}` : url;
 }
 
+// "since 2022" must track SINCE_YEAR in scripts/update-stats.mjs, which
+// bounds the commit/PR counts this line describes. The two files cannot share
+// a constant — one is TS bundled into the app, the other a standalone .mjs
+// script run by CI — so this is a comment-enforced link, not a type-checked
+// one.
 function statLine(stats: CrawlerStats): string {
-  return `${stats.commits.toLocaleString("en-US")} commits and ${stats.pullRequests.toLocaleString("en-US")} pull requests across ten years of shipping.`;
+  return `${stats.commits.toLocaleString("en-US")} commits and ${stats.pullRequests.toLocaleString("en-US")} pull requests since 2022.`;
 }
 
 // Deduplicated in first-appearance order: the showcase stack doubles as the

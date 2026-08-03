@@ -89,7 +89,7 @@ export function Stats() {
           rel="noreferrer"
           className="underline decoration-dotted underline-offset-2 transition-colors hover:text-ember"
         >
-          GitHub history 2016–2026, every org
+          GitHub history 2022–{new Date().getFullYear()}, every org
         </a>
         {" · updated "}
         {relativeTime(stats.updatedAt)}

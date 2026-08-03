@@ -14,6 +14,14 @@ import {
   openseaCollectionUrl,
 } from "../lib/contractAddress";
 import { invalidateMintedTotal, setMintedTotal } from "../lib/mintedTotal";
+import { truncateAddress } from "../lib/format";
+import {
+  allowAutoConnect,
+  isAutoConnectSuppressed,
+  sameAccount,
+  subscribeAccountsChanged,
+  suppressAutoConnect,
+} from "../lib/walletEvents";
 import type { AuroraSeed } from "../lib/seed";
 
 // What the panel is showing. `blocked` carries its own copy because the two
@@ -117,6 +125,11 @@ export function MintPanel({
     };
   }, []);
 
+  // A switch that arrives mid-mint is parked here rather than applied.
+  // `undefined` means nothing is parked; `null` means the wallet reported no
+  // accounts. Both are meaningful, hence the three-state ref.
+  const pendingAccountRef = useRef<`0x${string}` | null | undefined>(undefined);
+
   // Unsubscribe for an in-flight fade wait, so an abort or unmount doesn't
   // leave a callback pointing at a dead component.
   const rerollWaitRef = useRef<(() => void) | null>(null);
@@ -127,6 +140,11 @@ export function MintPanel({
     },
     [],
   );
+
+  // Bumped on every load and on every wallet-state reset, so a pre-flight that
+  // resolves after the account changed (or after a disconnect) cannot write its
+  // stale mintable/estimate over the current wallet's.
+  const loadSeqRef = useRef(0);
 
   const activeRef = useRef(active);
   useEffect(() => {
@@ -148,6 +166,7 @@ export function MintPanel({
   // the small print to "—" rather than blocking the mint button.
   const loadForAccount = useCallback(
     async (addr: `0x${string}`, seed: AuroraSeed, snapshot: AuroraSnapshot) => {
+      const seq = ++loadSeqRef.current;
       setEstimate("loading");
       try {
         const { checkMintable, estimateMint } = await import("../lib/mint");
@@ -155,7 +174,7 @@ export function MintPanel({
           checkMintable(addr, seed),
           estimateMint(addr, seed, snapshot),
         ]);
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || seq !== loadSeqRef.current) return;
         setMintable(
           mintableResult.status === "fulfilled" ? mintableResult.value : "ok",
         );
@@ -168,7 +187,7 @@ export function MintPanel({
             : "error",
         );
       } catch {
-        if (!mountedRef.current) return;
+        if (!mountedRef.current || seq !== loadSeqRef.current) return;
         // Could not even load the wallet code — leave the mint button
         // available (it will surface a real error if pressed) and show "—".
         setMintable("ok");
@@ -177,6 +196,109 @@ export function MintPanel({
     },
     [],
   );
+
+  // Shared by clearWalletState and applyAccountChange's non-null branch: both
+  // reset every read derived from *which* wallet is connected, bump
+  // loadSeqRef so an in-flight loadForAccount from the account being left
+  // cannot land after this point, and clear a stale connect/mint error (a
+  // done phase holds the only copy of the OpenSea/tx links and is never
+  // touched here). `subject` is deliberately left alone by both callers: the
+  // aurora on screen is still the one you would mint, and re-capturing it is
+  // the C1 provenance hazard.
+  const resetWalletReads = useCallback(() => {
+    loadSeqRef.current++;
+    setMintable(null);
+    setEstimate(null);
+    setOwned(null);
+    setOwnedImage(null);
+    setPhase((p) => (p.step === "error" ? { step: "ready" } : p));
+  }, []);
+
+  const clearWalletState = useCallback(() => {
+    setAccount(null);
+    resetWalletReads();
+  }, [resetWalletReads]);
+
+  // EIP-1193 has no portable disconnect — wallet_revokePermissions is
+  // MetaMask-only, and nothing lets a dApp make a wallet forget it in general.
+  // So this is a local forget: drop the state, and stop the silent pre-fill
+  // for the rest of the page session.
+  const disconnect = useCallback(() => {
+    suppressAutoConnect();
+    clearWalletState();
+  }, [clearWalletState]);
+
+  // The switch itself. Resets every wallet-derived read and re-runs the
+  // pre-flights against the SAME frozen seed and snapshot — a new account
+  // changes who is minting, never what is being minted.
+  const applyAccountChange = useCallback(
+    (
+      next: `0x${string}` | null,
+      seed: AuroraSeed,
+      snapshot: AuroraSnapshot,
+    ) => {
+      if (next === null) {
+        // Locked, or the site's permission revoked from inside the wallet.
+        // Same reset as an explicit disconnect, minus the suppression flag —
+        // the visitor never asked this page to forget anything, so a later
+        // unlock should pre-fill normally.
+        clearWalletState();
+        return;
+      }
+      // Switching accounts in the wallet is a reconnect intent, so it
+      // overrides an earlier disconnect.
+      allowAutoConnect();
+      setAccount(next);
+      resetWalletReads();
+      void loadForAccount(next, seed, snapshot);
+    },
+    [clearWalletState, resetWalletReads, loadForAccount],
+  );
+
+  // Listens whenever a snapshot is frozen. Deliberately NOT gated on `active`:
+  // that prop means "the mint segment is showing", not "the modal is open" —
+  // the inactive segment stays mounted under `hidden`, and closing the modal
+  // unmounts this component outright. Gating on it would miss a switch made
+  // while the visitor is on the gallery tab.
+  useEffect(() => {
+    if (subject?.kind !== "ready") return;
+    // A successful mint is a finished record: its OpenSea and transaction links
+    // belong to the account that actually minted. Nothing about the wallet may
+    // alter that panel, so we stop listening entirely rather than parking a
+    // switch we would only discard.
+    if (phase.step === "done") return;
+    const { seed, snapshot } = subject;
+    return subscribeAccountsChanged((next) => {
+      if (!mountedRef.current) return;
+      // Park BEFORE the sameAccount comparison. Switching away and back during
+      // a mint must overwrite the park, not skip it — otherwise the drain later
+      // applies an account the wallet has already left.
+      if (phase.step === "minting") {
+        pendingAccountRef.current = next;
+        return;
+      }
+      if (sameAccount(next, account)) return;
+      applyAccountChange(next, seed, snapshot);
+    });
+  }, [subject, account, phase.step, applyAccountChange]);
+
+  // Deferred, not dropped: apply a parked switch once the mint is no longer in
+  // flight. A *successful* mint is the exception — the done panel's OpenSea and
+  // transaction links belong to the account that actually minted, and swapping
+  // the account under them would misattribute the token. There the parked value
+  // is discarded, not applied.
+  useEffect(() => {
+    if (phase.step === "minting") return;
+    const pending = pendingAccountRef.current;
+    if (pending === undefined) return;
+    // Retain the park if it cannot be applied yet; only consume it once we
+    // know this render can act on it.
+    if (subject?.kind !== "ready") return;
+    pendingAccountRef.current = undefined;
+    if (phase.step === "done") return;
+    if (sameAccount(pending, account)) return;
+    applyAccountChange(pending, subject.seed, subject.snapshot);
+  }, [phase.step, subject, account, applyAccountChange]);
 
   // Takes the snapshot and starts the read-only pre-flights. Split out so the
   // "still warming up" state can retry it in place without leaving the segment.
@@ -210,6 +332,10 @@ export function MintPanel({
 
     if (next.kind !== "ready") return;
     const { seed, snapshot } = next;
+    // A disconnect earlier in this page session means the visitor asked us to
+    // forget the wallet. eth_accounts would happily hand it straight back, so
+    // reopening the modal must not silently re-fill it.
+    if (isAutoConnectSuppressed()) return;
     // eth_accounts — reads an already-authorized account without prompting.
     void (async () => {
       try {
@@ -381,6 +507,9 @@ export function MintPanel({
   }, [active, mintable, account]);
 
   const connect = async (seed: AuroraSeed, snapshot: AuroraSnapshot) => {
+    // Pressing connect revokes an earlier disconnect — without this, the
+    // address would vanish again the next time the modal reopened.
+    allowAutoConnect();
     setConnecting(true);
     setPhase({ step: "ready" });
     try {
@@ -682,26 +811,57 @@ export function MintPanel({
             </div>
           )}
 
-          {/* Gas/seed small print describes the mint candidate — for
-              an already-minted wallet there is no candidate, and the
-              recall panel shows its own token's seed instead. */}
-          {mintable !== "wallet-minted" && (
+          {/* The gas/seed rows describe the mint candidate, which does not
+              exist for a wallet that has already minted — but the wallet row
+              does, and that is exactly the state where knowing *which* wallet
+              claimed the aurora matters most. So the dl itself is no longer
+              gated on wallet-minted; only the candidate rows are. */}
+          {(mintable !== "wallet-minted" || account !== null) && (
             <dl className="mt-3 space-y-0.5 font-mono text-xs text-muted">
-              <div className="flex justify-between gap-2">
-                <dt>est. gas</dt>
-                <dd>{estimateText}</dd>
-              </div>
-              {/* Priced off the Chainlink ETH/USD feed on Base; "—"
-                  when that read failed, so a flaky oracle never takes
-                  the ETH number down with it. */}
-              <div className="flex justify-between gap-2">
-                <dt>in USD</dt>
-                <dd>{usdText}</dd>
-              </div>
-              <div className="flex justify-between gap-2">
-                <dt>seed</dt>
-                <dd>{String(subject.seed)}</dd>
-              </div>
+              {mintable !== "wallet-minted" && (
+                <>
+                  <div className="flex justify-between gap-2">
+                    <dt>est. gas</dt>
+                    <dd>{estimateText}</dd>
+                  </div>
+                  {/* Priced off the Chainlink ETH/USD feed on Base; "—"
+                      when that read failed, so a flaky oracle never takes
+                      the ETH number down with it. */}
+                  <div className="flex justify-between gap-2">
+                    <dt>in USD</dt>
+                    <dd>{usdText}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>seed</dt>
+                    <dd>{String(subject.seed)}</dd>
+                  </div>
+                </>
+              )}
+              {account !== null && (
+                <div className="flex items-center justify-between gap-2">
+                  <dt>wallet</dt>
+                  <dd className="flex items-center gap-2" aria-label={account}>
+                    {/* Truncated to fit the two-column list at 360px. `title`
+                        surfaces the full address on mouse hover only — the
+                        `aria-label` above is what makes it reachable without
+                        one, so it can be checked against the wallet either
+                        way. */}
+                    <span title={account}>{truncateAddress(account)}</span>
+                    <button
+                      type="button"
+                      onClick={disconnect}
+                      // A completed mint's panel is immutable (see the
+                      // subscription effect above) — disconnecting here would
+                      // clear mintable and resurrect the candidate rows under
+                      // a done panel describing a mint that already happened.
+                      disabled={sealed || phase.step === "done"}
+                      className="rounded-full border border-glass-border px-2 py-0.5 text-[10px] text-muted transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted cursor-pointer"
+                    >
+                      disconnect
+                    </button>
+                  </dd>
+                </div>
+              )}
             </dl>
           )}
         </>

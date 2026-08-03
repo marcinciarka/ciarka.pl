@@ -17,6 +17,13 @@ const STATS_PATH = join(
 // curated baseline; commits/PRs are fetched live.
 const BASELINE = { defiYears: 4 };
 
+// Commits before 2022 are a handful of throwaway repos; counting them inflates
+// the number without representing real work. Recorded into stats.json as
+// `sinceYear` so the never-regress floor below can tell a deliberate narrowing
+// apart from an API outage.
+const SINCE_YEAR = 2022;
+const SINCE = `${SINCE_YEAR}-01-01`;
+
 // The Actions-issued GITHUB_TOKEN is scoped to this repo only, so search
 // results exclude every other repo the author contributes to and undercount
 // badly. STATS_TOKEN (a user PAT with repo + read:user) sees the real history.
@@ -36,34 +43,64 @@ async function ghSearchCount(url) {
   return json.total_count;
 }
 
+// encodeURIComponent, not a raw template: the date qualifiers contain `>` and
+// `=`, which have no business going unencoded in a query string. Terms are
+// separated by spaces here rather than `+` — encodeURIComponent renders them as
+// %20, which the search API accepts.
+function searchUrl(path, q) {
+  return `https://api.github.com/search/${path}?q=${encodeURIComponent(q)}&per_page=1`;
+}
+
 export async function fetchStats() {
   const [commits, pullRequests] = await Promise.all([
+    // author-date, not committer-date: a rebase or cherry-pick rewrites the
+    // committer date and would drag pre-2022 work back into range.
     ghSearchCount(
-      `https://api.github.com/search/commits?q=author:${AUTHOR}&per_page=1`,
+      searchUrl("commits", `author:${AUTHOR} author-date:>=${SINCE}`),
     ),
+    // The PR query is bounded too, not just commits: the caption sits under
+    // both numbers, so a range claim has to be true of both or it is a lie
+    // about the PR count.
     ghSearchCount(
-      `https://api.github.com/search/issues?q=author:${AUTHOR}+type:pr&per_page=1`,
+      searchUrl("issues", `author:${AUTHOR} type:pr created:>=${SINCE}`),
     ),
   ]);
-  return { commits, pullRequests, ...BASELINE };
+  return { commits, pullRequests, sinceYear: SINCE_YEAR, ...BASELINE };
 }
 
 export function statsChanged(prev, next) {
-  return ["commits", "pullRequests", "defiYears"].some(
+  return ["commits", "pullRequests", "defiYears", "sinceYear"].some(
     (k) => prev[k] !== next[k],
   );
+}
+
+// The API can undercount during outages/reindexing, so fetched values are
+// floored by what is already published - never regress the numbers.
+//
+// Unless the range itself moved. A narrower window legitimately returns *fewer*
+// commits, and flooring that would pin the counters to the old wide-window
+// number forever, while statsChanged reported nothing to write. prev.sinceYear
+// is absent on the first run after a range change, which is precisely the
+// signal to let the drop through.
+export function applyFloor(prev, fetched) {
+  const rangeChanged = prev.sinceYear !== fetched.sinceYear;
+  return {
+    commits: rangeChanged
+      ? fetched.commits
+      : Math.max(fetched.commits, prev.commits),
+    pullRequests: rangeChanged
+      ? fetched.pullRequests
+      : Math.max(fetched.pullRequests, prev.pullRequests),
+    sinceYear: fetched.sinceYear,
+    defiYears: fetched.defiYears,
+  };
 }
 
 async function main() {
   const prev = JSON.parse(readFileSync(STATS_PATH, "utf8"));
   const fetched = await fetchStats();
 
-  // The API can undercount during outages/reindexing - never regress the numbers.
-  const next = {
-    commits: Math.max(fetched.commits, prev.commits),
-    pullRequests: Math.max(fetched.pullRequests, prev.pullRequests),
-    defiYears: fetched.defiYears,
-  };
+  const next = applyFloor(prev, fetched);
   console.log("fetched:", fetched, "-> after floor:", next);
 
   if (!statsChanged(prev, next)) {
