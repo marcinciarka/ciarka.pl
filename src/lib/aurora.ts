@@ -285,6 +285,59 @@ const MAX_SNAPSHOT_SIZE = 800;
 // below ~0.65 the aurora's soft gradients start banding visibly.
 const SNAPSHOT_QUALITIES = [0.85, 0.75, 0.65];
 const SNAPSHOT_TARGET_BYTES = 16_000;
+// The sky is all low-frequency noise, so rendering above 800 device pixels
+// tall buys nothing visible while costing real fragment work. CSS still
+// stretches the canvas across the full viewport.
+const MAX_RENDER_HEIGHT = 800;
+
+// How far the ideal buffer size may drift from the allocated one before it is
+// worth reallocating. 15% of stretch is invisible on a sky built from
+// low-frequency noise - a black flash and a recomposed sky are not, and that
+// is what a reallocation costs:
+//
+//   - assigning canvas.width/height wipes the drawing buffer to opaque black
+//     (alpha: false, no preserveDrawingBuffer), and
+//   - uResolution feeds `aspect` into the noise field, so a new buffer size
+//     re-samples the whole sky into a different shape.
+//
+// A phone's URL bar makes that continuous: the hero box is fixed to the
+// viewport, and because `height` is clamped by MAX_RENDER_HEIGHT, `width` is
+// derived from clientHeight - so a toolbar nudge moves BOTH buffer dimensions
+// and the sky visibly restarts on every scroll. Measured on a 375x844 box, a
+// 60px toolbar shift moved the buffer 355x800 -> 375x784.
+const RESIZE_TOLERANCE = 0.15;
+
+// The drawing-buffer size for a CSS box, or null to keep the current buffer
+// and let CSS stretch it. Pure so the resize policy can be tested without a
+// WebGL context - see aurora.test.ts.
+export function nextRenderSize(
+  clientWidth: number,
+  clientHeight: number,
+  devicePixelRatio: number,
+  allocatedWidth: number,
+  allocatedHeight: number,
+): { width: number; height: number } | null {
+  // A detached or display:none canvas measures 0; there is nothing to size to
+  // yet, and dividing by clientHeight below would produce NaN.
+  if (clientWidth <= 0 || clientHeight <= 0) return null;
+
+  const dpr = Math.min(Math.max(devicePixelRatio, 1), 2);
+  const height = Math.min(MAX_RENDER_HEIGHT, Math.floor(clientHeight * dpr));
+  // Scale width by the same factor so the buffer's aspect matches the box's.
+  const width = Math.floor(clientWidth * (height / clientHeight));
+  if (width <= 0 || height <= 0) return null;
+
+  // Nothing allocated yet - the first size is always worth taking.
+  if (allocatedWidth <= 0 || allocatedHeight <= 0) return { width, height };
+
+  const widthDrift = Math.abs(width - allocatedWidth) / allocatedWidth;
+  const heightDrift = Math.abs(height - allocatedHeight) / allocatedHeight;
+  if (widthDrift <= RESIZE_TOLERANCE && heightDrift <= RESIZE_TOLERANCE) {
+    return null;
+  }
+  return { width, height };
+}
+
 // Star boost applied to the capture draw only (see captureFrame). Tuned
 // against a 160px downscale of the snapshot: below ~1.4 the dust still
 // washes out at thumbnail size, above ~1.8 the stars read as cartoonish
@@ -352,27 +405,38 @@ export function initAurora(
   };
   window.addEventListener("scroll", onScroll, { passive: true });
 
-  // The sky is all low-frequency noise, so rendering above 800 device pixels
-  // tall buys nothing visible while costing real fragment work. CSS still
-  // stretches the canvas across the full viewport.
-  const MAX_RENDER_HEIGHT = 800;
+  // Draws one frame at the current clock. Assigned once `draw` and `clockAt`
+  // exist further down; null until then, so the initial resize() below cannot
+  // reach into their temporal dead zone. Called on reallocation and, unlike
+  // the render loop, it runs even while paused.
+  let redrawNow: (() => void) | null = null;
+
+  // Tracks what we actually allocated. Not read off canvas.width, because a
+  // fresh canvas reports 300x150 before the first allocation and that would
+  // read as a real buffer to compare against.
+  let allocatedWidth = 0;
+  let allocatedHeight = 0;
 
   const resize = () => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const clientWidth = canvas.clientWidth;
-    const clientHeight = canvas.clientHeight;
-    if (clientWidth === 0 || clientHeight === 0) return;
-    const height = Math.min(
-      MAX_RENDER_HEIGHT,
-      Math.floor(clientHeight * dpr),
+    const next = nextRenderSize(
+      canvas.clientWidth,
+      canvas.clientHeight,
+      window.devicePixelRatio || 1,
+      allocatedWidth,
+      allocatedHeight,
     );
-    // Scale width by the same factor so the aspect ratio is preserved.
-    const width = Math.floor(clientWidth * (height / clientHeight));
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width;
-      canvas.height = height;
-      gl.viewport(0, 0, width, height);
-    }
+    if (!next) return;
+    canvas.width = next.width;
+    canvas.height = next.height;
+    allocatedWidth = next.width;
+    allocatedHeight = next.height;
+    gl.viewport(0, 0, next.width, next.height);
+    // Redraw synchronously, still inside the ResizeObserver callback: it runs
+    // after layout but before paint, so the freshly-wiped buffer is never
+    // presented. Without this the black buffer survives until the next rAF -
+    // and indefinitely while the renderer is paused (hero scrolled out of
+    // view), which on a phone is exactly when a resize tends to arrive.
+    redrawNow?.();
   };
 
   const resizeObserver = new ResizeObserver(resize);
@@ -429,6 +493,8 @@ export function initAurora(
     gl.uniform1f(uScrollWarp, scrollWarp);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   };
+
+  redrawNow = () => draw(clockAt(performance.now()));
 
   // Cap the draw rate at 60fps: on 120Hz+ displays the extra frames are
   // invisible on a sky this slow but double the GPU cost. rAF keeps running

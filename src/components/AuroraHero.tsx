@@ -106,7 +106,18 @@ export function AuroraHero() {
     <div
       ref={containerRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10"
+      className={
+        // h-lvh on top of inset-0, so the box is the *large* viewport height
+        // and stops changing as a phone's URL bar slides in and out - that
+        // movement resized the canvas continuously while scrolling, and every
+        // resize wipes the WebGL buffer and re-samples the sky (see
+        // nextRenderSize). The overflow just sits behind the toolbar, which
+        // costs nothing for a background. inset-0 stays as the fallback:
+        // where lvh is unsupported the height declaration is dropped and
+        // top/bottom still stretch the box, rather than collapsing it to zero
+        // and leaving no sky at all.
+        "pointer-events-none fixed inset-0 -z-10 h-lvh"
+      }
     >
       {reducedMotion || !webglOk ? (
         <div

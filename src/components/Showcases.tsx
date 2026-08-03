@@ -1,7 +1,13 @@
 import { showcases, type Showcase } from "../content";
+import { CONTRACT_DEPLOYED } from "../lib/contractAddress";
+import { AuroraShowcaseActions } from "./AuroraShowcaseActions";
 import { RecordingPreview } from "./RecordingPreview";
 
 function ShowcaseLinks({ showcase }: { showcase: Showcase }) {
+  if (showcase.kind === "aurora") {
+    return <AuroraShowcaseActions />;
+  }
+
   if (showcase.status === "in-progress") {
     return (
       <span className="rounded-full border border-glass-border bg-glass px-3 py-1 font-mono text-xs text-muted">
@@ -97,11 +103,30 @@ function ShowcaseCard({
       >
         {showcase.recording ? (
           <RecordingPreview src={showcase.recording} title={showcase.name} />
+        ) : showcase.image ? (
+          <div className="glass aspect-4/3 w-full overflow-hidden rounded-2xl">
+            <img
+              src={showcase.image}
+              alt={`A generative aurora sky captured from the ${showcase.name} shader`}
+              width={1600}
+              height={1200}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
+          </div>
         ) : null}
       </div>
     </div>
   );
 }
+
+// Three of the aurora card's four actions (gallery, Basescan, OpenSea) need a
+// deployed contract to point at; showing it with those links dead would
+// mislead rather than degrade, so the whole card is dropped until deploy.
+const visibleShowcases = showcases.filter(
+  (showcase) => showcase.kind !== "aurora" || CONTRACT_DEPLOYED,
+);
 
 export function Showcases() {
   return (
@@ -117,7 +142,7 @@ export function Showcases() {
         Live demos
       </h2>
       <div className="mt-16 space-y-24">
-        {showcases.map((showcase, i) => (
+        {visibleShowcases.map((showcase, i) => (
           <ShowcaseCard
             key={showcase.id}
             showcase={showcase}

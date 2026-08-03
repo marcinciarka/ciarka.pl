@@ -8,16 +8,12 @@ import {
 } from "../lib/skyStore";
 import { supportsWebpCapture, type AuroraSnapshot } from "../lib/capture";
 import {
-  CONTRACT_ADDRESS,
   CONTRACT_DEPLOYED,
   GALLERY_PAGE_SIZE,
   MAX_IMAGE_BYTES,
+  openseaCollectionUrl,
 } from "../lib/contractAddress";
 import { invalidateMintedTotal, setMintedTotal } from "../lib/mintedTotal";
-
-// Static-safe fallback (no viem import): the collection view on OpenSea,
-// for when the wallet's own tokenId isn't known (lookup pending/failed).
-const OPENSEA_COLLECTION_URL = `https://opensea.io/assets/base/${CONTRACT_ADDRESS}`;
 import type { AuroraSeed } from "../lib/seed";
 
 // What the panel is showing. `blocked` carries its own copy because the two
@@ -608,7 +604,7 @@ export function MintPanel({
                   </p>
                   {(owned === "loading" || owned === "none") && (
                     <a
-                      href={OPENSEA_COLLECTION_URL}
+                      href={openseaCollectionUrl()}
                       target="_blank"
                       rel="noreferrer"
                       className={`${buttonClass} text-center`}

@@ -14,6 +14,11 @@ import {
   subscribeWebglFailed,
   whenSkySettled,
 } from "../lib/skyStore";
+import {
+  setBusy,
+  subscribeIntent,
+  type SkyIntent,
+} from "../lib/skyIntents";
 import { CONTRACT_DEPLOYED } from "../lib/contractAddress";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useMintedTotal } from "../hooks/useMintedTotal";
@@ -21,8 +26,7 @@ import { AuroraModal, type Segment } from "./AuroraModal";
 import { AuroraGallery } from "./AuroraGallery";
 import { MintPanel } from "./MintPanel";
 
-const pillClass =
-  "flex items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 font-mono text-xs backdrop-blur-xl transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted cursor-pointer";
+import { pillClass } from "./pillClass";
 
 export function SkyControls() {
   const reducedMotion = useReducedMotion();
@@ -42,20 +46,36 @@ export function SkyControls() {
   const spinWaitRef = useRef<(() => void) | null>(null);
   const galleryTriggerRef = useRef<HTMLButtonElement>(null);
 
+  // `spinning` is this component's own lockout; `setBusy` mirrors it out so
+  // the showcase card's "new aurora" action (which has no other way to know
+  // a reseed is in flight) disables in step with the pill. Kept as a mirror
+  // rather than the source of truth: skyIntents.ts is a plain module store,
+  // and re-deriving `spinning` from it here would need its own subscription
+  // for no benefit, since this component is the only writer.
+  useEffect(() => setBusy(spinning), [spinning]);
+
   useEffect(
     () => () => {
       spinWaitRef.current?.();
       spinWaitRef.current = null;
+      // Belt-and-braces for the case above: if unmount races a settle
+      // callback that hasn't fired yet, the mirror above never runs again to
+      // clear it, and the showcase button would stay disabled forever.
+      setBusy(false);
     },
     [],
   );
 
-  // Focus returns to the pill that opened the dialog, after it re-enables.
-  const restoreFocusRef = useRef(false);
+  // Focus returns to whichever element opened the dialog, after it
+  // re-enables — the top pill by default, or the showcase card's own button
+  // when the gallery was opened via the intent bus (see the `gallery` intent
+  // handler below).
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (open || !restoreFocusRef.current) return;
-    restoreFocusRef.current = false;
-    galleryTriggerRef.current?.focus();
+    const el = restoreFocusRef.current;
+    restoreFocusRef.current = null;
+    el.focus();
   }, [open]);
 
   const close = useCallback(() => {
@@ -63,6 +83,113 @@ export function SkyControls() {
     setSegment("gallery");
     setSealed(false);
   }, []);
+
+  // Shared by the pill's onClick and the `new-aurora` intent handler so the
+  // reseed sequence — and the fade-aware lockout around it — exists in one
+  // place. See the pill button below for why whenSkySettled, not a timer.
+  const startReseed = useCallback(() => {
+    spinWaitRef.current?.();
+    setSpinning(true);
+    reseed();
+    spinWaitRef.current = whenSkySettled(() => {
+      spinWaitRef.current = null;
+      setSpinning(false);
+    });
+  }, []);
+
+  const openGallery = useCallback((trigger: HTMLElement | null) => {
+    setSegment("gallery");
+    restoreFocusRef.current = trigger ?? galleryTriggerRef.current;
+    setOpen(true);
+  }, []);
+
+  // Scrolls the hero back into view, then runs `run` once the scroll has
+  // actually finished. Both halves of that are load-bearing:
+  //
+  // 1. The reseed must not start until the hero is on screen. The crossfade
+  //    runs on the renderer's pause-adjusted clock, and AuroraHero pauses on
+  //    an IntersectionObserver, so a reseed fired while the hero is still
+  //    scrolled away leaves the fade frozen on its first frame and
+  //    whenSkySettled never resolves. A requestAnimationFrame is NOT enough
+  //    here - it lands one frame after the scroll *starts*, ~1.5s before a
+  //    smooth scroll of this distance arrives.
+  // 2. Nothing may steal focus while the scroll animates. Chrome cancels an
+  //    in-flight programmatic smooth scroll when focus moves, and disabling
+  //    the element that currently has focus moves it - so flipping the
+  //    clicked button's `disabled` mid-scroll killed the scroll ~6px in
+  //    (measured). Deferring the reseed until after arrival means `spinning`
+  //    (and the `disabled` it drives) only flips once the scroll is over.
+  const scrollWaitRef = useRef<(() => void) | null>(null);
+  const scrollToHeroThen = useCallback(
+    (run: () => void) => {
+      if (window.scrollY === 0) {
+        run();
+        return;
+      }
+      // A second request while one is pending would queue a duplicate reseed:
+      // `spinning` is still false until the first one arrives.
+      if (scrollWaitRef.current) return;
+
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener("scrollend", finish);
+        clearTimeout(timer);
+        scrollWaitRef.current = null;
+        run();
+      };
+      // scrollend also fires when the scroll is interrupted (a wheel gesture
+      // cancels it), which is what we want - reseed against wherever the
+      // reader actually ended up. The timeout covers browsers without the
+      // event and a scroll that never moves at all.
+      const timer = setTimeout(finish, 1500);
+      window.addEventListener("scrollend", finish);
+      scrollWaitRef.current = () => {
+        window.removeEventListener("scrollend", finish);
+        clearTimeout(timer);
+      };
+
+      // Respect reduced motion rather than hardcoding "smooth": the media
+      // query in index.css already forces `scroll-behavior: auto` back on, so
+      // an explicit "smooth" here would fight it.
+      window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+    },
+    [reducedMotion],
+  );
+
+  useEffect(
+    () => () => {
+      scrollWaitRef.current?.();
+      scrollWaitRef.current = null;
+    },
+    [],
+  );
+
+  // Services both intents the showcase card's AuroraShowcaseActions can fire.
+  // Re-subscribes whenever the guard conditions change so the closure inside
+  // never checks stale `spinning`/`mintActive`/`open` values.
+  useEffect(() => {
+    return subscribeIntent((intent: SkyIntent) => {
+      if (intent.type === "new-aurora") {
+        // Same guard as the pill's `disabled` below — the intent is a plain
+        // function call, not a DOM click, so a disabled-looking showcase
+        // button doesn't stop it from firing on its own.
+        if (spinning || mintActive) return;
+        scrollToHeroThen(startReseed);
+      } else if (intent.type === "gallery") {
+        if (open || spinning) return;
+        openGallery(intent.trigger);
+      }
+    });
+  }, [
+    spinning,
+    mintActive,
+    open,
+    startReseed,
+    openGallery,
+    scrollToHeroThen,
+  ]);
 
   const loadSky = useCallback(
     (seed: number) => {
@@ -96,22 +223,13 @@ export function SkyControls() {
             // mid-fade would cut the transition short) and while a mint
             // snapshot is frozen (C1 above).
             disabled={spinning || mintActive}
-            onClick={() => {
-              // Was a setTimeout(FADE_MS). That measured wall clock while the
-              // fade runs on the renderer's pause-adjusted clock, so once the
-              // hero scrolled out of view the lockout lifted on a sky still
-              // frozen mid-transition — and the mint path it guards would
-              // then capture the old image against the new seed. Wait for the
-              // fade itself instead. reseed() before subscribing: with no
-              // fade in flight whenSkySettled resolves immediately.
-              spinWaitRef.current?.();
-              setSpinning(true);
-              reseed();
-              spinWaitRef.current = whenSkySettled(() => {
-                spinWaitRef.current = null;
-                setSpinning(false);
-              });
-            }}
+            // Was a setTimeout(FADE_MS). That measured wall clock while the
+            // fade runs on the renderer's pause-adjusted clock, so once the
+            // hero scrolled out of view the lockout lifted on a sky still
+            // frozen mid-transition — and the mint path it guards would then
+            // capture the old image against the new seed. Wait for the fade
+            // itself instead (see startReseed / whenSkySettled).
+            onClick={startReseed}
             className={pillClass}
           >
             <span
@@ -134,11 +252,7 @@ export function SkyControls() {
             // snapshot of two blended skies against one seed. The original
             // MintButton carried the same `disabled={spinning}` guard.
             disabled={open || spinning}
-            onClick={() => {
-              setSegment("gallery");
-              restoreFocusRef.current = true;
-              setOpen(true);
-            }}
+            onClick={() => openGallery(galleryTriggerRef.current)}
             className={`${pillClass} text-ember`}
           >
             <span className="tabular-nums">{galleryLabel}</span>

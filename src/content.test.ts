@@ -72,3 +72,25 @@ describe("recruiter call to action", () => {
     expect(identity.cvUrl).toBe("/marcin_ciarka_cv.pdf");
   });
 });
+
+describe("showcases", () => {
+  it("leads with the aurora entry", () => {
+    expect(showcases[0].id).toBe("aurora");
+  });
+
+  it("gives every card a recording or a still - no empty media frame", () => {
+    for (const s of showcases) {
+      expect(!!s.recording || !!s.image, s.id).toBe(true);
+    }
+  });
+
+  // liveUrl is now optional on the type to make room for the aurora's
+  // in-page modal; every other showcase still needs somewhere to link out to.
+  it("keeps a liveUrl on every non-aurora showcase", () => {
+    for (const s of showcases) {
+      if (s.kind !== "aurora") {
+        expect(s.liveUrl, s.id).toBeTruthy();
+      }
+    }
+  });
+});

@@ -34,3 +34,15 @@ export const EXPLORER_BASE = "https://basescan.org";
 export function basescanTokenUrl(tokenId: bigint): string {
   return `${EXPLORER_BASE}/token/${CONTRACT_ADDRESS}?a=${tokenId}`;
 }
+
+export function explorerContractUrl(): string {
+  return `${EXPLORER_BASE}/address/${CONTRACT_ADDRESS}`;
+}
+
+const OPENSEA_COLLECTION_BASE = "https://opensea.io/assets/base";
+
+// OpenSea collection page for this contract. Responds with a 308 redirect to
+// the `/contract/base/<address>` collection page.
+export function openseaCollectionUrl(): string {
+  return `${OPENSEA_COLLECTION_BASE}/${CONTRACT_ADDRESS}`;
+}

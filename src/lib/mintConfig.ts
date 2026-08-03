@@ -6,6 +6,8 @@ import {
   GALLERY_PAGE_SIZE,
   MAX_IMAGE_BYTES,
   basescanTokenUrl,
+  explorerContractUrl,
+  openseaCollectionUrl,
 } from "./contractAddress";
 
 // Base mainnet. The CREATE2 vanity address is identical on Base Sepolia,
@@ -22,6 +24,8 @@ export {
   GALLERY_PAGE_SIZE,
   MAX_IMAGE_BYTES,
   basescanTokenUrl,
+  explorerContractUrl,
+  openseaCollectionUrl,
 };
 export const OPENSEA_BASE = "https://opensea.io/assets/base";
 
@@ -32,10 +36,6 @@ export const OPENSEA_BASE = "https://opensea.io/assets/base";
 export const CHAINLINK_ETH_USD =
   "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70" as const;
 export const CHAINLINK_ETH_USD_DECIMALS = 8;
-
-export function explorerContractUrl(): string {
-  return `${EXPLORER_BASE}/address/${CONTRACT_ADDRESS}`;
-}
 
 export const AURORA_SKY_ABI = [
   {

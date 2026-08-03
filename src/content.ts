@@ -112,14 +112,39 @@ export type Showcase = {
   description: string;
   highlights: string[];
   tech: string[];
-  liveUrl: string;
+  // Optional because the aurora's demo lives on this same page (a modal) -
+  // there is nowhere else to link out to.
+  liveUrl?: string;
   repoUrl?: string;
   npm?: { pkg: string; url: string };
   status: "live" | "source-only" | "in-progress";
   recording?: string;
+  // A still, not a video: the NFT is one frame, and the hero already
+  // animates the same shader - a recording here would just repeat it.
+  image?: string;
+  // Discriminates the entry whose call-to-action opens an in-page modal
+  // instead of following liveUrl out to another site.
+  kind?: "aurora";
 };
 
 export const showcases: Showcase[] = [
+  {
+    id: "aurora",
+    kind: "aurora",
+    name: "Aurora, on-chain",
+    tagline: "A generative sky that lives in contract storage",
+    description:
+      "The shader behind this page's hero, minted as an ERC-721 on Base. Every visitor gets a different sky from a seeded noise field, and the one you're looking at can be captured and written into the contract as bytes - the image is in storage, not on IPFS behind a metadata server.",
+    highlights: [
+      "Every visitor gets a different seeded sky",
+      "Snapshot written on-chain as WebP under 16 kB - no IPFS",
+      "One sky per seed, one mint per wallet, enforced in the contract",
+      "Live gas estimate priced off the Chainlink ETH/USD feed",
+    ],
+    tech: ["Solidity", "Foundry", "WebGL / GLSL", "viem", "Base"],
+    image: "/aurora-still.webp",
+    status: "live",
+  },
   {
     id: "chainvibe",
     name: "ChainVibe",

@@ -12,6 +12,7 @@ npm run build      # tsc + vite build → dist/
 npm test           # vitest (lib + scripts)
 npm run preview    # serve the production build
 npm run og         # re-render public/og.png from scripts/og-card.html
+npm run aurora:still  # re-render public/aurora-still.webp from the shader
 ```
 
 ## Live stats
@@ -32,6 +33,23 @@ which vite injects from `stats.json` on every build.
 After editing `identity`, run `npm run og`. `scripts/og-card.test.mjs`
 asserts the card still matches `content.ts` verbatim and carries nothing
 that can go stale, and CI runs the tests before every deploy.
+
+## Aurora still
+
+The first Live Demos card previews the on-chain aurora with a still frame
+rather than a screen recording. `scripts/aurora-still.html` imports the real
+shader from `src/lib/aurora.ts` - no second copy of the GLSL - and draws one
+frame at a fixed seed and a fixed `uTime`, so `npm run aurora:still` is
+deterministic: same seed, byte-identical WebP. It spawns the dev server
+(needed to resolve the TS imports), renders headlessly, and writes
+`public/aurora-still.webp`.
+
+Pass a seed to try another sky, and an output path to compare candidates
+without overwriting the asset:
+
+```bash
+npm run aurora:still -- 3141592 /tmp/candidate.webp
+```
 
 ## Deploy
 
