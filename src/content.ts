@@ -16,8 +16,21 @@ export type Identity = {
   email: string;
   github: string;
   githubHandle: string;
+  telegramHandle: string;
+  discordHandle: string;
   linkedin?: string;
   cvUrl?: string;
+};
+
+// Ordered as rendered in the contact section. `icon` keys map to the inline
+// SVGs in Contact.tsx; Discord has no public per-username profile URL, so it
+// carries a handle to copy instead of an href.
+export type ContactLink = {
+  icon: "telegram" | "discord" | "linkedin" | "email" | "github";
+  label: string;
+  value: string;
+  href?: string;
+  copy?: string;
 };
 
 export const identity: Identity = {
@@ -33,11 +46,47 @@ export const identity: Identity = {
   email: "cv@plamka.net",
   github: "https://github.com/marcinciarka",
   githubHandle: "marcinciarka",
-  // TODO(marcin): add LinkedIn profile URL when ready
-  linkedin: undefined,
+  telegramHandle: "marcinciarka",
+  discordHandle: "marcinciarka",
+  linkedin: "https://www.linkedin.com/in/marcin-ciarka-942405147/",
   // TODO(marcin): add hosted CV/resume URL when ready
   cvUrl: undefined,
 };
+
+export const contactLinks: ContactLink[] = [
+  {
+    icon: "telegram",
+    label: "Telegram",
+    value: `@${identity.telegramHandle}`,
+    href: `https://t.me/${identity.telegramHandle}`,
+  },
+  {
+    icon: "discord",
+    label: "Discord",
+    value: identity.discordHandle,
+    copy: identity.discordHandle,
+  },
+  {
+    icon: "linkedin",
+    label: "LinkedIn",
+    value: "marcin-ciarka",
+    href: identity.linkedin,
+  },
+  {
+    icon: "email",
+    label: "Email",
+    value: identity.email,
+    href: `mailto:${identity.email}`,
+  },
+  {
+    icon: "github",
+    label: "GitHub",
+    value: identity.githubHandle,
+    href: identity.github,
+  },
+];
+
+export const contactCopied = "copied";
 
 // Baked fallback for the live stats.json (updated by scheduled workflow).
 // Derived from the same public/stats.json the client fetches at runtime -
