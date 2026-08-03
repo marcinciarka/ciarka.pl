@@ -184,9 +184,9 @@ export type WorkEntry = {
 
 export const work: WorkEntry[] = [
   {
-    period: "2025 - present",
+    period: "2026 — present",
     company: "Stealth DeFi platform (NDA)",
-    role: "Lead Frontend Engineer (contract)",
+    role: "Technical Advisor",
     summary:
       "An all-in-one, 100% self-custodial DeFi app - earn, borrow, multiply, loop yields and trade perps, with every position held in the user's own Safe smart account. I scaffolded the monorepo and the indexer it runs on, then wired six lending protocols behind one set of product views. Under NDA, so it stays unnamed here - happy to walk through the architecture live.",
     details: [

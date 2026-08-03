@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "stats:update": "node scripts/update-stats.mjs",
+    "og": "node scripts/generate-og.mjs",
     "postinstall": "node scripts/setup-contracts.mjs"
   },
   "dependencies": {

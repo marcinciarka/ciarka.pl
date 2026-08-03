@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>og card</title>
+  <!--
+    Source for public/og.png. Rendered at exactly 1200x630 by
+    `npm run og` (scripts/generate-og.mjs).
+
+    Deliberately carries NO volatile values - no commit counts, no PR
+    counts, no "N minted", no client names. The previous card baked stats
+    in, drifted 1,500 commits out of date, and kept advertising copy the
+    site had already dropped. Live numbers reach the share preview through
+    og:description instead, which vite injects from public/stats.json on
+    every build.
+
+    Copy below must match `identity` in src/content.ts verbatim.
+    scripts/og-card.test.mjs asserts that, and CI runs the tests before
+    every deploy, so the two cannot separate again. Change content.ts,
+    then re-run `npm run og`.
+  -->
+  <style>
+    @font-face {
+      font-family: 'Clash Display';
+      src: url('../public/fonts/clash-display-600.woff2') format('woff2');
+      font-weight: 600;
+    }
+
+    @font-face {
+      font-family: 'Instrument Sans';
+      src: url('../node_modules/@fontsource/instrument-sans/files/instrument-sans-latin-400-normal.woff2') format('woff2');
+      font-weight: 400;
+    }
+
+    @font-face {
+      font-family: 'Instrument Sans';
+      src: url('../node_modules/@fontsource/instrument-sans/files/instrument-sans-latin-500-normal.woff2') format('woff2');
+      font-weight: 500;
+    }
+
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('../node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+      font-weight: 400;
+    }
+
+    /* Same tokens as src/index.css @theme. */
+    :root {
+      --ink: #070b14;
+      --text: #e9eef7;
+      --muted: #96a0b5;
+      --ember: #ffb454;
+      --aurora-1: #35e0c2;
+      --aurora-2: #7c6cf6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+    }
+
+    body {
+      position: relative;
+      background: var(--ink);
+      color: var(--text);
+      font-family: 'Instrument Sans', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Aurora, approximated in gradients rather than screenshotted from the
+       live shader: a share card wants a stable image, and the shader is
+       seeded per visit. Bands sit right-of-centre so the text column keeps
+       its contrast without a mask on top of it. */
+    .sky {
+      position: absolute;
+      inset: 0;
+      /* Two bright cores (violet high, magenta mid-right) over a teal skirt,
+         which is roughly what the shader lands on. Alphas are high because
+         the scrim below takes a chunk back out of the left half - tuned as a
+         pair, so lowering one without raising the other flattens the card. */
+      background:
+        radial-gradient(58% 46% at 76% 20%, rgba(139, 118, 255, 0.85), transparent 72%),
+        radial-gradient(46% 40% at 99% 46%, rgba(255, 124, 186, 0.6), transparent 74%),
+        radial-gradient(52% 44% at 62% 78%, rgba(53, 224, 194, 0.45), transparent 72%),
+        radial-gradient(64% 52% at 90% 96%, rgba(124, 108, 246, 0.4), transparent 76%),
+        radial-gradient(120% 100% at 100% 0%, rgba(30, 24, 74, 0.75), transparent 70%);
+    }
+
+    /* Stars are hand-placed circles in the SVG below, not a repeating
+       background-image: a tiled dot pattern is perfectly regular, and at this
+       size it reads as a mechanical grid laid over the aurora rather than as
+       sky. Faded out over the text column. */
+    .stars {
+      position: absolute;
+      inset: 0;
+      mask-image: linear-gradient(to right, transparent 32%, black 70%);
+    }
+
+    /* Pulls the left column back toward pure ink so 25px body copy stays
+       readable over the violet. Mirrors the hero's radial mask - and stops
+       short of the right edge so the aurora keeps its colour. */
+    .scrim {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 68% 100% at 0% 52%, rgba(3, 6, 12, 0.95), rgba(3, 6, 12, 0.78) 52%, transparent 82%);
+    }
+
+    .card {
+      position: relative;
+      height: 100%;
+      padding: 56px 72px 60px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .domain {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 20px;
+      color: var(--muted);
+    }
+
+    .body {
+      margin-top: auto;
+      margin-bottom: auto;
+      /* Wide enough that the availability line fits on one row; the pitch is
+         held narrower on its own rule for line length. */
+      max-width: 780px;
+    }
+
+    h1 {
+      font-family: 'Clash Display', 'Instrument Sans', sans-serif;
+      font-weight: 600;
+      font-size: 104px;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+    }
+
+    .role {
+      display: inline-block;
+      margin-top: 18px;
+      font-size: 34px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .role svg {
+      display: block;
+      width: 100%;
+      height: 9px;
+      margin-top: 5px;
+      color: var(--ember);
+    }
+
+    .pitch {
+      margin-top: 26px;
+      max-width: 640px;
+      font-size: 25px;
+      line-height: 1.45;
+      color: rgba(233, 238, 247, 0.9);
+    }
+
+    .meta {
+      margin-top: 30px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      /* 17px, not 19: at 19 the availability line is ~810px and wraps to a
+         second row on the word "engineering", which reads as an overflow
+         rather than a choice. Mono advance is 0.6em, so this keeps the
+         70-character line near 715px - inside .body's max-width. */
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .meta .location {
+      color: rgba(233, 238, 247, 0.8);
+    }
+
+    .meta .availability {
+      color: var(--ember);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sky"></div>
+
+  <!-- Scattered by hand across the right two-thirds, varied in radius and
+       opacity so no row or column lines up. Coordinates are in card pixels. -->
+  <svg class="stars" viewBox="0 0 1200 630" fill="#ffffff">
+    <circle cx="452" cy="88" r="1" opacity=".5" />
+    <circle cx="521" cy="214" r="1.3" opacity=".4" />
+    <circle cx="498" cy="392" r="1" opacity=".35" />
+    <circle cx="565" cy="47" r="1.6" opacity=".7" />
+    <circle cx="604" cy="163" r="1" opacity=".45" />
+    <circle cx="588" cy="308" r="1.2" opacity=".5" />
+    <circle cx="642" cy="481" r="1" opacity=".35" />
+    <circle cx="671" cy="96" r="1.1" opacity=".55" />
+    <circle cx="705" cy="252" r="1.7" opacity=".75" />
+    <circle cx="688" cy="574" r="1.2" opacity=".4" />
+    <circle cx="744" cy="31" r="1.2" opacity=".5" />
+    <circle cx="762" cy="188" r="1" opacity=".4" />
+    <circle cx="731" cy="371" r="1.5" opacity=".65" />
+    <circle cx="796" cy="118" r="1.8" opacity=".8" />
+    <circle cx="812" cy="286" r="1.1" opacity=".45" />
+    <circle cx="778" cy="446" r="1.3" opacity=".55" />
+    <circle cx="835" cy="61" r="1" opacity=".4" />
+    <circle cx="857" cy="521" r="1.4" opacity=".5" />
+    <circle cx="871" cy="207" r="1.2" opacity=".6" />
+    <circle cx="903" cy="342" r="1" opacity=".4" />
+    <circle cx="924" cy="79" r="1.6" opacity=".7" />
+    <circle cx="948" cy="264" r="1.1" opacity=".45" />
+    <circle cx="912" cy="592" r="1" opacity=".35" />
+    <circle cx="981" cy="141" r="1.3" opacity=".55" />
+    <circle cx="996" cy="411" r="1.7" opacity=".7" />
+    <circle cx="1018" cy="38" r="1" opacity=".4" />
+    <circle cx="1042" cy="231" r="1.2" opacity=".5" />
+    <circle cx="1029" cy="498" r="1.1" opacity=".45" />
+    <circle cx="1074" cy="112" r="1.5" opacity=".65" />
+    <circle cx="1097" cy="318" r="1" opacity=".4" />
+    <circle cx="1063" cy="561" r="1.3" opacity=".5" />
+    <circle cx="1121" cy="182" r="1.2" opacity=".55" />
+    <circle cx="1148" cy="392" r="1" opacity=".4" />
+    <circle cx="1136" cy="64" r="1.6" opacity=".7" />
+    <circle cx="1172" cy="271" r="1.1" opacity=".45" />
+    <circle cx="1165" cy="472" r="1.3" opacity=".5" />
+  </svg>
+
+  <div class="scrim"></div>
+
+  <div class="card">
+    <div class="domain">ciarka.pl</div>
+
+    <div class="body">
+      <h1>Marcin Ciarka</h1>
+
+      <!-- Same hand-drawn underline path as the hero in App.tsx. -->
+      <p class="role">Senior Web3 Full-Stack Engineer<svg viewBox="0 0 240 8" preserveAspectRatio="none">
+          <path d="M2 5.5 C 30 2.5, 55 7, 85 4.5 S 140 2, 170 5 S 220 3.5, 238 4.5" fill="none" stroke="currentColor"
+            stroke-width="2.2" stroke-linecap="round" opacity="0.85" />
+        </svg></p>
+
+      <p class="pitch">Ten years shipping for the web, four of them building production DeFi at Summer.fi - I shipped
+        the multi-protocol frontend for Maker, Aave, Spark, Morpho and Ajna, and the risk automation that guards
+        positions on it.</p>
+
+      <div class="meta">
+        <div class="location">Poland · remote (CET)</div>
+        <div class="availability">Open to senior roles - Web3 frontend, full-stack, product engineering</div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
