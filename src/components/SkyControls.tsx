@@ -22,7 +22,7 @@ import { AuroraGallery } from "./AuroraGallery";
 import { MintPanel } from "./MintPanel";
 
 const pillClass =
-  "flex items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 font-mono text-xs text-muted backdrop-blur-xl transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted cursor-pointer";
+  "flex items-center gap-2 rounded-full border border-glass-border bg-glass px-4 py-2 font-mono text-xs backdrop-blur-xl transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted cursor-pointer";
 
 export function SkyControls() {
   const reducedMotion = useReducedMotion();
@@ -84,7 +84,11 @@ export function SkyControls() {
 
   return (
     <>
-      <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
+      {/* Absolute, not fixed: the pills belong to the top of the page next to
+          the hero they act on, and scroll away with it instead of following the
+          reader down over the content. No positioned ancestor, so this resolves
+          against the initial containing block. */}
+      <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
         {liveSky && (
           <button
             type="button"
@@ -135,7 +139,7 @@ export function SkyControls() {
               restoreFocusRef.current = true;
               setOpen(true);
             }}
-            className={pillClass}
+            className={`${pillClass} text-ember`}
           >
             <span className="tabular-nums">{galleryLabel}</span>
           </button>

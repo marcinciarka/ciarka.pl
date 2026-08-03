@@ -1,4 +1,5 @@
 import { work, workHeading, type WorkEntry } from "../content";
+import { useStats } from "../hooks/useStats";
 
 function WorkItem({ entry }: { entry: WorkEntry }) {
   const detailsId = `work-details-${entry.company.replace(/\s+/g, "-").toLowerCase()}`;
@@ -24,13 +25,16 @@ function WorkItem({ entry }: { entry: WorkEntry }) {
         >
           {entry.details.map((d) => (
             <li
-              key={d}
+              key={d.lead}
               className="flex gap-2 items-center text-sm text-text/90"
             >
               <span aria-hidden="true" className="my-1 text-ember">
                 ▸
               </span>
-              <span>{d}</span>
+              <span>
+                <strong className="font-medium text-text">{d.lead}</strong>{" "}
+                {d.text}
+              </span>
             </li>
           ))}
         </ul>
@@ -40,6 +44,8 @@ function WorkItem({ entry }: { entry: WorkEntry }) {
 }
 
 export function Work() {
+  const stats = useStats();
+
   return (
     <section
       id="work"
@@ -52,7 +58,11 @@ export function Work() {
       >
         {workHeading}
       </h2>
-      <ol className="mt-16 space-y-6 border-l border-glass-border">
+      <p className="mt-3 font-mono text-sm text-muted">
+        {stats.commits.toLocaleString("en-US")} commits ·{" "}
+        {stats.pullRequests.toLocaleString("en-US")} pull requests
+      </p>
+      <ol className="mt-10 space-y-6 border-l border-glass-border">
         {work.map((entry) => (
           <WorkItem key={entry.company} entry={entry} />
         ))}

@@ -14,13 +14,14 @@ const ICONS: Record<ContactLink["icon"], string> = {
     "M2 5.5A2.5 2.5 0 0 1 4.5 3h15A2.5 2.5 0 0 1 22 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 18.5v-13Zm2.6-.5 7.4 6.1L19.4 5H4.6ZM20 6.9l-7.36 6.06a1 1 0 0 1-1.28 0L4 6.9V19h16V6.9Z",
   github:
     "M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.42 7.86 10.96.57.1.78-.25.78-.55v-2.15c-3.2.7-3.87-1.37-3.87-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.58.24 2.75.12 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.42.36.78 1.08.78 2.18v3.23c0 .3.2.66.79.55A10.51 10.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z",
+  cv: "M6 2h7.2L19 7.8V22H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm7 1.9V8h4.1L13 3.9ZM8 12h8v1.6H8V12Zm0 4h8v1.6H8V16Z",
 };
 
 function Icon({ name }: { name: ContactLink["icon"] }) {
   return (
     <svg
-      width="18"
-      height="18"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="currentColor"
       aria-hidden="true"
@@ -31,10 +32,27 @@ function Icon({ name }: { name: ContactLink["icon"] }) {
   );
 }
 
-const ROW =
-  "group flex items-center gap-3 rounded-full border border-glass-border bg-glass px-4 py-2.5 text-sm text-text transition-colors hover:border-ember/60 hover:text-ember";
+// Icon tiles rather than full-width rows. The handle itself moves to the
+// title/aria-label - the label caption keeps each glyph legible without
+// restating the value.
+// w-full because the accented tiles are wrapped in a col-span-2 grid cell
+// rather than being grid items themselves.
+const TILE =
+  "group flex w-full flex-col items-center justify-center gap-2 rounded-xl border px-2 py-3.5 transition-colors";
 
-function ContactRow({ link }: { link: ContactLink }) {
+const TILE_PLAIN =
+  "border-glass-border bg-glass text-text hover:border-ember/60 hover:text-ember";
+
+// The accented pair sits on the ember tint so the CV cannot be mistaken for
+// one more handle.
+const TILE_ACCENT =
+  "border-ember/45 bg-ember/12 text-ember hover:border-ember hover:bg-ember/20";
+
+const CAPTION = "font-mono text-[0.7rem] transition-colors";
+const CAPTION_PLAIN = "text-muted group-hover:text-ember";
+const CAPTION_ACCENT = "text-ember";
+
+function ContactTile({ link }: { link: ContactLink }) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -43,27 +61,31 @@ function ContactRow({ link }: { link: ContactLink }) {
     return () => clearTimeout(t);
   }, [copied]);
 
+  const tile = `${TILE} ${link.accent ? TILE_ACCENT : TILE_PLAIN}`;
+
   const body = (
     <>
       <Icon name={link.icon} />
-      <span className="font-mono text-muted transition-colors group-hover:text-ember">
-        {link.label}
+      <span
+        className={`${CAPTION} ${link.accent ? CAPTION_ACCENT : CAPTION_PLAIN}`}
+      >
+        {copied ? contactCopied : link.label}
       </span>
-      <span className="ml-auto">{copied ? contactCopied : link.value}</span>
     </>
   );
 
-  // Discord exposes no per-username profile URL, so that row copies the handle.
+  // Discord exposes no per-username profile URL, so that tile copies the handle.
   if (!link.href) {
     return (
       <button
         type="button"
+        title={link.value}
         aria-label={`Copy ${link.label} handle ${link.value}`}
         onClick={() => {
           navigator.clipboard?.writeText(link.copy ?? link.value);
           setCopied(true);
         }}
-        className={`${ROW} w-full text-left`}
+        className={tile}
       >
         {body}
       </button>
@@ -79,8 +101,9 @@ function ContactRow({ link }: { link: ContactLink }) {
       href={link.href}
       target={external ? "_blank" : undefined}
       rel={external ? "noreferrer" : undefined}
+      title={link.value}
       aria-label={`${link.label}: ${link.value}`}
-      className={ROW}
+      className={tile}
     >
       {body}
     </a>
@@ -106,24 +129,26 @@ export function Contact() {
           <p className="mt-6 font-mono text-sm text-muted">
             {identity.availability}
           </p>
-          <p className="mt-2 font-mono text-sm text-muted">
+          <p className="mt-6 font-mono text-sm text-muted">
             {identity.location}
           </p>
         </div>
-        <div className="mt-8 flex w-full flex-col gap-2 lg:mt-0 lg:ml-auto lg:max-w-sm">
-          {contactLinks.map((link) => (
-            <ContactRow key={link.icon} link={link} />
-          ))}
-          {identity.cvUrl && (
-            <a
-              href={identity.cvUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 rounded-full bg-ember px-4 py-2.5 text-center text-sm font-medium text-ink transition-opacity hover:opacity-90"
-            >
-              Download CV
-            </a>
-          )}
+        {/* Four handles on the top row, then GitHub and the CV as two wide
+            accented tiles. Split on the data's `accent` flag rather than on
+            array index, so reordering contactLinks cannot break the layout. */}
+        <div className="mt-8 grid w-full grid-cols-4 gap-2 lg:mt-0 lg:ml-auto lg:max-w-sm">
+          {contactLinks
+            .filter((link) => !link.accent)
+            .map((link) => (
+              <ContactTile key={link.icon} link={link} />
+            ))}
+          {contactLinks
+            .filter((link) => link.accent)
+            .map((link) => (
+              <div key={link.icon} className="col-span-2">
+                <ContactTile link={link} />
+              </div>
+            ))}
         </div>
       </div>
     </section>

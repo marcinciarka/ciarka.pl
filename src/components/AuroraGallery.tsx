@@ -40,6 +40,51 @@ const primaryButtonClass =
 const pagerClass =
   "rounded-full border border-glass-border px-2.5 py-1 transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-40 disabled:hover:border-glass-border disabled:hover:text-muted";
 
+// One row of placeholders, sized to the grid below so nothing shifts when the
+// real tiles arrive. Every aurora is square, so the skeleton can claim the
+// exact final height. Column counts track the gallery grid: 2 / 3 / 5, and the
+// surplus tiles hide at the narrower breakpoints to keep it to a single row.
+const SKELETON_TILES = [
+  "",
+  "",
+  "hidden min-[420px]:block",
+  "hidden lg:block",
+  "hidden lg:block",
+];
+
+const SHIMMER =
+  "h-full w-full animate-shimmer bg-[length:200%_100%] bg-[linear-gradient(110deg,transparent_30%,rgba(124,108,246,0.22)_45%,rgba(53,224,194,0.18)_58%,transparent_72%)]";
+
+function GallerySkeleton() {
+  return (
+    <div role="status" aria-busy="true">
+      <span className="sr-only">loading minted auroras</span>
+      <ul
+        aria-hidden="true"
+        className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-3 lg:grid-cols-5"
+      >
+        {SKELETON_TILES.map((visibility, i) => (
+          <li key={i} className={visibility}>
+            <div className="flex w-full flex-col gap-1">
+              <div className="aspect-square w-full overflow-hidden rounded-lg border border-glass-border bg-glass">
+                {/* Slight stagger so the row reads as one wave rather than five
+                    tiles pulsing in lockstep. Kept well under the sweep's own
+                    duration - a larger offset puts neighbouring tiles far
+                    enough out of phase that the row looks choppy instead. */}
+                <div
+                  className={SHIMMER}
+                  style={{ animationDelay: `${i * 45}ms` }}
+                />
+              </div>
+              <div className="h-2.5 w-6 rounded bg-glass" />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function AuroraGallery({
   active,
   canLoadSky,
@@ -235,8 +280,7 @@ export function AuroraGallery({
     );
   }
 
-  if (state.status === "loading")
-    return <p className="font-mono text-xs text-muted">loading…</p>;
+  if (state.status === "loading") return <GallerySkeleton />;
 
   if (state.status === "error")
     return (

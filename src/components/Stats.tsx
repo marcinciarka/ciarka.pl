@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { identity } from "../content";
 import { useStats } from "../hooks/useStats";
 import { useCountUp } from "../hooks/useCountUp";
 import { useReducedMotion } from "../hooks/useReducedMotion";
@@ -70,10 +71,7 @@ export function Stats() {
 
   return (
     <div ref={rootRef}>
-      <div
-        className="grid grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:gap-10"
-        title={`Updated ${relativeTime(stats.updatedAt)}`}
-      >
+      <div className="grid grid-cols-2 gap-6 sm:flex sm:flex-wrap sm:gap-10">
         {FIELDS.map((f) => (
           <StatCounter
             key={f.key}
@@ -84,6 +82,18 @@ export function Stats() {
           />
         ))}
       </div>
+      <p className="mt-3 font-mono text-xs text-muted">
+        <a
+          href={identity.github}
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-dotted underline-offset-2 transition-colors hover:text-ember"
+        >
+          GitHub history 2016–2026, every org
+        </a>
+        {" · updated "}
+        {relativeTime(stats.updatedAt)}
+      </p>
     </div>
   );
 }

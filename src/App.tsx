@@ -1,6 +1,5 @@
 import { identity } from "./content";
 import { AuroraHero } from "./components/AuroraHero";
-import { Nav } from "./components/Nav";
 import { Stats } from "./components/Stats";
 import { Showcases } from "./components/Showcases";
 import { Work } from "./components/Work";
@@ -15,7 +14,6 @@ export default function App() {
       </a>
       <AuroraHero />
       <SkyControls />
-      <Nav />
       <header
         id="top"
         className="relative flex min-h-svh flex-col justify-between px-6 py-8 sm:px-10"
@@ -56,41 +54,24 @@ export default function App() {
           <p className="mt-4 font-mono text-sm text-text/80 [text-shadow:0_1px_12px_rgba(3,6,12,0.85)]">
             {identity.location}
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
+          <p className="mt-2 font-mono text-sm text-ember [text-shadow:0_1px_12px_rgba(3,6,12,0.85)]">
+            {identity.availability}
+          </p>
+          {/* Single hero action: every contact route, the CV included, lives in
+              one place at the bottom of the page rather than crowding the pitch. */}
+          <div className="mt-6">
             <a
-              href={`mailto:${identity.email}`}
-              className="rounded-full bg-ember px-5 py-2.5 text-sm font-medium text-ink transition-opacity hover:opacity-90"
+              href="#contact"
+              className="group inline-flex items-center gap-2 rounded-full bg-ember px-5 py-2.5 text-sm font-medium text-ink transition-opacity hover:opacity-90"
             >
-              Email me
-            </a>
-            <a
-              href={identity.github}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full border border-glass-border bg-glass px-5 py-2.5 text-sm font-medium text-text transition-colors hover:border-ember/60"
-            >
-              GitHub
-            </a>
-            {identity.linkedin && (
-              <a
-                href={identity.linkedin}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border border-glass-border bg-glass px-5 py-2.5 text-sm font-medium text-text transition-colors hover:border-ember/60"
+              Get in touch
+              <span
+                aria-hidden="true"
+                className="transition-transform group-hover:translate-y-0.5"
               >
-                LinkedIn
-              </a>
-            )}
-            {identity.cvUrl && (
-              <a
-                href={identity.cvUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border border-glass-border bg-glass px-5 py-2.5 text-sm font-medium text-text transition-colors hover:border-ember/60"
-              >
-                Download CV
-              </a>
-            )}
+                ↓
+              </span>
+            </a>
           </div>
         </div>
         <div className="pb-4">

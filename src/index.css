@@ -30,10 +30,43 @@
   --font-display: 'Clash Display', 'Instrument Sans', sans-serif;
   --font-body: 'Instrument Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* `backwards` matters: the staggered tiles hold the `from` keyframe during
+     their animation-delay. Without it they render the un-animated default
+     background-position - band parked mid-tile - then snap to the start
+     position once the delay elapses, which reads as a stutter down the row. */
+  --animate-shimmer: shimmer 1.8s linear infinite backwards;
+}
+
+/* Sweep for the gallery's square placeholders. Travels right-to-left across a
+   background sized wider than the tile, so the gradient stays soft-edged. The
+   reduced-motion block below freezes it into a static tint. */
+@keyframes shimmer {
+  /* opacity:0 at the start, not just an off-tile background-position: with a
+     200%-wide background the position percentage resolves against a negative
+     (container - image) width, so no single offset reliably parks the band out
+     of sight. Fading in over the first tenth is geometry-independent, and it
+     lands while the band is still off-tile, so nothing visibly fades. */
+  0% {
+    background-position: 160% 0;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    background-position: -160% 0;
+    opacity: 1;
+  }
 }
 
 html {
   color-scheme: dark;
+  /* The hero's single "Get in touch" action is now the main way down the page.
+     The reduced-motion block below already forces this back to auto. */
+  scroll-behavior: smooth;
 }
 
 body {

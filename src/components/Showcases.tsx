@@ -114,7 +114,7 @@ export function Showcases() {
         id="showcases-heading"
         className="font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium tracking-tight text-text"
       >
-        Side Projects
+        Live demos
       </h2>
       <div className="mt-16 space-y-24">
         {showcases.map((showcase, i) => (
