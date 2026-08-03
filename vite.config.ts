@@ -10,7 +10,7 @@ import {
   renderSitemapXml,
   type CrawlerContent,
 } from "./src/lib/crawlerContent.ts";
-import { identity, showcases, work } from "./src/content.ts";
+import { contactLinks, identity, showcases, work } from "./src/content.ts";
 
 // Reads the same public/stats.json the client fetches at runtime, so the
 // scheduled stats workflow updates the meta description for free.
@@ -40,6 +40,7 @@ function crawlerContent(): CrawlerContent {
     identity,
     work,
     showcases,
+    contactLinks,
     stats: { commits: stats.commits, pullRequests: stats.pullRequests },
   };
 }

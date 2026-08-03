@@ -9,7 +9,12 @@
 //
 // Wired in vite.config.ts: the fallback and JSON-LD are substituted into
 // index.html, robots.txt / llms.txt / sitemap.xml are emitted as build assets.
-import type { Identity, Showcase, WorkEntry } from "../content.ts";
+import type {
+  ContactLink,
+  Identity,
+  Showcase,
+  WorkEntry,
+} from "../content.ts";
 
 export type CrawlerStats = { commits: number; pullRequests: number };
 
@@ -17,6 +22,10 @@ export type CrawlerContent = {
   identity: Identity;
   work: WorkEntry[];
   showcases: Showcase[];
+  // The same ordered list Contact.tsx renders, so a route added there reaches
+  // crawlers without a second edit here. Hand-listing them once already lost
+  // Telegram and Discord from the fallback.
+  contactLinks: ContactLink[];
   stats: CrawlerStats;
 };
 
@@ -74,9 +83,12 @@ function knowsAbout({ showcases, work }: CrawlerContent): string[] {
  */
 export function renderPersonJsonLd(content: CrawlerContent): string {
   const { identity, stats } = content;
-  const sameAs = [identity.github, identity.linkedin].filter(
-    (v): v is string => !!v,
-  );
+  // `sameAs` is disambiguation infrastructure, not decoration: it is what tells
+  // an entity-resolution system that this Marcin Ciarka is one specific person
+  // with these accounts, distinct from anyone else carrying the name. Every
+  // profile that provably belongs to him goes here.
+  const sameAs = [identity.github, identity.linkedin, identity.npmProfile]
+    .filter((v): v is string => !!v);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -106,17 +118,15 @@ export function renderPersonJsonLd(content: CrawlerContent): string {
  * exactly the audience this exists for.
  */
 export function renderStaticFallback(content: CrawlerContent): string {
-  const { identity, work, showcases, stats } = content;
-  const links = [
-    `<a href="${escapeHtml(identity.github)}">GitHub</a>`,
-    identity.linkedin
-      ? `<a href="${escapeHtml(identity.linkedin)}">LinkedIn</a>`
-      : "",
-    `<a href="mailto:${escapeHtml(identity.email)}">${escapeHtml(identity.email)}</a>`,
-    identity.cvUrl
-      ? `<a href="${escapeHtml(identity.cvUrl)}">Download CV (PDF)</a>`
-      : "",
-  ].filter(Boolean);
+  const { identity, work, showcases, contactLinks, stats } = content;
+  // Discord has no public per-username profile URL, so it carries a handle to
+  // copy rather than an href - it renders as plain text, not a dead link.
+  const links = contactLinks.map((link) => {
+    const label = `${escapeHtml(link.label)}: ${escapeHtml(link.value)}`;
+    return link.href
+      ? `<a href="${escapeHtml(link.href)}">${label}</a>`
+      : `<span>${label}</span>`;
+  });
 
   return [
     `<div id="static-fallback">`,
@@ -205,11 +215,15 @@ export function renderLlmsTxt(content: CrawlerContent): string {
   }
 
   lines.push("## Contact", "");
-  lines.push(`- Email: ${identity.email}`);
-  lines.push(`- GitHub: ${identity.github}`);
-  if (identity.linkedin) lines.push(`- LinkedIn: ${identity.linkedin}`);
-  lines.push(`- Telegram: @${identity.telegramHandle}`);
-  if (identity.cvUrl) lines.push(`- CV (PDF): ${absolute(identity.cvUrl)}`);
+  for (const link of content.contactLinks) {
+    // mailto: would just repeat `value`, and Discord has no URL at all - both
+    // are complete without one.
+    const url =
+      link.href && !link.href.startsWith("mailto:")
+        ? ` (${absolute(link.href)})`
+        : "";
+    lines.push(`- ${link.label}: ${link.value}${url}`);
+  }
   lines.push("");
 
   return lines.join("\n");

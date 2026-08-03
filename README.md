@@ -68,7 +68,15 @@ no second copy of the copy to keep in sync:
   HTML-to-text pipelines routinely strip `noscript` - which is the exact
   audience this exists for.
 - **`schema.org/Person` JSON-LD** - the one part of the page LLM-backed search
-  parses rather than guesses at.
+  parses rather than guesses at. `sameAs` (GitHub, LinkedIn, npm) is
+  disambiguation infrastructure rather than decoration: it is the mechanism that
+  tells an entity-resolution system these accounts are one specific person, and
+  not someone else carrying the same name. `identity.npmProfile` exists only for
+  this - it is not rendered as a contact route.
+- **Contact routes** - both the fallback and `llms.txt` iterate `contactLinks`,
+  the same ordered list `Contact.tsx` renders, so adding a route reaches
+  crawlers without a second edit. Hand-listing them once already lost Telegram
+  and Discord.
 - **`/llms.txt`** - the whole portfolio as Markdown, per the Answer.AI
   convention. One page, so the copy is inline rather than linking out to
   per-page Markdown that does not exist.

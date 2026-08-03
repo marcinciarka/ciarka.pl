@@ -19,6 +19,10 @@ export type Identity = {
   telegramHandle: string;
   discordHandle: string;
   linkedin?: string;
+  // Not rendered as a contact route - it exists for the JSON-LD `sameAs`, which
+  // is how an entity-resolution system learns that these profiles are one
+  // person. Verified against the @chainvibe/components maintainer record.
+  npmProfile?: string;
   cvUrl?: string;
 };
 
@@ -54,6 +58,7 @@ export const identity: Identity = {
   telegramHandle: "marcinciarka",
   discordHandle: "marcinciarka",
   linkedin: "https://www.linkedin.com/in/marcin-ciarka-942405147/",
+  npmProfile: "https://www.npmjs.com/~marcinciarka",
   cvUrl: "/marcin_ciarka_cv.pdf",
 };
 

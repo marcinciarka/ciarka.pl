@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 // The real template, not a fixture - these tests exist to catch an edit to
 // index.html that drops the placeholders.
 import INDEX_HTML from "../../index.html?raw";
-import { identity, showcases, work } from "../content";
+import { contactLinks, identity, showcases, work } from "../content";
 import {
   AI_USER_AGENTS,
   injectCrawlerContent,
@@ -18,6 +18,7 @@ const CONTENT: CrawlerContent = {
   identity,
   work,
   showcases,
+  contactLinks,
   stats: { commits: 5332, pullRequests: 1188 },
 };
 
@@ -69,10 +70,22 @@ describe("renderStaticFallback", () => {
     for (const s of showcases) expect(html, s.id).toContain(s.name);
   });
 
-  it("carries the contact routes a reader needs to act on", () => {
-    expect(html).toContain(`mailto:${identity.email}`);
-    expect(html).toContain(identity.github);
-    expect(html).toContain(identity.cvUrl!);
+  // The first cut hand-listed four routes and silently dropped Telegram and
+  // Discord - the two the page itself leads with. Iterate the real list.
+  it("carries every contact route, not a hand-picked subset", () => {
+    for (const link of contactLinks) {
+      expect(html, link.label).toContain(link.label);
+      expect(html, link.label).toContain(link.value);
+      if (link.href) expect(html, link.label).toContain(link.href);
+    }
+  });
+
+  it("renders a route with no URL as text rather than a dead link", () => {
+    const discord = contactLinks.find((l) => l.icon === "discord")!;
+    expect(discord.href).toBeUndefined();
+    expect(html).toContain(
+      `<span>${discord.label}: ${discord.value}</span>`,
+    );
   });
 
   it("bakes in the live stat numbers", () => {
@@ -100,9 +113,12 @@ describe("renderPersonJsonLd", () => {
     expect(parsed.email).toBe(`mailto:${identity.email}`);
   });
 
-  it("links both public profiles via sameAs", () => {
+  // sameAs is the disambiguation mechanism - it is what separates this Marcin
+  // Ciarka from anyone else with the name. Every profile counts.
+  it("links every public profile via sameAs", () => {
     expect(parsed.sameAs).toContain(identity.github);
     expect(parsed.sameAs).toContain(identity.linkedin);
+    expect(parsed.sameAs).toContain(identity.npmProfile);
   });
 
   it("derives a deduplicated knowsAbout from the real stack", () => {
@@ -115,7 +131,7 @@ describe("renderPersonJsonLd", () => {
     const bare = JSON.parse(
       renderPersonJsonLd({
         ...CONTENT,
-        identity: { ...identity, linkedin: undefined },
+        identity: { ...identity, linkedin: undefined, npmProfile: undefined },
       }),
     );
     expect(bare.sameAs).toEqual([identity.github]);
@@ -138,10 +154,20 @@ describe("renderLlmsTxt", () => {
     for (const s of showcases) expect(txt, s.id).toContain(s.name);
   });
 
-  it("ends with reachable contact details", () => {
+  it("ends with every contact route", () => {
     expect(txt).toContain("## Contact");
-    expect(txt).toContain(identity.email);
+    for (const link of contactLinks) {
+      expect(txt, link.label).toContain(`- ${link.label}: ${link.value}`);
+    }
+  });
+
+  it("absolutises the relative CV path - a bare path is unusable off-site", () => {
     expect(txt).toContain(`https://ciarka.pl${identity.cvUrl}`);
+  });
+
+  it("omits a redundant URL for mailto and for URL-less handles", () => {
+    expect(txt).toContain(`- Email: ${identity.email}\n`);
+    expect(txt).toContain(`- Discord: ${identity.discordHandle}\n`);
   });
 });
 
