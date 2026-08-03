@@ -51,6 +51,40 @@ without overwriting the asset:
 npm run aurora:still -- 3141592 /tmp/candidate.webp
 ```
 
+## Crawlers and LLM readers
+
+The app renders entirely on the client, so the shipped HTML would otherwise be
+an empty `<div id="root">` - invisible to anything that does not execute
+JavaScript, which includes most LLM fetchers doing a plain HTTP GET. Google
+runs JS and sees the real app; those fetchers do not.
+
+`src/lib/crawlerContent.ts` derives all of it from `src/content.ts`, so there is
+no second copy of the copy to keep in sync:
+
+- **`<div id="root">` fallback** - real, visible content (bio, work, projects,
+  contact), styled by an inline `<style>` in `index.html` because `index.css`
+  only arrives with the JS bundle. React replaces it on mount. Deliberately not
+  hidden and not in `<noscript>`: cloaked blocks are a ranking risk, and
+  HTML-to-text pipelines routinely strip `noscript` - which is the exact
+  audience this exists for.
+- **`schema.org/Person` JSON-LD** - the one part of the page LLM-backed search
+  parses rather than guesses at.
+- **`/llms.txt`** - the whole portfolio as Markdown, per the Answer.AI
+  convention. One page, so the copy is inline rather than linking out to
+  per-page Markdown that does not exist.
+- **`/robots.txt`** - allow-all, plus an explicit `Allow` per named AI crawler.
+  `User-agent: *` already covers them; the explicit entries remove any question
+  of intent, since silence gets read conservatively.
+- **`/sitemap.xml`** - `lastmod` comes from `stats.json`'s `updatedAt` rather
+  than the clock, so a rebuild with no content change is byte-identical.
+
+The three text files are emitted by the `crawlerFiles` Vite plugin (build and
+dev alike) instead of being committed to `public/`, for the same reason the meta
+description carries `__COMMITS__` placeholders: a checked-in copy is a second
+place to forget. `index.html` carries `__STATIC_CONTENT__` and
+`__PERSON_JSONLD__` tokens, and `injectCrawlerContent` throws when either is
+missing - the empty-root page cannot come back unnoticed.
+
 ## Deploy
 
 Pushes to `main` build and deploy to GitHub Pages (`.github/workflows/deploy.yml`).

@@ -20,20 +20,52 @@
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/clash-display-600.woff2" />
-  <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Marcin Ciarka",
-        "jobTitle": "Senior Web3 Full-Stack Engineer",
-        "url": "https://ciarka.pl",
-        "sameAs": ["https://github.com/marcinciarka"]
-      }
-    </script>
+  <script type="application/ld+json">__PERSON_JSONLD__</script>
+  <!-- Styles the no-JS fallback inside #root (see src/lib/crawlerContent.ts).
+       Inline because index.css only arrives with the JS bundle, and this block
+       has to be presentable before that lands - it is real visible content,
+       not a hidden SEO payload. -->
+  <style>
+    body {
+      margin: 0;
+      background: #070b14;
+    }
+
+    #static-fallback {
+      max-width: 46rem;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+      color: #c9d3e6;
+      background: #070b14;
+      font: 400 1rem/1.65 system-ui, sans-serif;
+    }
+
+    #static-fallback a {
+      color: #7dd3fc;
+    }
+
+    #static-fallback h1 {
+      font-size: 2rem;
+      margin: 0 0 .5rem;
+      color: #f1f5ff;
+    }
+
+    #static-fallback h2 {
+      font-size: 1.25rem;
+      margin: 2.5rem 0 .5rem;
+      color: #f1f5ff;
+    }
+
+    #static-fallback h3 {
+      font-size: 1rem;
+      margin: 1.5rem 0 .25rem;
+      color: #f1f5ff;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">__STATIC_CONTENT__</div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
