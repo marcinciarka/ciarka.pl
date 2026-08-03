@@ -4,8 +4,6 @@ import { useCountUp } from "../hooks/useCountUp";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { relativeTime } from "../lib/relativeTime";
 
-const STALE_AFTER_MS = 14 * 24 * 60 * 60 * 1000;
-
 const FIELDS: {
   key: "commits" | "pullRequests" | "defiYears";
   label: string;
