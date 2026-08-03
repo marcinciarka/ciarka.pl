@@ -264,8 +264,18 @@ export type AuroraHandle = {
   setPaused: (paused: boolean) => void;
   setSeed: (seed: AuroraSeed) => void;
   // WYSIWYG snapshot of the live canvas. Synchronous by contract - see
-  // captureFrame's implementation note.
+  // captureFrame's implementation note. Returns null mid-crossfade: a blend
+  // of two skies is not any one seed's image.
   captureFrame: () => AuroraSnapshot | null;
+  // Runs `cb` once the sky is settled on a single seed - immediately if it
+  // already is. Returns an unsubscribe for the not-yet case.
+  //
+  // The UI cannot time this itself. The crossfade runs on the pause-adjusted
+  // clock, which stops dead whenever the hero scrolls out of view or the tab
+  // is hidden, so a wall-clock timer expires while the fade is still frozen
+  // at its first frame. Anything that captures on that timer mints the OLD
+  // sky against the NEW seed - permanent, unfixable on-chain corruption.
+  onceSettled: (cb: () => void) => () => void;
 };
 
 // A snapshot is square and never larger than the render target (which is
@@ -372,6 +382,18 @@ export function initAurora(
   // Seconds of animation actually played, i.e. wall time minus paused time.
   const clockAt = (now: number) => (now - startTime - pauseOffset) / 1000;
 
+  // One-shot waiters for "the sky is settled on a single seed again".
+  // Drained on promotion, so a caller that needs a capturable frame waits on
+  // the fade itself rather than on a wall clock that keeps running while the
+  // fade is paused. See AuroraHandle.onceSettled.
+  let settleWaiters: (() => void)[] = [];
+  const notifySettled = () => {
+    if (settleWaiters.length === 0) return;
+    const waiters = settleWaiters;
+    settleWaiters = [];
+    for (const waiter of waiters) waiter();
+  };
+
   // Slot B becomes the only sky; its phase carries over unchanged so the
   // promoted sky doesn't jump at the moment the fade ends.
   const promoteIncoming = () => {
@@ -390,6 +412,7 @@ export function initAurora(
       const progress = Math.min(1, (clock - blendStart) / FADE_SECONDS);
       if (progress >= 1) {
         promoteIncoming();
+        notifySettled();
       } else {
         // smoothstep: no visible seam at either end of the fade.
         blend = progress * progress * (3 - 2 * progress);
@@ -440,6 +463,10 @@ export function initAurora(
   return {
     destroy: () => {
       cancelAnimationFrame(rafId);
+      // Release anything waiting on a fade that will now never finish. The
+      // waiter re-checks its own liveness; leaving it pending would hang the
+      // UI it belongs to.
+      notifySettled();
       resizeObserver.disconnect();
       window.removeEventListener("scroll", onScroll);
       gl.deleteProgram(program);
@@ -466,12 +493,38 @@ export function initAurora(
       promoteIncoming();
       incoming = seedToUniforms(next);
       blendStart = clock;
-      // The animation loop picks the transition up on its next frame; if
-      // paused, draw one frame so the state is consistent - the fade itself
-      // resumes from 0 whenever the loop restarts.
-      if (paused) draw(clock);
+      if (paused) {
+        // Nothing is rendering, so there is no crossfade for anyone to see -
+        // and the pause-adjusted clock will never advance far enough to end
+        // one. Leaving it frozen at blend 0 would strand the sky showing the
+        // old seed's image while getSeed() reports the new seed, which is
+        // exactly what a capture must never observe. Land it now instead: the
+        // new sky is simply already there when the visitor scrolls back.
+        promoteIncoming();
+        draw(clock);
+        notifySettled();
+      }
+      // Unpaused, the render loop picks the transition up on its next frame
+      // and draw() drains the waiters when it completes.
+    },
+    onceSettled: (cb: () => void) => {
+      if (!incoming) {
+        cb();
+        return () => {};
+      }
+      settleWaiters.push(cb);
+      return () => {
+        settleWaiters = settleWaiters.filter((w) => w !== cb);
+      };
     },
     captureFrame: () => {
+      // Defense in depth for C1: mid-fade the canvas holds a blend of two
+      // skies while getSeed() names only one of them, so an image captured
+      // here could never be honest about its seed. Callers wait for
+      // onceSettled; this makes it impossible to mint the blend if one
+      // doesn't. Null is already the retryable "warming" state in the UI.
+      if (incoming) return null;
+
       // The live context has no preserveDrawingBuffer (it would cost a full
       // extra buffer on every frame for a feature used once per mint), so
       // the drawing buffer is valid only until the browser composites. Draw

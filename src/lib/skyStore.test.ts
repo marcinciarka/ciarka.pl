@@ -310,4 +310,53 @@ describe("skyStore", () => {
       expect(() => reseed()).not.toThrow();
     });
   });
+
+  // The crossfade-completion signal the mint flow waits on before capturing.
+  // A wall-clock timer cannot stand in for this: the fade runs on the
+  // renderer's pause-adjusted clock, so it stops whenever the hero is
+  // off-screen or the tab is hidden.
+  describe("whenSkySettled", () => {
+    it("runs the callback immediately when no renderer is registered", async () => {
+      const { whenSkySettled } = await import("./skyStore");
+      const cb = vi.fn();
+      whenSkySettled(cb);
+      expect(cb).toHaveBeenCalledTimes(1);
+    });
+
+    it("returns a no-op unsubscribe when it resolved immediately", async () => {
+      const { whenSkySettled } = await import("./skyStore");
+      const off = whenSkySettled(() => {});
+      expect(() => off()).not.toThrow();
+    });
+
+    it("delegates to the registered renderer instead of firing itself", async () => {
+      const { registerSettle, whenSkySettled } = await import("./skyStore");
+      const unsubscribe = vi.fn();
+      const onceSettled = vi.fn((_cb: () => void) => unsubscribe);
+      registerSettle(onceSettled);
+
+      const cb = vi.fn();
+      const off = whenSkySettled(cb);
+
+      expect(onceSettled).toHaveBeenCalledTimes(1);
+      // Pending, not resolved — the fade has not landed yet.
+      expect(cb).not.toHaveBeenCalled();
+
+      // The renderer decides when; here, simulate the fade completing.
+      onceSettled.mock.calls[0][0]();
+      expect(cb).toHaveBeenCalledTimes(1);
+
+      off();
+      expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it("falls back to immediate once the renderer deregisters", async () => {
+      const { registerSettle, whenSkySettled } = await import("./skyStore");
+      registerSettle(() => () => {});
+      registerSettle(null);
+      const cb = vi.fn();
+      whenSkySettled(cb);
+      expect(cb).toHaveBeenCalledTimes(1);
+    });
+  });
 });

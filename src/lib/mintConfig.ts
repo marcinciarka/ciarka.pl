@@ -1,14 +1,29 @@
 import { base } from "viem/chains";
-import { CONTRACT_ADDRESS, CONTRACT_DEPLOYED, MAX_IMAGE_BYTES } from "./contractAddress";
+import {
+  CONTRACT_ADDRESS,
+  CONTRACT_DEPLOYED,
+  EXPLORER_BASE,
+  GALLERY_PAGE_SIZE,
+  MAX_IMAGE_BYTES,
+  basescanTokenUrl,
+} from "./contractAddress";
 
 // Base mainnet. The CREATE2 vanity address is identical on Base Sepolia,
 // so only the chain/URLs change between environments.
 export const MINT_CHAIN = base;
 // Re-exported from the dependency-free contractAddress.ts, which is the one
-// place MintButton is allowed to statically import (no viem/chains there).
-export { CONTRACT_ADDRESS, CONTRACT_DEPLOYED, MAX_IMAGE_BYTES };
+// place entry-chunk components (SkyControls, AuroraGallery, MintPanel) are
+// allowed to statically import — this module pulls viem/chains, so anything
+// importing it lands viem in whatever chunk it belongs to.
+export {
+  CONTRACT_ADDRESS,
+  CONTRACT_DEPLOYED,
+  EXPLORER_BASE,
+  GALLERY_PAGE_SIZE,
+  MAX_IMAGE_BYTES,
+  basescanTokenUrl,
+};
 export const OPENSEA_BASE = "https://opensea.io/assets/base";
-export const EXPLORER_BASE = "https://basescan.org";
 
 // Chainlink ETH/USD price feed on Base mainnet. Verified on-chain: address
 // resolves to a feed with description "ETH / USD" and 8 decimals. Hardcoded
@@ -167,7 +182,7 @@ export function computeTotalUsd(
 export function pageTokenIds(
   total: number,
   page: number,
-  pageSize = 12,
+  pageSize = GALLERY_PAGE_SIZE,
 ): bigint[] {
   if (total <= 0 || page < 0 || pageSize <= 0) return [];
   const start = total - page * pageSize; // newest id in this page

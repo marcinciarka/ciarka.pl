@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   CONTRACT_ADDRESS,
   CONTRACT_DEPLOYED,
+  GALLERY_PAGE_SIZE,
   MAX_IMAGE_BYTES,
+  basescanTokenUrl,
   computeTotalUsd,
   dataUrlToBytes,
   explorerContractUrl,
@@ -60,6 +62,27 @@ describe("explorerContractUrl", () => {
     expect(explorerContractUrl()).toBe(
       `https://basescan.org/address/${CONTRACT_ADDRESS}`,
     );
+  });
+});
+
+describe("basescanTokenUrl", () => {
+  it("points at the token's page on the contract, by id", () => {
+    expect(basescanTokenUrl(17n)).toBe(
+      `https://basescan.org/token/${CONTRACT_ADDRESS}?a=17`,
+    );
+  });
+
+  // The gallery detail panel builds this for whatever token is selected, so
+  // it has to survive ids past Number.MAX_SAFE_INTEGER without exponent
+  // notation creeping into the query string.
+  it("renders a large bigint id as plain digits", () => {
+    expect(basescanTokenUrl(9007199254740993n)).toBe(
+      `https://basescan.org/token/${CONTRACT_ADDRESS}?a=9007199254740993`,
+    );
+  });
+
+  it("is pure string building — no chain read, so it works with any id", () => {
+    expect(basescanTokenUrl(1n)).toContain("?a=1");
   });
 });
 
@@ -131,6 +154,12 @@ describe("pageTokenIds", () => {
   it("rejects a negative page or non-positive pageSize defensively", () => {
     expect(pageTokenIds(25, -1, 12)).toEqual([]);
     expect(pageTokenIds(25, 0, 0)).toEqual([]);
+  });
+
+  it("defaults to GALLERY_PAGE_SIZE when no page size is given", () => {
+    expect(pageTokenIds(40, 0)).toHaveLength(GALLERY_PAGE_SIZE);
+    expect(pageTokenIds(40, 0)[0]).toBe(40n);
+    expect(pageTokenIds(40, 0).at(-1)).toBe(40n - BigInt(GALLERY_PAGE_SIZE) + 1n);
   });
 });
 

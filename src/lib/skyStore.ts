@@ -18,8 +18,9 @@ const webglFailedListeners = new Set<WebglFailedListener>();
 
 // C1 belt-and-braces: while a mint flow is past "idle" (preview/minting),
 // "new sky" must not be able to reseed out from under it — that's exactly
-// the seed/image mismatch this flag exists to prevent. MintButton is the
-// only writer; SkyControls reads it to disable the "new sky" button.
+// the seed/image mismatch this flag exists to prevent. MintPanel is the only
+// writer (on the mint segment's active edge, so browsing the gallery leaves
+// the sky free); SkyControls reads it to disable the "new sky" button.
 type MintActiveListener = () => void;
 let mintActive = false;
 const mintActiveListeners = new Set<MintActiveListener>();
@@ -114,6 +115,34 @@ export function registerCapture(fn: CaptureFn | null): void {
 
 export function captureNow(): AuroraSnapshot | null {
   return capture?.() ?? null;
+}
+
+// Registered by AuroraHero alongside captureFrame — same lifetime, same
+// reason (the live hero owns the only canvas that can answer).
+type SettleFn = (cb: () => void) => () => void;
+let onceSettled: SettleFn | null = null;
+
+export function registerSettle(fn: SettleFn | null): void {
+  onceSettled = fn;
+}
+
+// Runs `cb` once the sky has settled on a single seed, so a capture taken
+// then is honest about which seed it depicts.
+//
+// Callers used to approximate this with setTimeout(FADE_MS). That is wrong:
+// the crossfade runs on the renderer's pause-adjusted clock, which stops
+// whenever the hero leaves the viewport or the tab is hidden, so the timer
+// fires while the fade is still frozen on the previous sky. Anything minted
+// off that capture pairs the OLD image with the NEW seed, permanently.
+//
+// With no renderer (reduced motion, WebGL failure, hero unmounted) there is
+// no fade to wait for, so `cb` runs immediately.
+export function whenSkySettled(cb: () => void): () => void {
+  if (!onceSettled) {
+    cb();
+    return () => {};
+  }
+  return onceSettled(cb);
 }
 
 // Shared "WebGL init failed" flag so any UI that depends on the live

@@ -4,6 +4,7 @@ import { useReducedMotion } from "../hooks/useReducedMotion";
 import {
   getSeed,
   registerCapture,
+  registerSettle,
   setWebglFailed,
   subscribe,
 } from "../lib/skyStore";
@@ -48,8 +49,10 @@ export function AuroraHero() {
         setWebglFailed();
       } else {
         // Mint snapshots come from this canvas, so capture only exists
-        // while it does (cleared in the cleanup below).
+        // while it does (cleared in the cleanup below). Fade-completion has
+        // the same lifetime — only a live renderer can report it.
         registerCapture(created.captureFrame);
+        registerSettle(created.onceSettled);
       }
       unsubscribeSeed = subscribe((next) => handle?.setSeed(next));
     });
@@ -71,6 +74,7 @@ export function AuroraHero() {
       cancelled = true;
       cancelSchedule(idleId as never);
       registerCapture(null);
+      registerSettle(null);
       unsubscribeSeed();
       document.removeEventListener("visibilitychange", onVisibility);
       observer?.disconnect();

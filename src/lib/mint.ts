@@ -7,6 +7,7 @@ import {
   CHAINLINK_ETH_USD_DECIMALS,
   CONTRACT_ADDRESS,
   EXPLORER_BASE,
+  GALLERY_PAGE_SIZE,
   MAX_IMAGE_BYTES,
   MINT_CHAIN,
   computeTotalUsd,
@@ -16,7 +17,8 @@ import {
   pageTokenIds,
 } from "./mintConfig";
 // mint.ts is only ever reached via a dynamic `import("../lib/mint")`
-// (see MintButton), so a static import of viem here is safe — it never
+// (see MintPanel / AuroraGallery), so a static import of viem here is safe —
+// it never
 // touches the entry chunk, it just makes viem load as soon as mint.ts
 // does instead of only inside each function's own `await import("viem")`.
 import { BaseError } from "viem";
@@ -54,7 +56,8 @@ function getPublicClient(): Promise<PublicClient> {
   return publicClientPromise;
 }
 
-// Re-exported so callers (MintButton) can reach `openSeaUrl` through the
+// Re-exported so callers (MintPanel, AuroraGallery) can reach `openSeaUrl`
+// through the
 // same dynamic `import("../lib/mint")` used for minting, instead of
 // statically importing mintConfig.ts — which pulls in `viem/chains` and
 // would otherwise land that weight in the entry chunk.
@@ -253,7 +256,7 @@ export async function findMintedToken(
 // round trip.
 export async function fetchMintedAuroras(
   page: number,
-  pageSize = 12,
+  pageSize = GALLERY_PAGE_SIZE,
 ): Promise<{
   items: { tokenId: bigint; seed: number; dataUrl: string; openSeaUrl: string }[];
   total: number;
@@ -409,4 +412,36 @@ export async function mintSky(
     txUrl: `${EXPLORER_BASE}/tx/${hash}`,
     openSeaUrl: buildOpenSeaUrl(tokenId),
   };
+}
+
+// Standalone totalMinted read for the corner pill, which wants a count
+// without paying for a page of images. One RPC, no multicall.
+export async function fetchMintedTotal(): Promise<number> {
+  const publicClient = await getPublicClient();
+  const total = await publicClient.readContract({
+    address: CONTRACT_ADDRESS,
+    abi: AURORA_SKY_ABI,
+    functionName: "totalMinted",
+  });
+  return Number(total);
+}
+
+// Current holder of one token, for the gallery detail panel. Returns null
+// rather than throwing: the panel renders "—" and stays up, because an owner
+// row is the least important thing on it.
+export async function fetchTokenOwner(
+  tokenId: bigint,
+): Promise<string | null> {
+  try {
+    const publicClient = await getPublicClient();
+    const owner = await publicClient.readContract({
+      address: CONTRACT_ADDRESS,
+      abi: AURORA_SKY_ABI,
+      functionName: "ownerOf",
+      args: [tokenId],
+    });
+    return owner as unknown as string;
+  } catch {
+    return null;
+  }
 }
