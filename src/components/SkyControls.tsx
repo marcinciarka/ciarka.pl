@@ -14,11 +14,7 @@ import {
   subscribeWebglFailed,
   whenSkySettled,
 } from "../lib/skyStore";
-import {
-  setBusy,
-  subscribeIntent,
-  type SkyIntent,
-} from "../lib/skyIntents";
+import { setBusy, subscribeIntent, type SkyIntent } from "../lib/skyIntents";
 import { CONTRACT_DEPLOYED } from "../lib/contractAddress";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { useMintedTotal } from "../hooks/useMintedTotal";
@@ -35,10 +31,12 @@ export function SkyControls() {
   // so reseeding while the mint segment holds one would let a mint go through
   // against the wrong seed.
   const mintActive = useSyncExternalStore(subscribeMintActive, isMintActive);
-  const total = useMintedTotal();
 
   const [spinning, setSpinning] = useState(false);
   const [open, setOpen] = useState(false);
+  // Pass `open` so the viem/mint chunk only loads when the modal is shown —
+  // not on idle after first paint.
+  const total = useMintedTotal(open);
   const [segment, setSegment] = useState<Segment>("gallery");
   const [sealed, setSealed] = useState(false);
   // Bumped after a successful mint so the gallery drops its page cache.
@@ -182,14 +180,7 @@ export function SkyControls() {
         openGallery(intent.trigger);
       }
     });
-  }, [
-    spinning,
-    mintActive,
-    open,
-    startReseed,
-    openGallery,
-    scrollToHeroThen,
-  ]);
+  }, [spinning, mintActive, open, startReseed, openGallery, scrollToHeroThen]);
 
   const loadSky = useCallback(
     (seed: number) => {

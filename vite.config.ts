@@ -99,8 +99,46 @@ function crawlerFiles(): Plugin {
   };
 }
 
+// LCP is the hero body copy (Instrument Sans). Clash Display is already
+// preloaded from public/; this injects a matching preload for the hashed
+// @fontsource 400 face once Vite knows its output path.
+function preloadBodyFont(): Plugin {
+  return {
+    name: "preload-body-font",
+    transformIndexHtml: {
+      // `bundle` (hashed asset names) is only populated for post-order
+      // transforms during build — see Vite's transformIndexHtml docs.
+      order: "post",
+      handler(html, ctx) {
+        if (!/(^|\/)index\.html$/.test(ctx.path)) return html;
+        if (!ctx.bundle) return html;
+        const font = Object.values(ctx.bundle).find(
+          (item) =>
+            item.type === "asset" &&
+            typeof item.fileName === "string" &&
+            item.fileName.includes("instrument-sans-latin-400") &&
+            item.fileName.endsWith(".woff2"),
+        );
+        if (!font || font.type !== "asset") return html;
+        const tag = `<link rel="preload" as="font" type="font/woff2" crossorigin href="/${font.fileName}" />`;
+        if (html.includes(tag)) return html;
+        return html.replace(
+          '<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/clash-display-600.woff2" />',
+          `<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/clash-display-600.woff2" />\n  ${tag}`,
+        );
+      },
+    },
+  };
+}
+
 // ciarka.pl is served from the domain root (GitHub Pages + CNAME)
 export default defineConfig({
   base: "/",
-  plugins: [react(), tailwindcss(), injectStats(), crawlerFiles()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    injectStats(),
+    crawlerFiles(),
+    preloadBodyFont(),
+  ],
 });

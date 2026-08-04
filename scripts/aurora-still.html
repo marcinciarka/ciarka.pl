@@ -1,7 +1,7 @@
 <!--
   Build-time tool, not part of the site: renders exactly one frame of the
   real aurora shader (imported from src/lib/aurora.ts, no copy of the GLSL)
-  to a fixed 1600x1200 WebGL canvas, then hands the pixels back to
+  to a fixed 800x600 WebGL canvas, then hands the pixels back to
   generate-aurora-still.mjs as a data: URL for it to decode to disk.
 
   uTime is a fixed constant (never performance.now() or Date.now()) so the
@@ -11,74 +11,84 @@
 -->
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>aurora still</title>
-    <style>
-      html, body { margin: 0; background: #000; }
-      canvas { display: block; }
-    </style>
-  </head>
-  <body>
-    <canvas id="c" width="1600" height="1200"></canvas>
-    <pre id="out" data-ready="0"></pre>
-    <script type="module">
-      import { setupAuroraProgram } from "/src/lib/aurora.ts";
-      import { seedToUniforms } from "/src/lib/seed.ts";
 
-      // Same default the generator falls back to when no seed is passed on
-      // the command line; overridable via ?seed= so the script can pass any
-      // seed through without editing this file.
-      const DEFAULT_SEED = 1;
-      const FIXED_TIME = 0;
+<head>
+  <meta charset="utf-8" />
+  <title>aurora still</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      background: #000;
+    }
 
-      function currentSeed() {
-        const raw = new URLSearchParams(location.search).get("seed");
-        const n = raw === null ? NaN : Number(raw);
-        return Number.isFinite(n) ? n : DEFAULT_SEED;
-      }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
 
-      function main() {
-        const canvas = document.getElementById("c");
-        const out = document.getElementById("out");
-        const gl = canvas.getContext("webgl", {
-          antialias: true,
-          alpha: false,
-        });
-        if (!gl) throw new Error("WebGL unavailable");
+<body>
+  <canvas id="c" width="800" height="600"></canvas>
+  <pre id="out" data-ready="0"></pre>
+  <script type="module">
+    import { setupAuroraProgram } from "/src/lib/aurora.ts";
+    import { seedToUniforms } from "/src/lib/seed.ts";
 
-        const setup = setupAuroraProgram(gl);
-        if (!setup) throw new Error("Aurora program failed to set up");
-        const { uResolution, uTime, uScrollWarp, uSeed, uBlend, uColorA,
-          uColorB, uColorA2, uColorB2, uStarBoost } = setup;
+    // Same default the generator falls back to when no seed is passed on
+    // the command line; overridable via ?seed= so the script can pass any
+    // seed through without editing this file.
+    const DEFAULT_SEED = 1;
+    const FIXED_TIME = 0;
 
-        const uniforms = seedToUniforms(currentSeed());
+    function currentSeed() {
+      const raw = new URLSearchParams(location.search).get("seed");
+      const n = raw === null ? NaN : Number(raw);
+      return Number.isFinite(n) ? n : DEFAULT_SEED;
+    }
 
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.uniform2f(uResolution, canvas.width, canvas.height);
-        gl.uniform1f(uTime, FIXED_TIME + uniforms.t);
-        gl.uniform2f(uSeed, uniforms.x, uniforms.y);
-        gl.uniform3fv(uColorA, uniforms.colorA);
-        gl.uniform3fv(uColorB, uniforms.colorB);
-        // Steady state: only slot A is evaluated (uBlend 0), but the shader
-        // still reads the A2/B2 uniforms unconditionally when uBlend == 0 is
-        // false at compile time it wouldn't, yet the uniform locations are
-        // real WebGLUniformLocation values regardless, so set them to the
-        // same pair as A/B for a well-defined, driver-independent state.
-        gl.uniform3fv(uColorA2, uniforms.colorA);
-        gl.uniform3fv(uColorB2, uniforms.colorB);
-        gl.uniform1f(uBlend, 0);
-        gl.uniform1f(uScrollWarp, 0);
-        gl.uniform1f(uStarBoost, 1);
+    function main() {
+      const canvas = document.getElementById("c");
+      const out = document.getElementById("out");
+      const gl = canvas.getContext("webgl", {
+        antialias: true,
+        alpha: false,
+      });
+      if (!gl) throw new Error("WebGL unavailable");
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      const setup = setupAuroraProgram(gl);
+      if (!setup) throw new Error("Aurora program failed to set up");
+      const { uResolution, uTime, uScrollWarp, uSeed, uBlend, uColorA,
+        uColorB, uColorA2, uColorB2, uStarBoost } = setup;
 
-        const dataUrl = canvas.toDataURL("image/webp", 0.9);
-        out.textContent = dataUrl;
-        out.dataset.ready = "1";
-      }
+      const uniforms = seedToUniforms(currentSeed());
 
-      main();
-    </script>
-  </body>
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.uniform2f(uResolution, canvas.width, canvas.height);
+      gl.uniform1f(uTime, FIXED_TIME + uniforms.t);
+      gl.uniform2f(uSeed, uniforms.x, uniforms.y);
+      gl.uniform3fv(uColorA, uniforms.colorA);
+      gl.uniform3fv(uColorB, uniforms.colorB);
+      // Steady state: only slot A is evaluated (uBlend 0), but the shader
+      // still reads the A2/B2 uniforms unconditionally when uBlend == 0 is
+      // false at compile time it wouldn't, yet the uniform locations are
+      // real WebGLUniformLocation values regardless, so set them to the
+      // same pair as A/B for a well-defined, driver-independent state.
+      gl.uniform3fv(uColorA2, uniforms.colorA);
+      gl.uniform3fv(uColorB2, uniforms.colorB);
+      gl.uniform1f(uBlend, 0);
+      gl.uniform1f(uScrollWarp, 0);
+      gl.uniform1f(uStarBoost, 1);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      const dataUrl = canvas.toDataURL("image/webp", 0.82);
+      out.textContent = dataUrl;
+      out.dataset.ready = "1";
+    }
+
+    main();
+  </script>
+</body>
+
 </html>

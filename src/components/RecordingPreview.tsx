@@ -47,6 +47,8 @@ export function RecordingPreview({
         <img
           src={poster}
           alt=""
+          width={800}
+          height={600}
           loading="lazy"
           decoding="async"
           className="pointer-events-none h-full w-full object-cover"

@@ -112,8 +112,8 @@ function ShowcaseCard({
             <img
               src={showcase.image}
               alt={`A generative aurora sky captured from the ${showcase.name} shader`}
-              width={1600}
-              height={1200}
+              width={800}
+              height={600}
               loading="lazy"
               decoding="async"
               className="h-full w-full object-cover"

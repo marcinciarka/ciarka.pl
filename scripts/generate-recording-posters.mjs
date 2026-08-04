@@ -24,9 +24,10 @@ import { dirname, join } from "node:path";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RECORDINGS = join(HERE, "..", "public", "recordings");
 
-// The card is aspect-4/3 with object-cover, so width is what matters; 1200 is
-// ~2x the largest rendered size. Quality 74 lands both frames near 30 kB.
-const WIDTH = 1200;
+// The card is aspect-4/3 with object-cover. At max-w-6xl the media column is
+// ~550 CSS px; 800 covers 1.5x DPR without shipping a 1200px frame that PageSpeed
+// flags as oversized on mobile. Quality 74 keeps both posters near ~15–20 kB.
+const WIDTH = 800;
 const QUALITY = 74;
 
 const POSTERS = [
@@ -48,14 +49,21 @@ for (const { video, seconds } of POSTERS) {
   execFileSync(
     "ffmpeg",
     [
-      "-v", "error",
+      "-v",
+      "error",
       "-y",
-      "-ss", String(seconds),
-      "-i", input,
-      "-frames:v", "1",
-      "-vf", `scale=${WIDTH}:-2`,
-      "-c:v", "libwebp",
-      "-quality", String(QUALITY),
+      "-ss",
+      String(seconds),
+      "-i",
+      input,
+      "-frames:v",
+      "1",
+      "-vf",
+      `scale=${WIDTH}:-2`,
+      "-c:v",
+      "libwebp",
+      "-quality",
+      String(QUALITY),
       output,
     ],
     { stdio: ["ignore", "inherit", "inherit"] },

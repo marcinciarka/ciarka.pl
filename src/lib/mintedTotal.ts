@@ -1,8 +1,8 @@
-// How many auroras exist on-chain. Read once on idle (so the corner pill can
-// show a count without opening anything), refreshed by every gallery page
-// fetch, and invalidated after a successful mint. Same module-store idiom as
-// skyStore: a plain module variable plus a listener set, consumed through
-// useSyncExternalStore.
+// How many auroras exist on-chain. First read is deferred until the aurora
+// modal opens (so the viem/mint chunk stays off the critical path), then
+// refreshed by every gallery page fetch and invalidated after a successful
+// mint. Same module-store idiom as skyStore: a plain module variable plus a
+// listener set, consumed through useSyncExternalStore.
 //
 // Replaces MintButton's per-open `mintedTotal` state, which had to be reset
 // on close (a successful mint made the remembered count stale) and therefore

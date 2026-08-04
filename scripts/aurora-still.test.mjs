@@ -10,7 +10,7 @@ import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ASSET = join(HERE, "..", "public", "aurora-still.webp");
-const MAX_BYTES = 200_000;
+const MAX_BYTES = 50_000;
 
 describe("public/aurora-still.webp", () => {
   it("exists", () => {

@@ -11,7 +11,7 @@ import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PUBLIC = join(HERE, "..", "public");
-const MAX_BYTES = 200_000;
+const MAX_BYTES = 50_000;
 
 const POSTERS = [
   "/recordings/chainvibe_poster.webp",
