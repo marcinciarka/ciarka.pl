@@ -214,7 +214,7 @@ export type WorkEntry = {
 
 export const work: WorkEntry[] = [
   {
-    period: "2026 — present",
+    period: "2026 - present",
     company: "Stealth DeFi platform (NDA)",
     role: "Technical Advisor",
     summary:
@@ -243,11 +243,11 @@ export const work: WorkEntry[] = [
     ],
   },
   {
-    period: "2024 — 2026",
+    period: "2024 - 2026",
     company: "Lazy Summer Protocol · Summer.fi",
     role: "Senior Full-Stack Engineer",
     summary:
-      "The next-generation Earn protocol app, taken from an empty repository to production. I led the frontend architecture, moved wallet connectivity off legacy Web3Onboard onto Viem and Wagmi v2, and built the telemetry that shows a depositor what their position is actually doing.",
+      "The next-generation Earn protocol app, taken from an empty repository to production, in parallel with Summer.fi Pro - same team, two product lines. I led the frontend architecture, moved wallet connectivity off legacy Web3Onboard onto Viem and Wagmi v2, and built the telemetry that shows a depositor what their position is actually doing.",
     details: [
       {
         lead: "Empty repo to production",
@@ -272,7 +272,7 @@ export const work: WorkEntry[] = [
     ],
   },
   {
-    period: "2023 — 2025",
+    period: "2023 - 2025",
     company: "Summer.fi Pro",
     role: "Senior Full-Stack Engineer",
     summary:
@@ -301,7 +301,7 @@ export const work: WorkEntry[] = [
     ],
   },
   {
-    period: "2022 — 2023",
+    period: "2022 - 2023",
     company: "Oasis.app",
     role: "DeFi Frontend Engineer",
     summary:
