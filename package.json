@@ -11,6 +11,7 @@
     "stats:update": "node scripts/update-stats.mjs",
     "og": "node scripts/generate-og.mjs",
     "aurora:still": "node scripts/generate-aurora-still.mjs",
+    "posters": "node scripts/generate-recording-posters.mjs",
     "postinstall": "node scripts/setup-contracts.mjs"
   },
   "dependencies": {

@@ -101,8 +101,12 @@ function ShowcaseCard({
       <div
         className={`relative order-1 flex-1 ${reversed ? "" : "lg:order-2"}`}
       >
-        {showcase.recording ? (
-          <RecordingPreview src={showcase.recording} title={showcase.name} />
+        {showcase.recording && showcase.poster ? (
+          <RecordingPreview
+            src={showcase.recording}
+            poster={showcase.poster}
+            title={showcase.name}
+          />
         ) : showcase.image ? (
           <div className="glass aspect-4/3 w-full overflow-hidden rounded-2xl">
             <img

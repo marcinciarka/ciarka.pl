@@ -84,6 +84,19 @@ describe("showcases", () => {
     }
   });
 
+  // The card never renders the <video> itself, only this poster - WebKit
+  // decodes no frame at preload="metadata", so a recording without a poster is
+  // an empty card in Safari. Showcases.tsx skips a recording that has no
+  // poster, which makes the omission silent; this is what catches it.
+  it("pairs a poster with every recording", () => {
+    for (const s of showcases) {
+      if (s.recording) {
+        expect(s.poster, s.id).toBeTruthy();
+        expect(s.poster, s.id).toMatch(/^\/recordings\/.+\.webp$/);
+      }
+    }
+  });
+
   // liveUrl is now optional on the type to make room for the aurora's
   // in-page modal; every other showcase still needs somewhere to link out to.
   it("keeps a liveUrl on every non-aurora showcase", () => {

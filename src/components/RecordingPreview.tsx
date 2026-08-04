@@ -3,9 +3,11 @@ import { createPortal } from "react-dom";
 
 export function RecordingPreview({
   src,
+  poster,
   title,
 }: {
   src: string;
+  poster: string;
   title: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -38,13 +40,15 @@ export function RecordingPreview({
         aria-label={`Play ${title} recording`}
         className="glass group relative aspect-4/3 w-full cursor-pointer overflow-hidden rounded-2xl text-left"
       >
-        <video
-          src={src}
-          muted
-          playsInline
-          preload="metadata"
-          tabIndex={-1}
-          aria-hidden="true"
+        {/* A still, not the <video> itself. WebKit decodes no frame at
+            preload="metadata", so a video here renders as an empty card in
+            Safari; it also spares every browser the megabytes of clip nobody
+            asked to watch yet. The button carries the accessible name. */}
+        <img
+          src={poster}
+          alt=""
+          loading="lazy"
+          decoding="async"
           className="pointer-events-none h-full w-full object-cover"
         />
         <span
@@ -86,6 +90,7 @@ export function RecordingPreview({
               <video
                 ref={videoRef}
                 src={src}
+                poster={poster}
                 controls
                 autoPlay
                 playsInline

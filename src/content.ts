@@ -124,6 +124,12 @@ export type Showcase = {
   npm?: { pkg: string; url: string };
   status: "live" | "source-only" | "in-progress";
   recording?: string;
+  // Required alongside `recording`, not optional in practice (content.test.ts
+  // enforces the pair): the card shows this frame and only fetches the video
+  // once the reader opens the player. Without it Safari renders an empty card,
+  // because WebKit decodes no frame at preload="metadata". Regenerate with
+  // `npm run posters`.
+  poster?: string;
   // A still, not a video: the NFT is one frame, and the hero already
   // animates the same shader - a recording here would just repeat it.
   image?: string;
@@ -171,6 +177,7 @@ export const showcases: Showcase[] = [
     },
     status: "live",
     recording: "/recordings/chainvibe_web.mp4",
+    poster: "/recordings/chainvibe_poster.webp",
   },
   {
     id: "summer-resonance",
@@ -189,6 +196,7 @@ export const showcases: Showcase[] = [
     // repo is private - add repoUrl when/if it goes public
     status: "live",
     recording: "/recordings/resonance_web.mp4",
+    poster: "/recordings/resonance_poster.webp",
   },
 ];
 
