@@ -197,8 +197,7 @@ export function SkyControls() {
   // a mint. The gallery is on-chain data and stands on its own — keep it.
   const liveSky = !reducedMotion && !webglFailed;
 
-  const galleryLabel =
-    total === null ? "on-chain gallery" : `mint your own · ${total} minted`;
+  const galleryLabel = "mint your own · view gallery";
 
   return (
     <>
