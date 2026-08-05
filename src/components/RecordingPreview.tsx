@@ -38,7 +38,7 @@ export function RecordingPreview({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`Play ${title} recording`}
-        className="glass group relative aspect-4/3 w-full cursor-pointer overflow-hidden rounded-2xl text-left"
+        className="glass group relative aspect-4/3 w-full overflow-hidden rounded-2xl text-left"
       >
         {/* A still, not the <video> itself. WebKit decodes no frame at
             preload="metadata", so a video here renders as an empty card in

@@ -78,7 +78,7 @@ const SIZE_BLOCKED_MESSAGE =
   "This aurora encodes to more than 16 kB, which is too large to live on-chain. Try a new aurora — most of them fit.";
 
 const buttonClass =
-  "rounded-full border border-glass-border bg-glass px-4 py-2 font-mono text-xs text-muted backdrop-blur-xl transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted cursor-pointer";
+  "rounded-full border border-glass-border bg-glass px-4 py-2 font-mono text-xs text-muted backdrop-blur-xl transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted";
 
 const primaryButtonClass =
   "rounded-full border border-ember/60 bg-ember/10 px-4 py-2 font-mono text-xs text-ember backdrop-blur-xl transition-colors hover:bg-ember/20 disabled:cursor-default disabled:opacity-45 disabled:hover:bg-ember/10";
@@ -855,7 +855,7 @@ export function MintPanel({
                       // clear mintable and resurrect the candidate rows under
                       // a done panel describing a mint that already happened.
                       disabled={sealed || phase.step === "done"}
-                      className="rounded-full border border-glass-border px-2 py-0.5 text-[10px] text-muted transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted cursor-pointer"
+                      className="rounded-full border border-glass-border px-2 py-0.5 text-[10px] text-muted transition-colors hover:border-ember/60 hover:text-text disabled:cursor-default disabled:opacity-45 disabled:hover:border-glass-border disabled:hover:text-muted"
                     >
                       disconnect
                     </button>

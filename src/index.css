@@ -104,6 +104,15 @@ body {
   top: 1rem;
 }
 
+/* Every interactive control gets the hand pointer so it reads as clickable.
+   Declared unlayered so it beats Tailwind's layered utilities, and skipped for
+   disabled controls - those already opt into the default arrow. */
+button:not(:disabled):not([aria-disabled="true"]),
+summary,
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 .glass {
   background: var(--color-glass);
   border: 1px solid var(--color-glass-border);
