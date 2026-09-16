@@ -47,7 +47,7 @@ export const identity: Identity = {
   name: "Marcin Ciarka",
   role: "Senior Web3 Full-Stack Engineer",
   pitch:
-    "Ten years shipping for the web, four of them building production DeFi at Summer.fi - I shipped the multi-protocol frontend for Maker, Aave, Spark, Morpho and Ajna, and the risk automation that guards positions on it.",
+    "Ten years building for the web, four of them shipping production DeFi: frontend, on-chain data layers, and the risk automation that keeps positions safe.",
   location: "Poland · remote (CET)",
   availability:
     "Open to senior roles - Web3 frontend, full-stack, product engineering",
