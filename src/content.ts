@@ -24,6 +24,7 @@ export type Identity = {
   // person. Verified against the @chainvibe/components maintainer record.
   npmProfile?: string;
   cvUrl?: string;
+  siteRepo: string;
 };
 
 // Ordered as rendered in the contact section. `icon` keys map to the inline
@@ -60,6 +61,7 @@ export const identity: Identity = {
   linkedin: "https://www.linkedin.com/in/marcin-ciarka-942405147/",
   npmProfile: "https://www.npmjs.com/~marcinciarka",
   cvUrl: "/marcin_ciarka_cv.pdf",
+  siteRepo: "https://github.com/marcinciarka/ciarka.pl",
 };
 
 export const contactLinks: ContactLink[] = [

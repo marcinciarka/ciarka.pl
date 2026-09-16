@@ -159,7 +159,16 @@ export function Footer() {
   return (
     <footer className="mx-auto max-w-6xl px-6 pb-12 pt-6">
       <p className="text-xs text-muted">
-        You've reached the end, thanks for stopping by!
+        You've reached the end, thanks for stopping by!{" "}
+        <a
+          href={identity.siteRepo}
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-dotted underline-offset-2 transition-colors hover:text-ember"
+        >
+          This site is open source
+        </a>
+        .
       </p>
     </footer>
   );
