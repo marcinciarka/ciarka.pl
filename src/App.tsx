@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { identity } from "./content";
+import { track } from "./lib/track";
 import { AuroraHero } from "./components/AuroraHero";
 import { Stats } from "./components/Stats";
 import { Showcases } from "./components/Showcases";
@@ -6,7 +8,49 @@ import { Work } from "./components/Work";
 import { Contact, Footer } from "./components/Contact";
 import { SkyControls } from "./components/SkyControls";
 
+// Umami has no scroll-depth metric, so how far down a reader gets is measured
+// by which sections they actually reach - once each per visit.
+//
+// rootMargin rather than a threshold: these sections are taller than the
+// viewport, so a ratio-based threshold would never fire on them. The band runs
+// from a quarter down the screen to just short of its bottom edge, and both
+// insets are load-bearing:
+//
+// - without the top inset, a section counts as read the moment one pixel of it
+//   appears at the bottom of the screen;
+// - without the bottom inset, #work counts as read on every page load - the
+//   hero is exactly one viewport tall, so at scroll 0 #work's top edge touches
+//   the viewport's bottom edge, and Chrome reports that zero-height contact as
+//   intersecting (measured);
+// - the bottom inset stays small (5%, not a symmetric 25%) because #contact is
+//   short and sits against the end of the document: a deep inset can leave it
+//   below the line no matter how far the reader scrolls.
+const TRACKED_SECTIONS = ["work", "showcases", "contact"];
+
+function useSectionViews() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          observer.unobserve(entry.target);
+          track("section-view", { section: entry.target.id });
+        }
+      },
+      { rootMargin: "-25% 0px -5% 0px", threshold: 0 },
+    );
+
+    for (const id of TRACKED_SECTIONS) {
+      const section = document.getElementById(id);
+      if (section) observer.observe(section);
+    }
+    return () => observer.disconnect();
+  }, []);
+}
+
 export default function App() {
+  useSectionViews();
+
   return (
     <>
       <a href="#main" className="skip-link">
@@ -62,6 +106,7 @@ export default function App() {
           <div className="mt-6">
             <a
               href="#contact"
+              data-umami-event="hero-cta"
               className="group inline-flex items-center gap-2 rounded-full bg-ember px-5 py-2.5 text-sm font-medium text-ink transition-opacity hover:opacity-90"
             >
               Get in touch

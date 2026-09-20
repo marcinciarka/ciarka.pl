@@ -23,6 +23,9 @@ function ShowcaseLinks({ showcase }: { showcase: Showcase }) {
           href={showcase.liveUrl}
           target="_blank"
           rel="noreferrer"
+          data-umami-event="showcase-link"
+          data-umami-event-project={showcase.name}
+          data-umami-event-target="live"
           className="font-medium text-ember transition-opacity hover:opacity-80"
         >
           Live demo →
@@ -33,6 +36,9 @@ function ShowcaseLinks({ showcase }: { showcase: Showcase }) {
           href={showcase.repoUrl}
           target="_blank"
           rel="noreferrer"
+          data-umami-event="showcase-link"
+          data-umami-event-project={showcase.name}
+          data-umami-event-target="github"
           className={
             showcase.status === "source-only"
               ? "font-medium text-ember transition-opacity hover:opacity-80"
@@ -47,6 +53,9 @@ function ShowcaseLinks({ showcase }: { showcase: Showcase }) {
           href={showcase.npm.url}
           target="_blank"
           rel="noreferrer"
+          data-umami-event="showcase-link"
+          data-umami-event-project={showcase.name}
+          data-umami-event-target="npm"
           className="rounded-full border border-glass-border bg-glass px-3 py-1 font-mono text-xs text-muted transition-colors hover:text-text"
         >
           {showcase.npm.pkg}

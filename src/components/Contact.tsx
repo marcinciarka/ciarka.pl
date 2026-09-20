@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { contactCopied, contactLinks, identity } from "../content";
 import type { ContactLink } from "../content";
+import { track } from "../lib/track";
 
 // 24x24 single-path glyphs, currentColor-filled so they inherit link hover.
 const ICONS: Record<ContactLink["icon"], string> = {
@@ -84,6 +85,7 @@ function ContactTile({ link }: { link: ContactLink }) {
         onClick={() => {
           navigator.clipboard?.writeText(link.copy ?? link.value);
           setCopied(true);
+          track("contact-copy", { channel: link.icon });
         }}
         className={tile}
       >
@@ -103,6 +105,10 @@ function ContactTile({ link }: { link: ContactLink }) {
       rel={external ? "noreferrer" : undefined}
       title={link.value}
       aria-label={`${link.label}: ${link.value}`}
+      // Attributes rather than an onClick: the tracker picks these up itself,
+      // and a handler here would race the navigation on the mailto tile.
+      data-umami-event="contact-click"
+      data-umami-event-channel={link.icon}
       className={tile}
     >
       {body}
@@ -164,6 +170,7 @@ export function Footer() {
           href={identity.siteRepo}
           target="_blank"
           rel="noreferrer"
+          data-umami-event="footer-repo"
           className="underline decoration-dotted underline-offset-2 transition-colors hover:text-ember"
         >
           This site is open source

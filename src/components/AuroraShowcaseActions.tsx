@@ -11,6 +11,7 @@ import {
   openseaCollectionUrl,
 } from "../lib/contractAddress";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { track } from "../lib/track";
 import { pillClass } from "./pillClass";
 
 // Mirrors the hero's top-right pills so the aurora showcase card reads as
@@ -32,7 +33,10 @@ export function AuroraShowcaseActions() {
         <button
           type="button"
           disabled={busy}
-          onClick={() => requestNewAurora()}
+          onClick={() => {
+            track("new-aurora", { from: "showcase" });
+            requestNewAurora();
+          }}
           className={pillClass}
         >
           <span aria-hidden="true" className="inline-block">
@@ -50,7 +54,10 @@ export function AuroraShowcaseActions() {
         disabled={busy}
         // Passes its own element so SkyControls returns focus here (not to
         // the top pill) once the modal closes.
-        onClick={() => requestGallery(galleryButtonRef.current)}
+        onClick={() => {
+          track("gallery-open", { from: "showcase" });
+          requestGallery(galleryButtonRef.current);
+        }}
         className={`${pillClass} text-ember`}
       >
         view gallery
@@ -59,6 +66,8 @@ export function AuroraShowcaseActions() {
         href={explorerContractUrl()}
         target="_blank"
         rel="noreferrer"
+        data-umami-event="chain-link"
+        data-umami-event-target="basescan"
         className={pillClass}
       >
         Basescan ↗
@@ -67,6 +76,8 @@ export function AuroraShowcaseActions() {
         href={openseaCollectionUrl()}
         target="_blank"
         rel="noreferrer"
+        data-umami-event="chain-link"
+        data-umami-event-target="opensea"
         className={pillClass}
       >
         OpenSea ↗

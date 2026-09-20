@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { track } from "../lib/track";
 
 export function RecordingPreview({
   src,
@@ -36,7 +37,10 @@ export function RecordingPreview({
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          track("recording-play", { project: title });
+        }}
         aria-label={`Play ${title} recording`}
         className="glass group relative aspect-4/3 w-full overflow-hidden rounded-2xl text-left"
       >

@@ -22,6 +22,7 @@ import { AuroraModal, type Segment } from "./AuroraModal";
 import { AuroraGallery } from "./AuroraGallery";
 import { MintPanel } from "./MintPanel";
 
+import { track } from "../lib/track";
 import { pillClass } from "./pillClass";
 
 export function SkyControls() {
@@ -75,6 +76,14 @@ export function SkyControls() {
     restoreFocusRef.current = null;
     el.focus();
   }, [open]);
+
+  // Entering the mint segment is the top of the mint funnel. Wraps setSegment
+  // rather than sitting in an effect so a return trip gallery -> mint -> gallery
+  // -> mint reports both visits.
+  const onSegment = useCallback((next: Segment) => {
+    setSegment(next);
+    if (next === "mint") track("mint-open");
+  }, []);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -184,10 +193,13 @@ export function SkyControls() {
 
   const loadSky = useCallback(
     (seed: number) => {
+      // Shared by the gallery list and the mint panel's "view your sky", so
+      // the segment says which one the reader was on.
+      track("gallery-load-sky", { segment });
       applySeed(seed);
       close(); // so the crossfade is actually visible
     },
-    [close],
+    [close, segment],
   );
 
   const onMinted = useCallback(() => setCacheEpoch((e) => e + 1), []);
@@ -196,6 +208,19 @@ export function SkyControls() {
   // "new aurora" would do nothing and there is no live canvas to capture for
   // a mint. The gallery is on-chain data and stands on its own — keep it.
   const liveSky = !reducedMotion && !webglFailed;
+
+  // Reported once per visit so a session with no aurora events reads as "had
+  // no live sky to play with" rather than "was not interested". webglFailed
+  // flips asynchronously after a failed init, hence an effect and not a
+  // render-time call.
+  const skyUnavailableRef = useRef(false);
+  useEffect(() => {
+    if (liveSky || skyUnavailableRef.current) return;
+    skyUnavailableRef.current = true;
+    track("sky-unavailable", {
+      reason: reducedMotion ? "reduced-motion" : "webgl-failed",
+    });
+  }, [liveSky, reducedMotion]);
 
   const galleryLabel = "mint your own · view gallery";
 
@@ -219,7 +244,10 @@ export function SkyControls() {
             // frozen mid-transition — and the mint path it guards would then
             // capture the old image against the new seed. Wait for the fade
             // itself instead (see startReseed / whenSkySettled).
-            onClick={startReseed}
+            onClick={() => {
+              track("new-aurora", { from: "hero" });
+              startReseed();
+            }}
             className={pillClass}
           >
             <span
@@ -242,7 +270,10 @@ export function SkyControls() {
             // snapshot of two blended skies against one seed. The original
             // MintButton carried the same `disabled={spinning}` guard.
             disabled={open || spinning}
-            onClick={() => openGallery(galleryTriggerRef.current)}
+            onClick={() => {
+              track("gallery-open", { from: "hero" });
+              openGallery(galleryTriggerRef.current);
+            }}
             className={`${pillClass} text-ember`}
           >
             <span className="tabular-nums">{galleryLabel}</span>
@@ -255,7 +286,7 @@ export function SkyControls() {
           title="aurora, on-chain"
           subtitle={total === null ? "" : `${total} minted`}
           segment={segment}
-          onSegment={setSegment}
+          onSegment={onSegment}
           showMintSegment={liveSky}
           sealed={sealed}
           onClose={close}

@@ -21,6 +21,13 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/clash-display-600.woff2" />
   <script type="application/ld+json">__PERSON_JSONLD__</script>
+  <!-- Umami analytics. data-domains pins collection to the live site, so
+       `npm run dev` and `npm run preview` never reach the dataset.
+       data-performance adds Core Web Vitals. Cookieless, no personal data -
+       see src/lib/track.ts for the custom events. -->
+  <script defer src="https://cloud.umami.is/script.js"
+    data-website-id="8589972c-eba7-40e1-9140-09e83bfa17d2" data-domains="ciarka.pl"
+    data-performance="true"></script>
   <!-- Styles the no-JS fallback inside #root (see src/lib/crawlerContent.ts).
        Inline because index.css only arrives with the JS bundle, and this block
        has to be presentable before that lands - it is real visible content,

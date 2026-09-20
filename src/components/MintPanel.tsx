@@ -15,6 +15,7 @@ import {
 } from "../lib/contractAddress";
 import { invalidateMintedTotal, setMintedTotal } from "../lib/mintedTotal";
 import { truncateAddress } from "../lib/format";
+import { track } from "../lib/track";
 import {
   allowAutoConnect,
   isAutoConnectSuppressed,
@@ -405,6 +406,7 @@ export function MintPanel({
   // snapshot and the "finding a new sky…" button before they can render
   // (React batches those updates).
   const reroll = useCallback(() => {
+    track("mint-reroll");
     rerollWaitRef.current?.();
     setRerolling(true);
     // reseed() first, then wait — not the other way round. whenSkySettled
@@ -521,17 +523,23 @@ export function MintPanel({
       try {
         const addr = await connectWallet();
         if (!mountedRef.current) return;
+        track("mint-connect", { result: "ok" });
         setAccount(addr);
         await loadForAccount(addr, seed, snapshot);
       } catch (err) {
         if (!mountedRef.current) return;
-        if (isUserRejection(err)) return; // silently back to the ready state
-        if (err instanceof NoWalletError)
+        if (isUserRejection(err)) {
+          track("mint-connect", { result: "rejected" });
+          return; // silently back to the ready state
+        }
+        if (err instanceof NoWalletError) {
+          track("mint-connect", { result: "no-wallet" });
           setPhase({
             step: "error",
             message: "No wallet found — install one to mint.",
           });
-        else {
+        } else {
+          track("mint-connect", { result: "error" });
           console.error(err);
           setPhase({
             step: "error",
@@ -540,6 +548,7 @@ export function MintPanel({
         }
       }
     } catch (err) {
+      track("mint-connect", { result: "load-failed" });
       console.error(err);
       if (!mountedRef.current) return;
       setPhase({ step: "error", message: "Could not load wallet code." });
@@ -553,6 +562,7 @@ export function MintPanel({
     seed: AuroraSeed,
     snapshot: AuroraSnapshot,
   ) => {
+    track("mint-submit");
     setPhase({ step: "minting" });
     try {
       const {
@@ -568,6 +578,9 @@ export function MintPanel({
         // fresh getSeed() read — see the Subject comment (C1).
         const { txUrl, openSeaUrl } = await mintSky(addr, seed, snapshot);
         if (!mountedRef.current) return;
+        // Counted, never attributed: no address, token id or seed rides along
+        // with any event in this panel.
+        track("mint-success");
         setPhase({ step: "done", txUrl, openSeaUrl });
         // The new token shifts every gallery page and changes the count.
         invalidateMintedTotal();
@@ -575,26 +588,33 @@ export function MintPanel({
       } catch (err) {
         if (!mountedRef.current) return;
         if (isUserRejection(err)) {
+          track("mint-rejected");
           setPhase({ step: "ready" }); // rejected in wallet — no error line
         } else if (err instanceof SeedTakenError) {
+          track("mint-error", { reason: "seed-taken" });
           setMintable("seed-taken");
           setPhase({ step: "ready" });
         } else if (err instanceof NoWalletError) {
+          track("mint-error", { reason: "no-wallet" });
           setPhase({
             step: "error",
             message: "No wallet found — install one to mint.",
           });
         } else if (err instanceof WebpRequiredError) {
           // Defense in depth; the UI should already have blocked this.
+          track("mint-error", { reason: "webp-required" });
           setSubject({ kind: "blocked", message: WEBP_BLOCKED_MESSAGE });
         } else if (err instanceof ImageTooLargeError) {
+          track("mint-error", { reason: "image-too-large" });
           setSubject({ kind: "blocked", message: SIZE_BLOCKED_MESSAGE });
         } else {
+          track("mint-error", { reason: "unknown" });
           console.error(err);
           setPhase({ step: "error", message: "Mint failed — see console." });
         }
       }
     } catch (err) {
+      track("mint-error", { reason: "load-failed" });
       console.error(err);
       if (!mountedRef.current) return;
       setPhase({ step: "error", message: "Could not load wallet code." });
