@@ -56,6 +56,10 @@ describe("claims the audits found unverifiable or false", () => {
       /Where the habits came from/i,
       "cover-letter register, duplicates the summary",
     ],
+    [/\b6\s*kB/i, "size script exists, no limit is encoded (git analysis 2026-10)"],
+    [/Wagmi v2/i, "no wagmi v2 migration in git; WalletConnect v2 is what shipped"],
+    [/84k|84,000|17 statements/i, "commit-message figure, never measured"],
+    [/aphelion/i, "NDA: stealth repo name"],
   ];
 
   const corpus = JSON.stringify({ identity, showcases, work });

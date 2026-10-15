@@ -47,7 +47,7 @@ export const identity: Identity = {
   name: "Marcin Ciarka",
   role: "Senior Web3 Full-Stack Engineer",
   pitch:
-    "Ten years building for the web, four of them shipping production DeFi: frontend, on-chain data layers, and the risk automation that keeps positions safe.",
+    "Ten years building for the web, four of them shipping production DeFi: frontends, backend data pipelines, and the risk automation that keeps positions safe.",
   location: "Poland · remote (CET)",
   availability:
     "Open to senior roles - Web3 frontend, full-stack, product engineering",
@@ -161,16 +161,16 @@ export const showcases: Showcase[] = [
   {
     id: "chainvibe",
     name: "ChainVibe",
-    tagline: "Sub-second on-chain event streaming",
+    tagline: "Multi-tenant on-chain event streaming",
     description:
-      "A full-stack real-time streaming monorepo: custom WebSocket server broadcasting sub-second price and transaction feeds, plus a published one-dependency React ticker component.",
+      "A multi-tenant streaming server and the React package that consumes it. The Bun server watches on-chain events for each customer's config and fans them out over WebSocket and REST, so clients never hit RPC rate limits themselves.",
     highlights: [
-      "Solves RPC rate-limiting with one server-side stream fan-out",
+      "Per-customer configs, master-key auth and an admin panel",
+      "RPC failover and tx-hash dedupe on ingest",
+      "Per-minute metrics persisted to Postgres with Kysely migrations",
       "Published npm package: @chainvibe/components",
-      "useChainVibeStream hook, CSS-module theming",
-      "Bundle-size budget enforced: under 6 kB gzipped",
     ],
-    tech: ["React", "TypeScript", "Bun", "WebSockets", "npm library"],
+    tech: ["Bun", "viem", "WebSockets", "PostgreSQL", "React", "npm library"],
     liveUrl: "https://chainvi.be/",
     // repo is private - add repoUrl when/if it goes public
     npm: {
@@ -228,27 +228,27 @@ export const work: WorkEntry[] = [
     company: "Stealth DeFi platform (NDA)",
     role: "Technical Advisor",
     summary:
-      "An all-in-one, 100% self-custodial DeFi app - earn, borrow, multiply, loop yields and trade perps, with every position held in the user's own Safe smart account. I scaffolded the monorepo and the indexer it runs on, then wired six lending protocols behind one set of product views. Under NDA, so it stays unnamed here - happy to walk through the architecture live.",
+      "An all-in-one, self-custodial DeFi app: earn, borrow, multiply, loop yields and trade perps, with every position held in the user's own Safe smart account. I started the codebase and am its largest contributor (about 45% of commits), across the product, the SDK and the backend. Under NDA, so it stays unnamed here. Happy to walk through the architecture live.",
     details: [
+      {
+        lead: "Position flows on Safe smart accounts",
+        text: "— earn, borrow, multiply and refinance across Aave, Morpho, Euler, Fluid, Compound, Sky and Maple; SDK transaction building with a flash-loan fallback and ERC-4626 sanity checks.",
+      },
+      {
+        lead: "Shield position protection",
+        text: "— Stop-Loss, Trailing Stop and Take-Profit guardians with emergency-close transactions.",
+      },
       {
         lead: "Cost-basis and PnL engine",
         text: "— entry price read at the event block, with Chainlink and historical-API fallbacks when a feed dies.",
       },
       {
-        lead: "Six protocols, one view",
-        text: "— Morpho Blue, Euler v2, Fluid, Compound v3, Sky and Maple behind one set of product views.",
+        lead: "Market-data backend",
+        text: "— pipeline for ~15 lending protocols into Postgres with staleness and outlier gates, plus hourly Aave liquidation-risk snapshots.",
       },
       {
-        lead: "Ponder indexer",
-        text: "— chain-scoped position IDs; on-chain calls run parallel to indexer queries for sub-second loads.",
-      },
-      {
-        lead: "Risk controls",
-        text: "— Stop-Loss, Trailing Stop and Take-Profit sliders with directional loss-acceptance settings.",
-      },
-      {
-        lead: "Product Finder tables",
-        text: "— risk-curator filters, live liquidity, correlated-collateral exclusions.",
+        lead: "Yield loops",
+        text: "— a product line end to end: net-APY math, ledger-fed return tiles, yield-history API.",
       },
     ],
   },
@@ -257,27 +257,19 @@ export const work: WorkEntry[] = [
     company: "Lazy Summer Protocol · Summer.fi",
     role: "Senior Full-Stack Engineer",
     summary:
-      "The next-generation Earn protocol app, taken from an empty repository to production, in parallel with Summer.fi Pro - same team, two product lines. I led the frontend architecture, moved wallet connectivity off legacy Web3Onboard onto Viem and Wagmi v2, and built the telemetry that shows a depositor what their position is actually doing.",
+      "The Lazy Summer Earn app, built from an empty repository to production alongside Summer.fi Pro by the same team. I co-built it in 2024 and was its main contributor from 2025. I also built the institutional side: a vault admin dashboard and the auth system behind it.",
     details: [
       {
-        lead: "Empty repo to production",
-        text: "— owned the frontend architecture as Lazy Summer approached $200M TVL.",
+        lead: "Institutions auth",
+        text: "— AWS Cognito sessions, RBAC with admin management, TOTP MFA, Kysely/Postgres schema and migrations. Sole author.",
       },
       {
-        lead: "Vault simulation engine",
-        text: "— standardised position metrics on real-time net value rather than gross earnings.",
+        lead: "Institutional vault admin dashboard",
+        text: "— on-chain role admin, caps and fees, TVL/AUM/NAV charts, Safe admin transaction queue.",
       },
       {
-        lead: "Yield telemetry",
-        text: "— 1-hour granularity, up from 3-hour, with graceful empty states for vaults short on history.",
-      },
-      {
-        lead: "Institutional RWA dashboard",
-        text: "— two-layer auth: AWS Cognito for web2 roles, wallet connection for the web3 role.",
-      },
-      {
-        lead: "Monorepo foundations",
-        text: "— authored the Turborepo proof-of-concept behind the summerfi-monorepo move, then SST serverless deploys.",
+        lead: "Earn app",
+        text: "— vault views, deposit and withdraw, forecast charts, portfolio with rewards, server caching.",
       },
     ],
   },
@@ -286,23 +278,19 @@ export const work: WorkEntry[] = [
     company: "Summer.fi Pro",
     role: "Senior Full-Stack Engineer",
     summary:
-      "The 2023 rebrand and the consolidation that followed. I took the multi-protocol Borrow / Multiply / Earn suite onto Layer 2, brought Morpho Blue's isolated markets in, and built the risk-automation layer that lets several triggers guard one position without colliding - while the codebase itself was moving into a monorepo underneath us.",
+      "The 2023 rebrand and the consolidation that followed. I took the multi-protocol Borrow / Multiply / Earn suite onto Layer 2, brought Morpho Blue's isolated markets in, and built the risk-automation layer that lets several triggers guard one position without colliding. I also cleaned up the codebase underneath it and rewrote the runtime configuration the frontends read.",
     details: [
       {
         lead: "Trigger cross-validation",
         text: "— concurrent Stop-Loss, Auto-Buy and Auto-Sell can never collide or commit an impossible LTV.",
       },
       {
-        lead: "Reactive state machines",
-        text: "— proxy creation and token approvals, making 1-click leverage non-blocking.",
+        lead: "Runtime configuration",
+        text: "— rewritten as a typed TypeScript/Bun generator published to S3; used for production maintenance mode during incidents.",
       },
       {
-        lead: "Protocol integrations",
-        text: "— Maker, Aave v2/v3, Spark, Morpho Blue and Ajna, including Layer 2 networks.",
-      },
-      {
-        lead: "Shared libraries and config engine",
-        text: "— including trimming redundant on-chain calls out of Aave v3 reserve reads.",
+        lead: "Architecture cleanup",
+        text: "— removed circular dependencies across 1,497 files, split the app context, added bundle-analysis CI.",
       },
       {
         lead: "Wallet infrastructure",
