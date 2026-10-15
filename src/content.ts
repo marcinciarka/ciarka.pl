@@ -231,8 +231,8 @@ export const work: WorkEntry[] = [
       "An all-in-one, self-custodial DeFi app: earn, borrow, multiply, loop yields and trade perps, with every position held in the user's own Safe smart account. I started the codebase and am its largest contributor (about 45% of commits), across the product, the SDK and the backend. Under NDA, so it stays unnamed here. Happy to walk through the architecture live.",
     details: [
       {
-        lead: "Position flows on Safe smart accounts",
-        text: "— earn, borrow, multiply and refinance across Aave, Morpho, Euler, Fluid, Compound, Sky and Maple; SDK transaction building with a flash-loan fallback and ERC-4626 sanity checks.",
+        lead: "Position flows on Safe",
+        text: "— earn, borrow, multiply, refinance across Aave, Morpho, Euler, Fluid, Compound, Sky, Maple; SDK flash-loan fallback.",
       },
       {
         lead: "Shield position protection",
