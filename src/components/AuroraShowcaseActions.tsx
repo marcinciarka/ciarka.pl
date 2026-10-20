@@ -29,6 +29,14 @@ export function AuroraShowcaseActions() {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      <a
+        href="/aurora/"
+        data-umami-event="case-study"
+        data-umami-event-project="aurora"
+        className="mr-3 font-medium text-ember transition-opacity hover:opacity-80"
+      >
+        Read the case study →
+      </a>
       {liveSky && (
         <button
           type="button"

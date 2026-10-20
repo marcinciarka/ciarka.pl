@@ -16,6 +16,14 @@ function ShowcaseLinks({ showcase }: { showcase: Showcase }) {
     );
   }
 
+  if (showcase.status === "archived") {
+    return (
+      <p className="max-w-md font-mono text-xs leading-relaxed text-muted">
+        {showcase.note}
+      </p>
+    );
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-5">
       {showcase.status === "live" && (

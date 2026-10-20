@@ -3,6 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Rebuilds hourly so the hero counters stay current. The stats are fetched
+  # into the build rather than committed, which keeps bot commits out of the
+  # public history.
+  schedule:
+    - cron: "7 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -28,6 +33,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      # Writes fresh numbers into public/stats.json for this build only. The
+      # committed file is the fallback and the never-regress floor, so an API
+      # outage ships the last committed numbers instead of failing the deploy.
+      - name: Refresh stats.json
+        continue-on-error: true
+        env:
+          # STATS_TOKEN is a user PAT (repo + read:user). Without it the search
+          # API only sees this repo and the counts never move.
+          STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/update-stats.mjs
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,5 +1,5 @@
 // Refreshes public/stats.json from the GitHub API.
-// Run by .github/workflows/stats.yml on a schedule; commits only when values change.
+// Run by .github/workflows/deploy.yml before every build; the result is not committed.
 // Usage: GITHUB_TOKEN=... node scripts/update-stats.mjs
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

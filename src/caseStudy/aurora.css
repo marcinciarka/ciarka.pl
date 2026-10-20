@@ -1,0 +1,475 @@
+/* Aurora case study. Tokens come from src/index.css (@theme); this file only
+   lays out one long-form article. Plain CSS rather than utility classes
+   because the markup is hand-written static HTML. */
+
+.cs {
+  --measure: 68ch;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--color-text);
+  /* Faint aurora wash at the very top only, so the page reads as the same
+     sky as the home page without a shader. Content sits on ink. */
+  background:
+    radial-gradient(60rem 28rem at 85% -6rem, rgb(124 108 246 / 0.16), transparent 70%),
+    radial-gradient(48rem 22rem at 20% -8rem, rgb(53 224 194 / 0.12), transparent 70%),
+    var(--color-ink);
+  background-repeat: no-repeat;
+  min-height: 100svh;
+}
+
+@media (min-width: 48rem) {
+  .cs {
+    font-size: 1.125rem;
+  }
+}
+
+.cs a {
+  color: var(--color-ember);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.cs a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.cs code,
+.cs .num {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs code {
+  color: #cfd7e6;
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.3rem;
+  padding: 0.05em 0.3em;
+  overflow-wrap: anywhere;
+}
+
+.cs .num {
+  color: var(--color-text);
+}
+
+.cs-wrap {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* ---- top bar ---- */
+
+.cs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.25rem;
+  font-size: 0.95rem;
+}
+
+.cs-bar .cs-mark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.cs-bar a:not(.cs-mark) {
+  color: var(--color-muted);
+}
+
+.cs-bar a:not(.cs-mark):hover {
+  color: var(--color-ember);
+}
+
+/* ---- hero ---- */
+
+.cs-hero {
+  display: grid;
+  gap: 2rem;
+  padding-block: clamp(2.5rem, 8vw, 5.5rem) clamp(2.5rem, 6vw, 4.5rem);
+  align-items: center;
+}
+
+@media (min-width: 60rem) {
+  .cs-hero {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 4rem;
+  }
+}
+
+.cs-kicker {
+  color: var(--color-muted);
+  margin: 0 0 1rem;
+}
+
+.cs-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.75rem, 7.5vw, 5.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0 0 1.5rem;
+}
+
+.cs-lede {
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  line-height: 1.5;
+  max-width: 34ch;
+  margin: 0;
+  color: #d5dcea;
+}
+
+.cs-specs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 0.35rem 1.5rem;
+  margin: 2rem 0 0;
+  font-size: 0.95rem;
+}
+
+.cs-specs dt {
+  color: var(--color-muted);
+}
+
+.cs-specs dd {
+  margin: 0;
+}
+
+/* The still is an 800x600 frame of the real shader, cropped square so it
+   matches the shape of a minted token. */
+.cs-plate {
+  margin: 0;
+  justify-self: center;
+  width: min(100%, 26rem);
+}
+
+.cs-plate img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 1rem;
+  border: 1px solid var(--color-glass-border);
+  box-shadow: 0 2rem 6rem -2rem rgb(53 224 194 / 0.25);
+}
+
+.cs-plate figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+/* ---- article body ---- */
+
+.cs-layout {
+  display: grid;
+  gap: 2rem;
+  padding-bottom: 5rem;
+}
+
+@media (min-width: 64rem) {
+  .cs-layout {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: 4rem;
+  }
+}
+
+.cs-toc {
+  font-size: 0.9rem;
+}
+
+.cs-toc h2 {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  margin: 0 0 0.5rem;
+}
+
+.cs-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+}
+
+@media (min-width: 64rem) {
+  .cs-toc nav {
+    position: sticky;
+    top: 2rem;
+  }
+
+  .cs-toc ol {
+    display: grid;
+    gap: 0.5rem;
+    border-left: 1px solid var(--color-glass-border);
+    padding-left: 1rem;
+  }
+}
+
+.cs-toc a {
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.cs-toc a:hover {
+  color: var(--color-ember);
+}
+
+.cs-article {
+  min-width: 0;
+}
+
+.cs-article > section {
+  padding-top: 1rem;
+  margin-bottom: clamp(3rem, 7vw, 4.5rem);
+  scroll-margin-top: 1.5rem;
+}
+
+.cs-article > section > * {
+  max-width: var(--measure);
+}
+
+.cs-article h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.25rem;
+}
+
+.cs-article h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.75rem;
+}
+
+.cs-article p {
+  margin: 0 0 1.1rem;
+}
+
+.cs-article ul,
+.cs-article ol.cs-steps {
+  margin: 0 0 1.25rem;
+  padding-left: 1.25rem;
+}
+
+.cs-article ul {
+  list-style: disc;
+}
+
+.cs-article li {
+  margin-bottom: 0.5rem;
+}
+
+.cs-article li::marker {
+  color: var(--color-muted);
+}
+
+/* ---- architecture: diagram beside its numbered walkthrough ---- */
+
+.cs-arch {
+  display: grid;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  max-width: none !important;
+}
+
+@media (min-width: 52rem) {
+  .cs-arch {
+    grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .cs-arch figure {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+.cs-arch figure {
+  margin: 0;
+}
+
+.cs-arch svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cs-arch figcaption {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  margin-top: 0.5rem;
+}
+
+.cs-steps {
+  list-style: decimal;
+}
+
+.cs-steps li {
+  margin-bottom: 1rem !important;
+  padding-left: 0.25rem;
+}
+
+.cs-steps li::marker {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.cs-steps strong {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* SVG text and shapes. Colours live here so the diagram uses the tokens. */
+.dg-box {
+  fill: var(--color-ink-raise);
+  stroke: rgb(233 238 247 / 0.14);
+  stroke-width: 1;
+}
+
+.dg-gate {
+  fill: rgb(255 180 84 / 0.08);
+  stroke: var(--color-ember);
+  stroke-width: 1.5;
+}
+
+.dg-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 17px;
+  fill: var(--color-text);
+}
+
+.dg-detail {
+  font-family: var(--font-body);
+  font-size: 14px;
+  fill: var(--color-muted);
+}
+
+.dg-mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  fill: var(--color-muted);
+}
+
+.dg-gate-text {
+  fill: var(--color-ember);
+}
+
+.dg-step {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  fill: rgb(150 160 181 / 0.7);
+}
+
+.dg-line {
+  stroke: url(#dg-flow);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.dg-head {
+  fill: var(--color-aurora-2);
+}
+
+/* ---- decisions ---- */
+
+.cs-decision {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-glass-border);
+}
+
+.cs-decision:first-of-type {
+  margin-top: 1.5rem;
+}
+
+/* Chose vs passed on: the one structural device on the page that encodes a
+   comparison. Ember rule = what shipped; muted rule = the alternative. */
+.cs-choice {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1.5rem;
+}
+
+@media (min-width: 40rem) {
+  .cs-choice {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.cs-choice div {
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 2px solid var(--color-ember);
+}
+
+.cs-choice div + div {
+  border-left-color: rgb(150 160 181 / 0.45);
+}
+
+.cs-choice dt {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin-bottom: 0.2rem;
+}
+
+.cs-choice dd {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.cs-choice div + div dd {
+  color: #c3cad8;
+}
+
+/* ---- links + footer ---- */
+
+.cs-links {
+  list-style: none !important;
+  padding: 0 !important;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.cs-links li {
+  margin: 0 !important;
+}
+
+.cs-foot {
+  border-top: 1px solid var(--color-glass-border);
+  padding-block: 2rem 3rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cs-foot a {
+  color: var(--color-muted);
+}
+
+.cs-nowrap {
+  white-space: nowrap;
+}

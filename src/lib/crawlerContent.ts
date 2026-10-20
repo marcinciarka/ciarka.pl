@@ -171,6 +171,7 @@ export function renderStaticFallback(content: CrawlerContent): string {
         s.liveUrl
           ? `<p><a href="${escapeHtml(s.liveUrl)}">${escapeHtml(s.liveUrl)}</a></p>`
           : "",
+        s.note ? `<p>${escapeHtml(s.note)}</p>` : "",
         `</section>`,
       ]
         .filter(Boolean)
@@ -219,9 +220,17 @@ export function renderLlmsTxt(content: CrawlerContent): string {
     for (const h of s.highlights) lines.push(`- ${h}`);
     lines.push("", `- Stack: ${s.tech.join(", ")}`, `- Status: ${s.status}`);
     if (s.liveUrl) lines.push(`- Live: ${s.liveUrl}`);
+    if (s.note) lines.push(`- Note: ${s.note}`);
     if (s.npm) lines.push(`- npm: ${s.npm.pkg} (${s.npm.url})`);
     lines.push("");
   }
+
+  lines.push(
+    "## Case studies",
+    "",
+    `- [Aurora, on-chain: storing a generative sky in contract storage](${ORIGIN}/aurora/)`,
+    "",
+  );
 
   lines.push("## Contact", "");
   for (const link of content.contactLinks) {
@@ -249,8 +258,12 @@ export function renderRobotsTxt(): string {
   ].join("\n");
 }
 
+// Every HTML page the build emits (see build.rolldownOptions.input in
+// vite.config.ts). The case study is static HTML, so it needs no fallback.
+export const SITE_PATHS = ["/", "/aurora/"] as const;
+
 /**
- * One URL, because there is one page. `lastmod` comes from the stats payload
+ * One URL per page. `lastmod` comes from the stats payload
  * the scheduled workflow rewrites rather than the clock, so a rebuild with no
  * content change produces a byte-identical file.
  */
@@ -264,10 +277,12 @@ export function renderSitemapXml(updatedAt: string): string {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    "  <url>",
-    `    <loc>${ORIGIN}/</loc>`,
-    `    <lastmod>${day}</lastmod>`,
-    "  </url>",
+    ...SITE_PATHS.flatMap((path) => [
+      "  <url>",
+      `    <loc>${ORIGIN}${path}</loc>`,
+      `    <lastmod>${day}</lastmod>`,
+      "  </url>",
+    ]),
     "</urlset>",
     "",
   ].join("\n");

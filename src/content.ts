@@ -107,7 +107,7 @@ export const contactLinks: ContactLink[] = [
 
 export const contactCopied = "copied";
 
-// Baked fallback for the live stats.json (updated by scheduled workflow).
+// Baked fallback for the live stats.json (refreshed by the deploy build).
 // Derived from the same public/stats.json the client fetches at runtime -
 // no hand-maintained duplicate numbers.
 export const bakedStats = baked;
@@ -124,7 +124,11 @@ export type Showcase = {
   liveUrl?: string;
   repoUrl?: string;
   npm?: { pkg: string; url: string };
-  status: "live" | "source-only" | "in-progress";
+  // "archived": the product behind it was wound down, so the card points at
+  // the recording rather than a link that no longer shows the work.
+  status: "live" | "source-only" | "in-progress" | "archived";
+  // Shown in place of the live link on an archived showcase.
+  note?: string;
   recording?: string;
   // Required alongside `recording`, not optional in practice (content.test.ts
   // enforces the pair): the card shows this frame and only fetches the video
@@ -196,7 +200,8 @@ export const showcases: Showcase[] = [
     tech: ["Next.js", "TypeScript", "WebSockets", "Web Audio API", "WebGL"],
     liveUrl: "https://resonance.summer.fi/",
     // repo is private - add repoUrl when/if it goes public
-    status: "live",
+    status: "archived",
+    note: "Lazy Summer wound down in 2026, so the live stream is quiet. The recording shows it running on real traffic.",
     recording: "/recordings/resonance_web.mp4",
     poster: "/recordings/resonance_poster.webp",
   },
@@ -262,7 +267,7 @@ export const work: WorkEntry[] = [
     company: "Lazy Summer Protocol · Summer.fi",
     role: "Senior Full-Stack Engineer",
     summary:
-      "The Lazy Summer Earn app, built from an empty repository to production alongside Summer.fi Pro by the same team. I co-built it in 2024 as TVL approached $200M and was its main contributor from 2025. I also built the institutional side: a vault admin dashboard and the auth system behind it.",
+      "The Lazy Summer Earn app, built from an empty repository to production alongside Summer.fi Pro by the same team. I co-built it in 2024 as TVL approached $200M and was its main contributor from 2025. I also built the institutional side: a vault admin dashboard and the auth system behind it. Summer.fi wound down in 2026; the monorepo stays public.",
     links: [
       {
         label: "public monorepo",
@@ -312,7 +317,7 @@ export const work: WorkEntry[] = [
   {
     period: "2022 - 2023",
     company: "Oasis.app",
-    role: "DeFi Frontend Engineer",
+    role: "Senior Full-Stack Engineer",
     summary:
       "A Maker-native vault product growing into a multi-protocol one. I brought Aave in, shipped the first frontend integration for Spark Lend, built the automation that lets a position defend itself against liquidation, and kept the data layer quick enough to survive traffic spikes.",
     details: [

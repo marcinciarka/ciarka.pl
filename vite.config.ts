@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
@@ -24,10 +25,17 @@ function injectStats(): Plugin {
       // un-substituted tokens. Build-time tool pages like
       // scripts/aurora-still.html have no meta description to keep in sync,
       // and must not have to carry dummy tokens just to be servable.
-      if (!/(^|\/)index\.html$/.test(ctx.path)) return html;
+      if (!isHomePage(ctx.path)) return html;
       return injectStatsMeta(html, readStats());
     },
   };
+}
+
+// The root index.html only. Both token-substituting hooks below throw when
+// their placeholders are missing, and aurora/index.html (the case study) is a
+// static page that carries none of them.
+function isHomePage(path: string): boolean {
+  return /^\/?index\.html$/.test(path);
 }
 
 function readStats() {
@@ -93,7 +101,7 @@ function crawlerFiles(): Plugin {
     // Vite serves, and injectCrawlerContent throws on a missing token by
     // design, so build-time tool pages must not go through it.
     transformIndexHtml(html, ctx) {
-      if (!/(^|\/)index\.html$/.test(ctx.path)) return html;
+      if (!isHomePage(ctx.path)) return html;
       return injectCrawlerContent(html, crawlerContent());
     },
   };
@@ -134,6 +142,15 @@ function preloadBodyFont(): Plugin {
 // ciarka.pl is served from the domain root (GitHub Pages + CNAME)
 export default defineConfig({
   base: "/",
+  build: {
+    rolldownOptions: {
+      // Second page: the Aurora case study, served at /aurora/.
+      input: {
+        main: fileURLToPath(new URL("./index.html", import.meta.url)),
+        aurora: fileURLToPath(new URL("./aurora/index.html", import.meta.url)),
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

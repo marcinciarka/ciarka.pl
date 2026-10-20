@@ -19,8 +19,10 @@ npm run aurora:still  # re-render public/aurora-still.webp from the shader
 
 `public/stats.json` is the single source of truth for the hero counters -
 baked into the bundle at build time and re-fetched client-side.
-`.github/workflows/stats.yml` refreshes it from the GitHub API every 15 minutes,
-commits only when values change, and triggers a Pages redeploy.
+The deploy workflow refreshes it from the GitHub API on every build, and
+rebuilds hourly on a schedule. The refreshed file is never committed: the
+committed copy is the fallback when the API is down and the floor the numbers
+never drop below. Run `npm run stats:update` and commit to raise that floor.
 
 ## Share card
 

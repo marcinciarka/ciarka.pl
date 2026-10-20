@@ -211,6 +211,12 @@ describe("renderSitemapXml", () => {
     expect(renderSitemapXml(at)).toBe(renderSitemapXml(at));
   });
 
+  it("lists the Aurora case study page", () => {
+    expect(renderSitemapXml("2026-08-03T13:07:30.102Z")).toContain(
+      "<loc>https://ciarka.pl/aurora/</loc>",
+    );
+  });
+
   it("throws rather than emitting a malformed lastmod", () => {
     expect(() => renderSitemapXml("whenever")).toThrow(/ISO timestamp/);
   });

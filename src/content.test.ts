@@ -103,6 +103,12 @@ describe("showcases", () => {
 
   // liveUrl is now optional on the type to make room for the aurora's
   // in-page modal; every other showcase still needs somewhere to link out to.
+  it("explains every archived showcase with a note", () => {
+    for (const s of showcases) {
+      if (s.status === "archived") expect(s.note, s.id).toBeTruthy();
+    }
+  });
+
   it("keeps a liveUrl on every non-aurora showcase", () => {
     for (const s of showcases) {
       if (s.kind !== "aurora") {
