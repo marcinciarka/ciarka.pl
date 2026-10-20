@@ -584,7 +584,7 @@ export function initAurora(
       };
     },
     captureFrame: () => {
-      // Defense in depth for C1: mid-fade the canvas holds a blend of two
+      // Defense in depth for seed provenance: mid-fade the canvas holds a blend of two
       // skies while getSeed() names only one of them, so an image captured
       // here could never be honest about its seed. Callers wait for
       // onceSettled; this makes it impossible to mint the blend if one

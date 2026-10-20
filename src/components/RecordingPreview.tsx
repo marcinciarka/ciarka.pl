@@ -42,7 +42,7 @@ export function RecordingPreview({
           track("recording-play", { project: title });
         }}
         aria-label={`Play ${title} recording`}
-        className="glass group relative aspect-4/3 w-full overflow-hidden rounded-2xl text-left"
+        className="glass group relative aspect-video w-full overflow-hidden rounded-2xl text-left"
       >
         {/* A still, not the <video> itself. WebKit decodes no frame at
             preload="metadata", so a video here renders as an empty card in
@@ -52,7 +52,7 @@ export function RecordingPreview({
           src={poster}
           alt=""
           width={800}
-          height={600}
+          height={450}
           loading="lazy"
           decoding="async"
           className="pointer-events-none h-full w-full object-cover"
@@ -88,8 +88,8 @@ export function RecordingPreview({
               className="overflow-hidden rounded-2xl border border-glass-border bg-ink-raise shadow-2xl"
               style={{
                 width:
-                  "min(1470px, calc(100vw - 2.5rem), calc((100vh - 4rem) * 1470 / 884))",
-                aspectRatio: "1470 / 884",
+                  "min(1920px, calc(100vw - 2.5rem), calc((100vh - 4rem) * 16 / 9))",
+                aspectRatio: "16 / 9",
               }}
               onClick={(e) => e.stopPropagation()}
             >

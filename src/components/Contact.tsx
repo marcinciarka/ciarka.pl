@@ -132,6 +132,16 @@ export function Contact() {
             Let&rsquo;s build something.
           </h2>
           <p className="mt-4 max-w-md text-muted">{identity.contactNote}</p>
+          {/* Visible as text so it can be copied into an ATS or a forwarded
+              note without a mail client opening. */}
+          <a
+            href={`mailto:${identity.email}`}
+            data-umami-event="contact-click"
+            data-umami-event-channel="email-text"
+            className="mt-4 inline-block font-mono text-lg text-ember underline decoration-ember/40 underline-offset-4 transition-colors hover:decoration-ember"
+          >
+            {identity.email}
+          </a>
           <p className="mt-6 font-mono text-sm text-muted">
             {identity.availability}
           </p>
@@ -165,7 +175,14 @@ export function Footer() {
   return (
     <footer className="mx-auto max-w-6xl px-6 pb-12 pt-6">
       <p className="text-xs text-muted">
-        You've reached the end, thanks for stopping by!{" "}
+        {identity.name} ·{" "}
+        <a
+          href={`mailto:${identity.email}`}
+          className="underline decoration-dotted underline-offset-2 transition-colors hover:text-ember"
+        >
+          {identity.email}
+        </a>{" "}
+        · Thanks for stopping by.{" "}
         <a
           href={identity.siteRepo}
           target="_blank"
@@ -175,7 +192,7 @@ export function Footer() {
         >
           This site is open source
         </a>
-        .
+        , and its test suite runs in CI before every deploy.
       </p>
     </footer>
   );

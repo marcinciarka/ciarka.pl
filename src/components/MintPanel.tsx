@@ -34,7 +34,7 @@ type Subject =
   // getSeed() call). getSeed() is mutable module state — if "new aurora"
   // were to reseed while a mint is in flight, a second read here would mint
   // image A (from the frozen snapshot) against seed B, corrupting on-chain
-  // provenance permanently. See C1. ("new aurora" is also disabled for the
+  // provenance permanently. See the seed-provenance guard in skyStore.ts. ("new aurora" is also disabled for the
   // duration via setMintActive, belt-and-braces.)
   | { kind: "ready"; seed: AuroraSeed; snapshot: AuroraSnapshot }
   | { kind: "blocked"; message: string }
@@ -205,7 +205,7 @@ export function MintPanel({
   // done phase holds the only copy of the OpenSea/tx links and is never
   // touched here). `subject` is deliberately left alone by both callers: the
   // aurora on screen is still the one you would mint, and re-capturing it is
-  // the C1 provenance hazard.
+  // the seed-provenance hazard.
   const resetWalletReads = useCallback(() => {
     loadSeqRef.current++;
     setMintable(null);
@@ -353,7 +353,7 @@ export function MintPanel({
 
   // The snapshot freezes on entering the mint segment — not when the modal
   // opens. Browsing the gallery must leave "new aurora" usable, so
-  // setMintActive rides the same edge. (C1: while a snapshot is frozen to a
+  // setMintActive rides the same edge. (Seed provenance: while a snapshot is frozen to a
   // specific seed, a reseed would let a mint go through against the wrong
   // one.)
   //
@@ -575,7 +575,7 @@ export function MintPanel({
       } = await import("../lib/mint");
       try {
         // seed comes from the subject frozen when the segment activated, NOT a
-        // fresh getSeed() read — see the Subject comment (C1).
+        // fresh getSeed() read — see the Subject comment.
         const { txUrl, openSeaUrl } = await mintSky(addr, seed, snapshot);
         if (!mountedRef.current) return;
         // Counted, never attributed: no address, token id or seed rides along

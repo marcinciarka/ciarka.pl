@@ -70,6 +70,15 @@ describe("renderStaticFallback", () => {
     for (const s of showcases) expect(html, s.id).toContain(s.name);
   });
 
+  it("links every work entry's public product and source", () => {
+    const md = renderLlmsTxt(CONTENT);
+    for (const entry of work)
+      for (const l of entry.links ?? []) {
+        expect(html, l.label).toContain(`href="${l.href}"`);
+        expect(md, l.label).toContain(`](${l.href})`);
+      }
+  });
+
   // The first cut hand-listed four routes and silently dropped Telegram and
   // Discord - the two the page itself leads with. Iterate the real list.
   it("carries every contact route, not a hand-picked subset", () => {

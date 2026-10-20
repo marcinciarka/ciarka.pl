@@ -18,6 +18,23 @@ function WorkItem({ entry }: { entry: WorkEntry }) {
           <span className="font-mono text-xs text-muted">{entry.period}</span>
         </div>
         <p className="mt-1 text-sm text-ember">{entry.role}</p>
+        {entry.links && (
+          <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
+            {entry.links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noreferrer"
+                data-umami-event="work-link"
+                data-umami-event-href={l.href}
+                className="text-muted underline decoration-dotted underline-offset-2 transition-colors hover:text-ember"
+              >
+                {l.label} ↗
+              </a>
+            ))}
+          </p>
+        )}
         <p className="mt-3 text-muted">{entry.summary}</p>
         <ul
           id={detailsId}

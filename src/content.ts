@@ -1,5 +1,5 @@
 // All site copy and data in one place. Numbers are commit-verified -
-// extracted from GitHub history (2016–2026), see /output research docs.
+// extracted from GitHub history.
 
 // Single source of truth for baked stats: the same JSON the scheduled
 // workflow updates and the client fetches live at runtime.
@@ -214,19 +214,24 @@ export type WorkDetail = {
   text: string;
 };
 
+// Public places a reader can check the claims in an entry. Source only:
+// Summer.fi wound down in 2026, so its product URLs show a shutdown notice.
+export type WorkLink = { label: string; href: string };
+
 export type WorkEntry = {
   period: string;
   company: string;
   role: string;
   summary: string;
   details: WorkDetail[];
+  links?: WorkLink[];
 };
 
 export const work: WorkEntry[] = [
   {
     period: "2026 - present",
     company: "Stealth DeFi platform (NDA)",
-    role: "Technical Advisor",
+    role: "Technical Advisor (contract)",
     summary:
       "An all-in-one, self-custodial DeFi app: earn, borrow, multiply, loop yields and trade perps, with every position held in the user's own Safe smart account. I started the codebase and am its largest contributor (about 45% of commits), across the product, the SDK and the backend. Under NDA, so it stays unnamed here. Happy to walk through the architecture live.",
     details: [
@@ -257,7 +262,13 @@ export const work: WorkEntry[] = [
     company: "Lazy Summer Protocol · Summer.fi",
     role: "Senior Full-Stack Engineer",
     summary:
-      "The Lazy Summer Earn app, built from an empty repository to production alongside Summer.fi Pro by the same team. I co-built it in 2024 and was its main contributor from 2025. I also built the institutional side: a vault admin dashboard and the auth system behind it.",
+      "The Lazy Summer Earn app, built from an empty repository to production alongside Summer.fi Pro by the same team. I co-built it in 2024 as TVL approached $200M and was its main contributor from 2025. I also built the institutional side: a vault admin dashboard and the auth system behind it.",
+    links: [
+      {
+        label: "public monorepo",
+        href: "https://github.com/OasisDEX/summerfi-monorepo",
+      },
+    ],
     details: [
       {
         lead: "Institutions auth",
@@ -278,7 +289,7 @@ export const work: WorkEntry[] = [
     company: "Summer.fi Pro",
     role: "Senior Full-Stack Engineer",
     summary:
-      "The 2023 rebrand and the consolidation that followed. I took the multi-protocol Borrow / Multiply / Earn suite onto Layer 2, brought Morpho Blue's isolated markets in, and built the risk-automation layer that lets several triggers guard one position without colliding. I also cleaned up the codebase underneath it and rewrote the runtime configuration the frontends read.",
+      "The 2023 rebrand of Oasis.app to Summer.fi and the consolidation that followed. I took the multi-protocol Borrow / Multiply / Earn suite onto Layer 2, brought Morpho Blue's isolated markets in, and built the risk-automation layer that lets several triggers guard one position without colliding. I also cleaned up the codebase underneath it and rewrote the runtime configuration the frontends read.",
     details: [
       {
         lead: "Trigger cross-validation",

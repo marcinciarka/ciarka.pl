@@ -101,9 +101,9 @@ export default function App() {
           <p className="mt-2 font-mono text-sm text-ember [text-shadow:0_1px_12px_rgba(3,6,12,0.85)]">
             {identity.availability}
           </p>
-          {/* Single hero action: every contact route, the CV included, lives in
-              one place at the bottom of the page rather than crowding the pitch. */}
-          <div className="mt-6">
+          {/* Primary action jumps to every contact route; the CV sits beside it
+              as a quiet secondary because it is what a recruiter forwards. */}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <a
               href="#contact"
               data-umami-event="hero-cta"
@@ -117,6 +117,17 @@ export default function App() {
                 ↓
               </span>
             </a>
+            {identity.cvUrl && (
+              <a
+                href={identity.cvUrl}
+                target="_blank"
+                rel="noreferrer"
+                data-umami-event="hero-cv"
+                className="inline-flex items-center gap-2 rounded-full border border-ember/45 bg-ink/40 px-5 py-2.5 text-sm font-medium text-ember transition-colors hover:border-ember hover:bg-ember/12"
+              >
+                Download CV
+              </a>
+            )}
           </div>
         </div>
         <div className="pb-4">

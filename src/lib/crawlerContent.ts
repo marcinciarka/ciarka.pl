@@ -146,6 +146,9 @@ export function renderStaticFallback(content: CrawlerContent): string {
         `<section>`,
         `<h3>${escapeHtml(entry.role)} · ${escapeHtml(entry.company)} <small>(${escapeHtml(entry.period)})</small></h3>`,
         `<p>${escapeHtml(entry.summary)}</p>`,
+        ...(entry.links ?? []).map(
+          (l) => `<p><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a></p>`,
+        ),
         `<ul>`,
         ...entry.details.map(
           (d) =>
@@ -202,6 +205,7 @@ export function renderLlmsTxt(content: CrawlerContent): string {
   for (const entry of work) {
     lines.push(`### ${entry.role} — ${entry.company} (${entry.period})`, "");
     lines.push(entry.summary, "");
+    for (const l of entry.links ?? []) lines.push(`- [${l.label}](${l.href})`);
     for (const d of entry.details) {
       lines.push(`- **${d.lead}** ${d.text}`);
     }

@@ -228,7 +228,7 @@ describe("skyStore", () => {
     });
   });
 
-  describe("mint-active flag (C1 belt-and-braces)", () => {
+  describe("mint-active flag (seed-provenance guard)", () => {
     it("starts false", async () => {
       const { isMintActive } = await import("./skyStore");
       expect(isMintActive()).toBe(false);

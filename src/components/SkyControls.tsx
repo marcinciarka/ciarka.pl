@@ -28,7 +28,7 @@ import { pillClass } from "./pillClass";
 export function SkyControls() {
   const reducedMotion = useReducedMotion();
   const webglFailed = useSyncExternalStore(subscribeWebglFailed, isWebglFailed);
-  // C1 belt-and-braces: a frozen mint snapshot is bound to a specific seed,
+  // Seed-provenance guard: a frozen mint snapshot is bound to a specific seed,
   // so reseeding while the mint segment holds one would let a mint go through
   // against the wrong seed.
   const mintActive = useSyncExternalStore(subscribeMintActive, isMintActive);
@@ -236,7 +236,7 @@ export function SkyControls() {
             type="button"
             // Locked out for the length of the crossfade (a second click
             // mid-fade would cut the transition short) and while a mint
-            // snapshot is frozen (C1 above).
+            // snapshot is frozen (seed-provenance guard above).
             disabled={spinning || mintActive}
             // Was a setTimeout(FADE_MS). That measured wall clock while the
             // fade runs on the renderer's pause-adjusted clock, so once the

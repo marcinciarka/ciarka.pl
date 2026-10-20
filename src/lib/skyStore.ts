@@ -16,7 +16,7 @@ const listeners = new Set<Listener>();
 let webglFailed = false;
 const webglFailedListeners = new Set<WebglFailedListener>();
 
-// C1 belt-and-braces: while a mint flow is past "idle" (preview/minting),
+// Seed-provenance guard: while a mint flow is past "idle" (preview/minting),
 // "new sky" must not be able to reseed out from under it — that's exactly
 // the seed/image mismatch this flag exists to prevent. MintPanel is the only
 // writer (on the mint segment's active edge, so browsing the gallery leaves

@@ -7,7 +7,7 @@
 export const CONTRACT_ADDRESS =
   "0xc1aC1ac1Ac54691F6a22e2272ABA6f8989bd119a" as const; // CRKAurora (CREATE2 vanity — same address on Base Sepolia & mainnet)
 
-// Task 7's placeholder is the zero address. Until it's replaced, the mint
+// An undeployed build carries the zero address. Until it's replaced, the mint
 // flow is not live — SkyControls uses this to hide the gallery pill and
 // MintPanel to render nothing, rather than shipping UI that always fails.
 export const CONTRACT_DEPLOYED =
