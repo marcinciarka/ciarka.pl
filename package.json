@@ -12,7 +12,8 @@
     "og": "node scripts/generate-og.mjs",
     "aurora:still": "node scripts/generate-aurora-still.mjs",
     "posters": "node scripts/generate-recording-posters.mjs",
-    "postinstall": "node scripts/setup-contracts.mjs"
+    "postinstall": "node scripts/setup-contracts.mjs",
+    "cv": "node scripts/generate-cv.mjs"
   },
   "dependencies": {
     "@fontsource/instrument-sans": "5.3.0",
@@ -22,6 +23,7 @@
     "viem": "^2.55.10"
   },
   "devDependencies": {
+    "@fontsource/ibm-plex-sans": "5.3.0",
     "@tailwindcss/vite": "4.3.3",
     "@types/node": "^26.1.2",
     "@types/react": "19.2.18",
