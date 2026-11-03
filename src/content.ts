@@ -47,10 +47,10 @@ export const identity: Identity = {
   name: "Marcin Ciarka",
   role: "Senior Web3 Full-Stack Engineer",
   pitch:
-    "Ten years building for the web, four of them shipping production DeFi: frontends, backend data pipelines, and the risk automation that keeps positions safe.",
+    "Ten years building for the web, four of them shipping production DeFi: frontends, backends, the infrastructure they run on, and the risk automation that keeps positions safe.",
   location: "Poland · remote (CET)",
   availability:
-    "Open to senior roles - Web3 frontend, full-stack, product engineering",
+    "Open to senior and founding-engineer roles - Web3, full-stack, product engineering",
   contactNote:
     "Any of these reach me directly. Email is best if you're sending something with an attachment.",
   email: "cv@plamka.net",
@@ -234,31 +234,32 @@ export type WorkEntry = {
 
 export const work: WorkEntry[] = [
   {
-    period: "2026 - present",
-    company: "Stealth DeFi platform (NDA)",
-    role: "Technical Advisor (contract)",
+    period: "2025 - present",
+    company: "Supersmooth",
+    role: "Technical Co-founder",
     summary:
-      "An all-in-one, self-custodial DeFi app: earn, borrow, multiply, loop yields and trade perps, with every position held in the user's own Safe smart account. I started the codebase and am its largest contributor (about 45% of commits), across the product, the SDK and the backend. Under NDA, so it stays unnamed here. Happy to walk through the architecture live.",
+      "I co-founded Supersmooth, an all-in-one, self-custodial DeFi app: earn, borrow, multiply, loop yields and trade perps across Ethereum, Base, Arbitrum and Robinhood Chain, with every position held in the user's own Safe smart account. I started the codebase and wrote nearly half of the commits on a four-engineer team, across the product and the SDK. I also built most of what keeps it running in production: the databases, CI, the release pipeline, the staging environment and the indexer deployments.",
+    links: [{ label: "supersmooth.fi", href: "https://supersmooth.fi/" }],
     details: [
       {
-        lead: "Position flows on Safe",
-        text: "— earn, borrow, multiply, refinance across Aave, Morpho, Euler, Fluid, Compound, Sky, Maple; SDK flash-loan fallback.",
+        lead: "CI and releases",
+        text: "— five-shard test matrix on every push; semver releases redeploy only the services a change touches.",
       },
       {
-        lead: "Shield position protection",
-        text: "— Stop-Loss, Trailing Stop and Take-Profit guardians with emergency-close transactions.",
+        lead: "Staging environment",
+        text: "— split from prod with a prod-seeded ingest database: indexer backfill cut from ~60 hours to ~20 minutes.",
       },
       {
-        lead: "Cost-basis and PnL engine",
-        text: "— entry price read at the event block, with Chainlink and historical-API fallbacks when a feed dies.",
+        lead: "Databases and indexer ops",
+        text: "— app Postgres on Kysely; scripted indexer redeploy and full reindex; scheduled product and liquidation-risk jobs.",
       },
       {
-        lead: "Market-data backend",
-        text: "— pipeline for ~15 lending protocols into Postgres with staleness and outlier gates, plus hourly Aave liquidation-risk snapshots.",
+        lead: "Product and SDK",
+        text: "— earn, borrow, multiply across seven lending protocols; PnL from entry prices read at each event's block.",
       },
       {
-        lead: "Yield loops",
-        text: "— a product line end to end: net-APY math, ledger-fed return tiles, yield-history API.",
+        lead: "MCP server for AI agents",
+        text: "— OAuth sign-in, read-only tools for rates, portfolios, risk and products.",
       },
     ],
   },

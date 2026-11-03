@@ -49,8 +49,8 @@ const contact: Link[] = [
 const core = [
   "TypeScript · React · Next.js (App Router, RSC)",
   "Node · Bun · PostgreSQL (Prisma, Kysely)",
-  "AWS (ECS, Cognito) · Docker · SST · CI/CD",
-  "Turborepo · Vite libraries",
+  "AWS (ECS, Cognito) · Render · Docker · SST",
+  "GitHub Actions CI/CD · Turborepo",
   "CSS Modules · Tailwind · WebGL · Web Audio",
 ];
 
@@ -73,7 +73,7 @@ export const variants: CvContent[] = [
     file: "marcin_ciarka_cv.pdf",
     role: ["Senior Full-Stack Engineer", "DeFi & Web3"],
     summary:
-      "Full-stack engineer, 10 years building for the web, the last four shipping production DeFi: frontends, backend data pipelines, and the risk automation that keeps positions safe. I take repositories from empty to production.",
+      "Full-stack engineer, 10 years building for the web, the last four shipping production DeFi. Technical co-founder of Supersmooth, where I started the codebase, built product with a four-engineer team, and own most of production infrastructure. I take repositories from empty to production.",
     skills: {
       title: "Web3",
       items: [
@@ -86,10 +86,23 @@ export const variants: CvContent[] = [
     },
     experience: [
       {
-        dates: "2026 — now",
-        title: "Technical Advisor (contract)",
-        org: "DeFi platform, under NDA",
-        body: "Started the codebase for a self-custodial earn / borrow / multiply / loop / perps app on Safe smart accounts, and am its largest contributor across product, SDK and backend. Built position flows across seven lending protocols, Shield Stop-Loss / Trailing Stop / Take-Profit guardians, the cost-basis and PnL engine, and a market-data pipeline for ~15 protocols.",
+        dates: "2025 — now",
+        title: "Technical Co-founder",
+        org: "Supersmooth",
+        items: [
+          {
+            name: "Product",
+            body: "Started the codebase; wrote ~48% of 1,648 commits on a four-engineer team. Self-custodial earn / borrow / multiply / perps on Safe accounts, four chains, seven lending protocols; PnL from entry prices read at each event's block.",
+          },
+          {
+            name: "Infrastructure",
+            body: "Owned most of production: Postgres (Kysely), all CI (5-shard tests), releases that redeploy only changed services, prod-seeded staging (indexer backfill 60 h to 20 min).",
+          },
+          {
+            name: "Data & AI",
+            body: "Indexer redeploy and reindex workflows; market data for ~15 protocols; scheduled risk jobs; OAuth MCP server giving AI agents read-only rates, portfolios and risk.",
+          },
+        ],
       },
       {
         dates: "2022 — 2026",
@@ -134,7 +147,7 @@ export const variants: CvContent[] = [
     file: "marcin_ciarka_cv_nondefi.pdf",
     role: ["Senior Full-Stack Engineer", "Frontend Architecture & Platform"],
     summary:
-      "Full-stack engineer, 10 years building for the web, the last four in fintech: frontends, backend data pipelines, and the risk automation that keeps positions safe. I take repositories from empty to production.",
+      "Full-stack engineer, 10 years building for the web, the last four in fintech. Technical co-founder of Supersmooth, where I started the codebase, built product with a four-engineer team, and own most of production infrastructure. I take repositories from empty to production.",
     skills: {
       title: "Practice",
       items: [
@@ -147,10 +160,23 @@ export const variants: CvContent[] = [
     },
     experience: [
       {
-        dates: "2026 — now",
-        title: "Technical Advisor (contract)",
-        org: "Fintech platform, under NDA",
-        body: "Started the codebase for a self-custodial investing app on smart-contract accounts, and am its largest contributor across product, SDK and backend. Built position flows across seven lending providers, automated stop-loss and take-profit protection, the cost-basis and PnL engine, and a market-data pipeline for ~15 providers.",
+        dates: "2025 — now",
+        title: "Technical Co-founder",
+        org: "Supersmooth",
+        items: [
+          {
+            name: "Product",
+            body: "Started the codebase; wrote ~48% of 1,648 commits on a four-engineer team. Self-custodial investing on smart-contract accounts, seven lending providers; PnL from entry prices read at each event's block.",
+          },
+          {
+            name: "Infrastructure",
+            body: "Owned most of production: Postgres (Kysely), all CI (5-shard tests), releases that redeploy only changed services, prod-seeded staging (data backfill 60 h to 20 min).",
+          },
+          {
+            name: "Data & AI",
+            body: "Event-indexer redeploy and reindex workflows; market data for ~15 providers; scheduled risk jobs; OAuth MCP server giving AI agents read-only rates, portfolios and risk.",
+          },
+        ],
       },
       {
         dates: "2022 — 2026",
