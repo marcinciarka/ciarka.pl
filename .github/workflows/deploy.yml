@@ -50,3 +50,19 @@ jobs:
           path: dist
       - id: deployment
         uses: actions/deploy-pages@v4
+      # Cloudflare caches the unhashed static files (og.png, CV PDFs, aurora
+      # still, recordings). Hourly runs only change stats.json, which is not
+      # cached, so they skip the purge. The sleep gives GitHub Pages' own CDN
+      # (max-age=600) a moment so the purge does not refetch the old files.
+      - name: Purge Cloudflare cache
+        if: github.event_name != 'schedule'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          sleep 60
+          curl -fsS -X POST \
+            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}'
