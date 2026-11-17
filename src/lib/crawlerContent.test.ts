@@ -70,6 +70,12 @@ describe("renderStaticFallback", () => {
     for (const s of showcases) expect(html, s.id).toContain(s.name);
   });
 
+  it("links every case study, as the showcase cards do", () => {
+    for (const s of showcases)
+      if (s.caseStudyUrl)
+        expect(html, s.id).toContain(`href="${s.caseStudyUrl}"`);
+  });
+
   it("links every work entry's public product and source", () => {
     const md = renderLlmsTxt(CONTENT);
     for (const entry of work)
@@ -174,6 +180,12 @@ describe("renderLlmsTxt", () => {
     expect(txt).toContain(`https://ciarka.pl${identity.cvUrl}`);
   });
 
+  it("lists every case study with an absolute URL", () => {
+    const section = txt.slice(txt.indexOf("## Case studies"));
+    expect(section).toContain("](https://ciarka.pl/aurora/)");
+    expect(section).toContain("](https://ciarka.pl/jaksietumieszka/)");
+  });
+
   it("omits a redundant URL for mailto and for URL-less handles", () => {
     expect(txt).toContain(`- Email: ${identity.email}\n`);
     expect(txt).toContain(`- Discord: ${identity.discordHandle}\n`);
@@ -211,10 +223,10 @@ describe("renderSitemapXml", () => {
     expect(renderSitemapXml(at)).toBe(renderSitemapXml(at));
   });
 
-  it("lists the Aurora case study page", () => {
-    expect(renderSitemapXml("2026-08-03T13:07:30.102Z")).toContain(
-      "<loc>https://ciarka.pl/aurora/</loc>",
-    );
+  it("lists both case study pages", () => {
+    const xml = renderSitemapXml("2026-08-03T13:07:30.102Z");
+    expect(xml).toContain("<loc>https://ciarka.pl/aurora/</loc>");
+    expect(xml).toContain("<loc>https://ciarka.pl/jaksietumieszka/</loc>");
   });
 
   it("throws rather than emitting a malformed lastmod", () => {

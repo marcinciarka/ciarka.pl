@@ -171,6 +171,9 @@ export function renderStaticFallback(content: CrawlerContent): string {
         s.liveUrl
           ? `<p><a href="${escapeHtml(s.liveUrl)}">${escapeHtml(s.liveUrl)}</a></p>`
           : "",
+        s.caseStudyUrl
+          ? `<p><a href="${escapeHtml(s.caseStudyUrl)}">Read the case study</a></p>`
+          : "",
         s.note ? `<p>${escapeHtml(s.note)}</p>` : "",
         `</section>`,
       ]
@@ -220,17 +223,19 @@ export function renderLlmsTxt(content: CrawlerContent): string {
     for (const h of s.highlights) lines.push(`- ${h}`);
     lines.push("", `- Stack: ${s.tech.join(", ")}`, `- Status: ${s.status}`);
     if (s.liveUrl) lines.push(`- Live: ${s.liveUrl}`);
+    if (s.caseStudyUrl) lines.push(`- Case study: ${absolute(s.caseStudyUrl)}`);
     if (s.note) lines.push(`- Note: ${s.note}`);
     if (s.npm) lines.push(`- npm: ${s.npm.pkg} (${s.npm.url})`);
     lines.push("");
   }
 
-  lines.push(
-    "## Case studies",
-    "",
-    `- [Aurora, on-chain: storing a generative sky in contract storage](${ORIGIN}/aurora/)`,
-    "",
-  );
+  lines.push("## Case studies", "");
+  for (const s of showcases) {
+    if (s.caseStudyUrl) {
+      lines.push(`- [${s.name}: ${s.tagline}](${absolute(s.caseStudyUrl)})`);
+    }
+  }
+  lines.push("");
 
   lines.push("## Contact", "");
   for (const link of content.contactLinks) {
@@ -259,8 +264,8 @@ export function renderRobotsTxt(): string {
 }
 
 // Every HTML page the build emits (see build.rolldownOptions.input in
-// vite.config.ts). The case study is static HTML, so it needs no fallback.
-export const SITE_PATHS = ["/", "/aurora/"] as const;
+// vite.config.ts). The case studies are static HTML, so they need no fallback.
+export const SITE_PATHS = ["/", "/aurora/", "/jaksietumieszka/"] as const;
 
 /**
  * One URL per page. `lastmod` comes from the stats payload

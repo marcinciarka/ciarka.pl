@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aurora, on-chain: a case study - Marcin Ciarka</title>
   <meta name="description"
-    content="How I put a generative WebGL sky into contract storage on Base: a 16,000-byte WebP budget, guards in the contract and the client, seed provenance, and what each choice cost." />
+    content="The moving sky on ciarka.pl is drawn live for each visitor. You can keep yours as an NFT on Base, with the picture stored on the blockchain." />
   <meta name="author" content="Marcin Ciarka" />
   <meta name="theme-color" content="#070b14" />
   <link rel="canonical" href="https://ciarka.pl/aurora/" />
   <meta property="og:title" content="Aurora, on-chain: a case study - Marcin Ciarka" />
   <meta property="og:description"
-    content="How I put a generative WebGL sky into contract storage on Base: a 16,000-byte WebP budget, guards in the contract and the client, seed provenance, and what each choice cost." />
+    content="The moving sky on ciarka.pl is drawn live in your browser, and every visitor gets a different one. You can keep yours as an NFT on Base, stored whole on the blockchain. I designed and directed it, and AI coding agents wrote much of the code." />
   <meta property="og:url" content="https://ciarka.pl/aurora/" />
   <meta property="og:type" content="article" />
   <meta property="og:image" content="https://ciarka.pl/og.png" />
@@ -24,7 +24,7 @@
   <script defer src="https://cloud.umami.is/script.js"
     data-website-id="8589972c-eba7-40e1-9140-09e83bfa17d2" data-domains="ciarka.pl"
     data-performance="true"></script>
-  <script type="module" src="/src/caseStudy/aurora.ts"></script>
+  <script type="module" src="/src/caseStudy/caseStudy.ts"></script>
 </head>
 
 <body class="cs">
@@ -32,365 +32,729 @@
 
   <header class="cs-wrap cs-bar">
     <a class="cs-mark" href="/">ciarka.pl</a>
-    <a href="/#showcases">Back to the portfolio</a>
+    <nav class="cs-cases" aria-label="Case studies">
+      <span>Case studies</span>
+      <a href="/aurora/" aria-current="page">Aurora, on-chain</a>
+      <a href="/jaksietumieszka/" lang="pl">Jak się tu mieszka?</a>
+    </nav>
   </header>
 
   <main id="main">
-    <div class="cs-wrap cs-hero">
+    <div class="cs-wrap cs-opening">
       <div>
         <p class="cs-kicker">Case study by Marcin Ciarka</p>
         <h1>Aurora, <span class="cs-nowrap">on-chain</span></h1>
-        <p class="cs-lede">The sky behind ciarka.pl is a shader driven by one seed. You can mint the sky you are
-          looking at as an ERC-721 on Base, and the image itself is written into the contract's storage.</p>
-        <dl class="cs-specs">
-          <dt>Collection</dt>
-          <dd>CRKAurora (CRKA) on Base</dd>
-          <dt>Image cap</dt>
-          <dd><span class="num">16,000</span> bytes of WebP</dd>
-          <dt>Supply</dt>
-          <dd><span class="num">100</span> skies, one per wallet</dd>
-          <dt>Stack</dt>
-          <dd>Solidity, Foundry, WebGL, viem</dd>
-        </dl>
+        <p class="cs-lede">The moving sky behind ciarka.pl is drawn live in your browser, and every visitor gets a
+          different one. You can keep yours as a collectible (an NFT on Base), stored whole on the blockchain so it
+          needs no server of mine.</p>
+        <div class="cs-actions">
+          <a class="cs-btn" href="/">See the sky and keep one</a>
+          <a href="#links">Contract and source code</a>
+        </div>
       </div>
       <figure class="cs-plate">
         <img src="/aurora-still.webp" width="800" height="600"
-          alt="A still frame of the aurora shader: soft teal and violet curtains of light over a dark navy sky with faint stars." />
-        <figcaption>One frame of the real shader, rendered headlessly by <code>npm run aurora:still</code>.</figcaption>
+          alt="A still frame of the aurora: soft teal and violet curtains of light over a dark navy sky with faint stars." />
+        <figcaption>One frame of the sky, drawn from a fixed number by the same code that runs on the home page.
+        </figcaption>
       </figure>
     </div>
 
-    <div class="cs-wrap cs-layout">
-      <aside class="cs-toc">
-        <nav aria-labelledby="toc-heading">
-          <h2 id="toc-heading">On this page</h2>
+    <div class="cs-wrap cs-brief">
+      <section aria-labelledby="glance-h">
+        <h2 id="glance-h" class="cs-label">At a glance</h2>
+        <dl class="cs-glance">
+          <div>
+            <dt>What it is</dt>
+            <dd>A generative sky you can keep as an NFT, picture included</dd>
+          </div>
+          <div>
+            <dt>My role</dt>
+            <dd>Sole owner. I made the design decisions, directed and reviewed the work, and ran the launch. AI coding
+              agents (Claude Code) wrote much of the code from written plans, under my name.</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd>Live on Base since 2 August 2026. 8 of 100 skies minted (checked 17 November 2026).</dd>
+          </div>
+          <div>
+            <dt>Fee to mint</dt>
+            <dd>6 to 9 US cents in network fees</dd>
+          </div>
+          <div>
+            <dt>Built with</dt>
+            <dd>Solidity, Foundry, WebGL, TypeScript, React, viem</dd>
+          </div>
+          <div>
+            <dt>Links</dt>
+            <dd><a href="/">Live sky</a>, <a
+                href="https://basescan.org/address/0xc1aC1ac1Ac54691F6a22e2272ABA6f8989bd119a">contract on
+                Basescan</a>, <a href="https://github.com/marcinciarka/ciarka.pl">source on GitHub</a></dd>
+          </div>
+        </dl>
+      </section>
+
+      <div>
+        <section aria-labelledby="short-h">
+          <h2 id="short-h" class="cs-label">In short</h2>
+          <p class="cs-short">The moving sky on ciarka.pl is drawn live from one random number, so every visitor sees a
+            different sky and can keep it as an NFT on Base. I wanted the picture itself stored on the blockchain, so
+            a sky never depends on a server I run. Storage there is paid by size, so every picture has to fit in 16
+            kB. The contract enforces that limit and the collection rules, because it is the one part nobody can
+            bypass. I designed it and made the key calls, and AI coding agents wrote much of the code. Eight skies
+            have been minted, each for 6 to 9 US cents in fees.</p>
+        </section>
+        <nav class="cs-story" aria-labelledby="story-h">
+          <h2 id="story-h" class="cs-label">Chapters</h2>
           <ol>
-            <li><a href="#constraint">The constraint</a></li>
-            <li><a href="#architecture">How it fits together</a></li>
-            <li><a href="#decisions">Five decisions</a></li>
-            <li><a href="#testing">Testing</a></li>
-            <li><a href="#differently">What I would change</a></li>
-            <li><a href="#links">Source and contract</a></li>
+            <li><a href="#ch1">Every visitor gets a different sky</a></li>
+            <li><a href="#ch2">The picture is stored inside the contract</a></li>
+            <li><a href="#ch3">Every picture has to fit in 16 kB</a></li>
+            <li><a href="#ch4">How a sky becomes a collectible</a></li>
+            <li><a href="#ch5">A timer bug could have minted the wrong sky</a></li>
+            <li><a href="#ch6">Tests and eight live mints back the numbers</a></li>
+            <li><a href="#decisions">Six decisions and what each cost</a></li>
           </ol>
         </nav>
-      </aside>
+      </div>
+    </div>
 
-      <article class="cs-article">
-        <section id="constraint" aria-labelledby="constraint-h">
-          <h2 id="constraint-h">The constraint</h2>
-          <p>Most NFT images live on IPFS or behind a metadata server, and the token holds a link to them. I wanted
-            the token to be the image. This site is static files on GitHub Pages, so there is no backend to serve
-            metadata from, and I did not want a pinning service to be one more thing that has to keep running for a
-            sky to exist.</p>
-          <p>So <code>AuroraSky</code> stores two things per token: the raw WebP bytes and the <code>uint32</code>
-            seed that shaped the sky. <code>tokenURI()</code> assembles the OpenSea-style JSON on every read, with the
-            image embedded as a <code>data:image/webp;base64</code> URI. <code>contractURI()</code> does the same for
-            the collection page. Nothing about a token lives off-chain.</p>
-          <p>That choice sets every other number on this page. Contract storage is paid per 32-byte slot. My cost
-            model in <code>scripts/estimate-mint-cost.mjs</code> is a fixed <span class="num">100,000</span> gas for
-            the mint plus <span class="num">22,100</span> gas per slot of image. The size of the image is the price
-            of the mint, so the whole project turns into a byte budget.</p>
-          <p>Before writing the contract I ran that model as a decision gate, and later checked it against a real
-            mint on Base Sepolia. The first mint stored a 512px WebP for a fee of <span class="num">0.000023849</span> ETH,
-            about <span class="num">$0.044</span> at <span class="num">0.0072</span> gwei, roughly
-            <span class="num">3.31M</span> gas including the L1 data fee. The model had predicted about
-            <span class="num">2.9M</span> gas of execution for a 4 kB image. That was close enough to size everything
-            else with it.</p>
-        </section>
+    <div class="cs-wrap">
+      <!-- Chapter 1 -->
+      <section class="cs-ch" id="ch1" aria-labelledby="ch1-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 1</p>
+          <h2 id="ch1-h" class="cs-h">Every visitor gets a different sky</h2>
+          <p class="cs-stand">The sky at the top of ciarka.pl is drawn live by your browser. One random number decides
+            its shape, its motion and its two colours.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame">
+            <img class="cs-shot" src="/aurora-still.webp" width="800" height="600" loading="lazy" decoding="async"
+              alt="A still frame of the aurora: soft teal and violet curtains of light over a dark navy sky with faint stars." />
+          </div>
+          <figcaption>One frame at a fixed number. <code>npm run aurora:still</code> draws it with the same shader the
+            site runs.</figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>A small program on your graphics card draws the sky, with no 3D library. There are about 4.3 billion
+            possible numbers, and the same number always gives the same sky. So a link with a sky's number in it shows
+            that sky to anyone.</p>
+          <details class="cs-deep">
+            <summary>How one number becomes a sky<span class="cs-chev" aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p>A raw WebGL fragment shader, with no three.js. The drawing buffer stops at 800 device pixels tall and
+                the pixel ratio is capped at 2. CSS stretches the canvas to the viewport. A resize only reallocates the
+                buffer when the ideal size drifts more than 15%, because a phone's URL bar would otherwise restart the
+                sky on every scroll. On a 375 x 844 box, a 60 px toolbar shift moved the buffer from 355 x 800 to 375 x
+                784.</p>
+              <p>The seed is a <code>uint32</code>. It goes through mulberry32 and comes out as a noise offset, an
+                animation phase and two distinct colours from a five-colour palette. The offset and phase are drawn
+                first, so seeds from before the palette existed keep the exact sky they had. A test pins those values
+                byte for byte. The seed lives in <code>localStorage</code>. A <code>?seed=N</code> link is never saved,
+                so following a shared link does not replace your own sky.</p>
+              <p>Source: <code>src/lib/seed.ts</code>, <code>src/lib/aurora.ts</code>. Tests:
+                <code>src/lib/seed.test.ts</code> ("is deterministic for the same seed", "keeps x/y/t byte-identical to
+                the pre-palette implementation", "picks two distinct palette colors for every seed"),
+                <code>src/lib/aurora.test.ts</code> (render-size policy).</p>
+            </div>
+          </details>
+        </div>
+      </section>
 
-        <section id="architecture" aria-labelledby="architecture-h">
-          <h2 id="architecture-h">How it fits together</h2>
-          <p>The pipeline runs in one direction: a seed picks a sky, the visitor's own canvas becomes the image, the
-            image has to pass a size gate, and the contract keeps it. Reads come back out through two paths.</p>
-          <div class="cs-arch">
-            <figure>
-              <svg viewBox="0 0 420 640" role="img" aria-labelledby="dg-title dg-desc">
-                <title id="dg-title">Mint pipeline</title>
-                <desc id="dg-desc">Six stages from top to bottom. WebGL shader, then uint32 seed, then captureFrame,
-                  then the 16,000-byte gate, then the AuroraSky contract, which splits into two read paths:
-                  tokenURI for marketplaces and the on-site gallery.</desc>
-                <defs>
-                  <linearGradient id="dg-flow" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#35e0c2" />
-                    <stop offset="1" stop-color="#7c6cf6" />
-                  </linearGradient>
-                  <marker id="dg-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7"
-                    orient="auto-start-reverse">
-                    <path class="dg-head" d="M0 0 L10 5 L0 10 z" />
-                  </marker>
-                </defs>
+      <!-- Chapter 2 -->
+      <section class="cs-ch" id="ch2" aria-labelledby="ch2-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 2</p>
+          <h2 id="ch2-h" class="cs-h">The picture is stored inside the contract</h2>
+          <p class="cs-stand">Most NFTs hold only a link to an image on another server. If that server goes away, the
+            NFT points at nothing. Each Aurora sky keeps its picture inside the contract itself.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame" role="img"
+            aria-label="Comparison. A typical NFT is a token that links to a server that links to an image, and both the server and the image have to stay online. An Aurora sky is one token that holds its own picture and number.">
+            <p class="cs-fig-h">A typical NFT</p>
+            <ol class="cs-chain">
+              <li class="cs-box"><b>Token</b><span>holds a link</span></li>
+              <li class="cs-box is-fragile"><b>Server</b><span>has to stay up</span></li>
+              <li class="cs-box is-fragile"><b>Image</b><span>kept somewhere else</span></li>
+            </ol>
+            <p class="cs-fig-h">An Aurora sky</p>
+            <div class="cs-box is-whole"><b>Picture and number, both inside the contract</b><span>WebP bytes + uint32
+                seed. tokenURI() builds the JSON on every read.</span></div>
+          </div>
+          <figcaption>Dashed boxes are the parts that have to keep running for a linked NFT to show its picture.
+          </figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>I wanted a sky to last as long as the blockchain does. So each collectible holds two things: the picture
+            and the number that produced it. When a marketplace asks for a collectible, the contract builds its
+            description on the spot from those two things. Nothing about a sky is stored anywhere else.</p>
+          <p>The contract has no owner and no admin functions. After deployment nobody can change its rules, me
+            included.</p>
+          <details class="cs-deep">
+            <summary>What the contract stores and returns<span class="cs-chev" aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p><code>AuroraSky</code> keeps two mappings per token: the raw WebP bytes and the <code>uint32</code>
+                seed. <code>tokenURI()</code> assembles OpenSea-style JSON on every read, with the image embedded as a
+                <code>data:image/webp;base64</code> URI and the seed as an attribute and as an
+                <code>external_url</code> back to <code>https://ciarka.pl/?seed=N</code>. <code>contractURI()</code>
+                returns EIP-7572 collection metadata as an on-chain data URI too. It leaves out a collection image on
+                purpose, because there is no on-chain one to embed and a hosted URL could rot.</p>
+              <p>Every mint emits <code>SkyMinted(tokenId, minter, seed)</code>, so an indexer can map token to seed
+                from logs alone. There is no ERC-2981 royalty interface. The NatSpec says this was considered and
+                rejected for a free drop. The site is static files on GitHub Pages behind Cloudflare.</p>
+              <p>The contract was deployed with CREATE2 at a mined vanity address,
+                <code>0xc1aC1ac1Ac54691F6a22e2272ABA6f8989bd119a</code>, which is the same on Base Sepolia and Base
+                mainnet. Mainnet deploy block: 49,453,995 (2 August 2026).</p>
+              <p>Source: <code>contracts/src/AuroraSky.sol</code>. Tests: <code>test_TokenURIContainsMetadata</code> and
+                <code>test_ContractURIContainsMetadata</code> decode the base64 JSON and check its fields. forge-std
+                only ships base64 encoding, so the test file carries a small decoder.</p>
+            </div>
+          </details>
+        </div>
+      </section>
 
-                <rect class="dg-box" x="20" y="10" width="380" height="72" rx="10" />
-                <text class="dg-step" x="36" y="34">1</text>
-                <text class="dg-title" x="56" y="36">WebGL fragment shader</text>
-                <text class="dg-detail" x="56" y="62">Raw GLSL, buffer capped at 800px tall</text>
+      <!-- Chapter 3 -->
+      <section class="cs-ch" id="ch3" aria-labelledby="ch3-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 3</p>
+          <h2 id="ch3-h" class="cs-h">Every picture has to fit in 16 kB</h2>
+          <p class="cs-stand">On a blockchain, storage is paid by size, and the visitor pays the fee. So the size of the
+            picture sets the price of a sky. I capped every picture at 16 kB, about 1.5 times the largest sky minted so
+            far.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame">
+            <p class="cs-fig-h">Size of each minted picture, on a scale up to the 16 kB limit</p>
+            <!-- Positions are bytes / 16,000. -->
+            <div class="cs-bb-track" role="img"
+              aria-label="A horizontal scale from 0 to 16 kB. Eight minted pictures sit between 8.1 and 10.5 kB. A test marker sits at 9 kB. The limit is at 16 kB, about 1.5 times the largest picture.">
+              <span class="cs-bb-test" style="left:56.25%"></span>
+              <span class="cs-bb-dot" style="left:50.71%"></span>
+              <span class="cs-bb-dot" style="left:52.19%"></span>
+              <span class="cs-bb-dot" style="left:52.8%"></span>
+              <span class="cs-bb-dot" style="left:52.86%"></span>
+              <span class="cs-bb-dot" style="left:53.38%"></span>
+              <span class="cs-bb-dot" style="left:54.36%"></span>
+              <span class="cs-bb-dot" style="left:62.26%"></span>
+              <span class="cs-bb-dot" style="left:65.68%"></span>
+              <span class="cs-bb-cap"></span>
+            </div>
+            <div class="cs-bb-axis" aria-hidden="true"><span style="left:0">0</span><span
+                style="left:25%">4k</span><span style="left:50%">8k</span><span style="left:75%">12k</span><span
+                style="left:100%">16k</span></div>
+            <ul class="cs-key">
+              <li><i class="k-dot" aria-hidden="true"></i>Minted skies: 8.1 to 10.5 kB</li>
+              <li><i class="k-test" aria-hidden="true"></i>Size test: 9 kB</li>
+              <li><i class="k-cap" aria-hidden="true"></i>Limit: 16 kB</li>
+            </ul>
+            <p class="cs-fig-note">My first plan allowed 64,000 bytes, four times this whole scale.</p>
+          </div>
+          <figcaption>Every sky minted so far uses between half and two thirds of the limit.</figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>Before any contract code existed, I had a small cost model built to see which picture sizes were
+            affordable. The written plan the AI agents worked from did not let contract work start until I had reviewed
+            those numbers. Checked against the eight mints on Base, the model was within 4% every time.</p>
+          <p>The page takes the picture from the sky on your screen, in a compact image format (WebP). It lowers the
+            quality step by step until the picture fits, and stops before the colours band. In that one frame it
+            brightens the stars, so they survive as a small thumbnail.</p>
+          <details class="cs-deep">
+            <summary>The cost model and what the mints measured<span class="cs-chev" aria-hidden="true"></span>
+            </summary>
+            <div class="cs-deep-body">
+              <p>Cost model (<code>scripts/estimate-mint-cost.mjs</code>): a fixed 100,000 gas for the mint plus 22,100
+                gas per 32-byte slot of image. At the 16,000-byte cap that is 500 slots and about 11.15M gas.</p>
+              <p>Test mint before launch: on Base Sepolia, a 512 px WebP of about 4 kB cost 0.000023849 ETH, about
+                $0.044 at 0.0072 gwei, roughly 3.31M gas with the L1 data fee included. The model had predicted about
+                2.9M gas of execution.</p>
+              <p>The eight mainnet mints (gas from each receipt, model from the formula above):</p>
+              <div class="cs-scroll">
+                <table class="cs-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Token</th>
+                      <th scope="col">Stored bytes</th>
+                      <th scope="col">Model gas</th>
+                      <th scope="col">Measured gas</th>
+                      <th scope="col">Difference</th>
+                      <th scope="col">Fee (ETH)</th>
+                      <th scope="col">Fee (USD, Chainlink at that block)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>1</td><td>8,448</td><td>5,934,400</td><td>6,150,590</td><td>+3.6%</td><td>0.0000443</td><td>$0.083</td></tr>
+                    <tr><td>2</td><td>8,114</td><td>5,713,400</td><td>5,906,551</td><td>+3.4%</td><td>0.0000461</td><td>$0.087</td></tr>
+                    <tr><td>3</td><td>8,540</td><td>6,000,700</td><td>6,201,552</td><td>+3.3%</td><td>0.0000449</td><td>$0.085</td></tr>
+                    <tr><td>4</td><td>9,962</td><td>6,995,200</td><td>7,223,229</td><td>+3.3%</td><td>0.0000363</td><td>$0.067</td></tr>
+                    <tr><td>5</td><td>8,458</td><td>5,956,500</td><td>6,156,386</td><td>+3.4%</td><td>0.0000385</td><td>$0.071</td></tr>
+                    <tr><td>6</td><td>10,508</td><td>7,370,900</td><td>7,613,023</td><td>+3.3%</td><td>0.0000383</td><td>$0.071</td></tr>
+                    <tr><td>7</td><td>8,350</td><td>5,868,100</td><td>6,070,467</td><td>+3.4%</td><td>0.0000441</td><td>$0.082</td></tr>
+                    <tr><td>8</td><td>8,698</td><td>6,111,200</td><td>6,315,049</td><td>+3.3%</td><td>0.0000317</td><td>$0.061</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>Gas prices were 0.0050 to 0.0078 gwei. The L1 data fee was 0.00000003 to 0.00000024 ETH per mint, under
+                1% of each fee, which is what the cost report expected after EIP-4844. The model leaves out the
+                transaction's base cost and the cost of sending the picture as calldata. That likely accounts for most
+                of the steady 3.3 to 3.6% gap.</p>
+              <p>Capture (<code>captureFrame()</code> in <code>src/lib/aurora.ts</code>): it copies the right-hand
+                square of the live canvas, up to 800 px, because the hero text sits on the left. It encodes WebP at
+                quality 0.85, then 0.75, then 0.65, and stops at the first one under 16,000 bytes. Below 0.65 the
+                gradients band. For that one draw it sets the star boost to 1.6, tuned against a 160 px downscale: below
+                about 1.4 the stars wash out, above about 1.8 they look like dots at full size. The boost is set, drawn,
+                copied and reset in one synchronous task, so no frame on screen ever shows it.</p>
+              <p>Safari: <code>toDataURL("image/webp")</code> silently returns a PNG. The capture checks the encoder's
+                output and returns nothing if it is not WebP (<code>isWebpDataUrl</code>), and
+                <code>supportsWebpCapture()</code> lets the panel explain this before any capture. The first cost report
+                planned a 256 px snapshot and a 64,000-byte cap, on a "PNG is 5 to 15 times larger" estimate nobody had
+                measured.</p>
+              <p>Source: <code>scripts/estimate-mint-cost.mjs</code>, <code>src/lib/capture.ts</code>,
+                <code>src/lib/aurora.ts</code>, <code>docs/superpowers/plans/aurora-nft-cost-report.md</code>.</p>
+            </div>
+          </details>
+        </div>
+      </section>
 
-                <path class="dg-line" d="M210 82 V108" marker-end="url(#dg-arrow)" />
-                <rect class="dg-box" x="20" y="114" width="380" height="72" rx="10" />
-                <text class="dg-step" x="36" y="138">2</text>
-                <text class="dg-title" x="56" y="140">uint32 seed</text>
-                <text class="dg-detail" x="56" y="166">mulberry32: offset, phase, 2 of 5 colors</text>
-
-                <path class="dg-line" d="M210 186 V212" marker-end="url(#dg-arrow)" />
-                <rect class="dg-box" x="20" y="218" width="380" height="72" rx="10" />
-                <text class="dg-step" x="36" y="242">3</text>
-                <text class="dg-title" x="56" y="244">captureFrame()</text>
-                <text class="dg-detail" x="56" y="270">Right-hand square, WebP at 0.85 / 0.75 / 0.65</text>
-
-                <path class="dg-line" d="M210 290 V316" marker-end="url(#dg-arrow)" />
-                <rect class="dg-gate" x="20" y="322" width="380" height="72" rx="10" />
-                <text class="dg-step" x="36" y="346">4</text>
-                <text class="dg-title dg-gate-text" x="56" y="348">≤ 16,000 bytes</text>
-                <text class="dg-detail" x="56" y="374">Checked in the UI, in mint.ts, and in mint()</text>
-
-                <path class="dg-line" d="M210 394 V420" marker-end="url(#dg-arrow)" />
-                <rect class="dg-box" x="20" y="426" width="380" height="72" rx="10" />
-                <text class="dg-step" x="36" y="450">5</text>
-                <text class="dg-title" x="56" y="452">AuroraSky.mint(bytes, uint32)</text>
-                <text class="dg-detail" x="56" y="478">Image and seed in storage, 100 max</text>
-
-                <path class="dg-line" d="M150 498 V524 H110 V542" marker-end="url(#dg-arrow)" />
-                <path class="dg-line" d="M270 498 V524 H310 V542" marker-end="url(#dg-arrow)" />
-                <rect class="dg-box" x="20" y="548" width="180" height="82" rx="10" />
-                <text class="dg-step" x="36" y="572">6</text>
-                <text class="dg-title" x="56" y="574">tokenURI()</text>
-                <text class="dg-detail" x="36" y="598">JSON + base64 WebP,</text>
-                <text class="dg-detail" x="36" y="617">built on every read</text>
-                <rect class="dg-box" x="220" y="548" width="180" height="82" rx="10" />
-                <text class="dg-step" x="236" y="572">6</text>
-                <text class="dg-title" x="256" y="574">Gallery</text>
-                <text class="dg-detail" x="236" y="598">imageOf + seedOf,</text>
-                <text class="dg-detail" x="236" y="617">multicall, 15 per page</text>
-              </svg>
-              <figcaption>The mint pipeline, top to bottom. The ember box is the one rule every path has to pass.
-              </figcaption>
-            </figure>
-
-            <ol class="cs-steps">
-              <li><strong>Shader.</strong> A raw WebGL fragment shader, no three.js. The render buffer stops at 800
-                device pixels tall and the pixel ratio is capped at 2, because the sky is low-frequency noise and more
-                pixels buy nothing visible. CSS stretches the canvas to the viewport.</li>
-              <li><strong>Seed.</strong> One <code>uint32</code> goes through mulberry32 and comes out as a noise
-                offset, an animation phase and two distinct colors from a five-color palette. Same seed, same sky.
-                <code>?seed=N</code> in the URL shows someone else's sky without overwriting yours.</li>
-              <li><strong>Capture.</strong> <code>captureFrame()</code> copies the right-hand square of the live
-                canvas, up to 800px, because the hero text sits on the left. It is the sky on screen, not a re-render.
-                For that one draw it boosts the stars by 1.6 so they survive as a 160px marketplace thumbnail. It
-                encodes WebP at quality 0.85 and steps down to 0.75 and 0.65 until the frame fits. Below 0.65 the
-                gradients start to band.</li>
-              <li><strong>Gate.</strong> <span class="num">16,000</span> bytes of decoded WebP, checked three times.
-                More on that below.</li>
-              <li><strong>Contract.</strong> <code>mint(bytes image, uint32 seed)</code> checks supply, wallet, empty
-                image, size and seed, then stores the bytes and the seed and emits <code>SkyMinted</code> so indexers
-                can map token to seed from logs alone. There are no owner functions and no royalty interface.</li>
-              <li><strong>Read paths.</strong> Marketplaces call <code>tokenURI()</code>. The on-site gallery reads
-                <code>imageOf</code> and <code>seedOf</code> in two multicalls, 15 tokens a page, which fills three
-                rows of the five-column grid. A page is roughly 135 kB of on-chain image, so pages are cached until a
-                new mint shifts them all by one.</li>
+      <!-- Chapter 4 -->
+      <section class="cs-ch" id="ch4" aria-labelledby="ch4-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 4</p>
+          <h2 id="ch4-h" class="cs-h">How a sky becomes a collectible</h2>
+          <p class="cs-stand">Six steps take a sky from your screen to the blockchain. The size limit is checked three
+            times on the way. The contract checks last, because it is the only check nobody can skip.</p>
+        </div>
+        <figure class="cs-stage">
+          <!-- Drawn in HTML rather than SVG so the labels reflow at phone
+               widths instead of shrinking with a viewBox. -->
+          <div class="cs-frame" role="img"
+            aria-label="How a sky becomes a collectible. Six steps from top to bottom. Your browser draws the sky. A number picks the sky. The page takes a picture. The picture must be 16 kB or less, checked three times. The contract stores the picture and its number. Then two read paths: marketplaces, and the gallery on ciarka.pl.">
+            <ol class="cs-flow">
+              <li class="cs-box"><i>1</i><b>Your browser draws the sky</b><span>WebGL fragment shader, buffer capped at
+                  800 px tall</span></li>
+              <li class="cs-box"><i>2</i><b>A number picks the sky</b><span>uint32 seed, mulberry32: offset, phase, 2 of
+                  5 colours</span></li>
+              <li class="cs-box"><i>3</i><b>The page takes a picture</b><span>captureFrame(): right-hand square, WebP at
+                  0.85 / 0.75 / 0.65</span></li>
+              <li class="cs-box is-gate"><i>4</i><b>Size check: 16 kB</b><span>checked in the mint panel, in mint.ts and
+                  in mint()</span></li>
+              <li class="cs-box"><i>5</i><b>The contract stores it</b><span>AuroraSky.mint(bytes, uint32): picture and
+                  number in storage, 100 max</span></li>
+              <li class="cs-split">
+                <div class="cs-box"><i>6a</i><b>Marketplaces read it</b><span>tokenURI(): JSON + base64 WebP, built on
+                    every read</span></div>
+                <div class="cs-box"><i>6b</i><b>The gallery reads it</b><span>imageOf + seedOf, two multicalls, 15 per
+                    page</span></div>
+              </li>
             </ol>
           </div>
-        </section>
+          <figcaption>The orange box is the one rule every path has to pass.</figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <ol>
+            <li>Your browser draws the sky.</li>
+            <li>A number picks which sky it is.</li>
+            <li>The page takes a picture of the sky on your screen.</li>
+            <li>The page checks the 16 kB limit before any wallet is involved, so a visitor never sees a mint button
+              that would fail.</li>
+            <li>The contract checks the limit again, enforces the collection rules and stores the picture with its
+              number.</li>
+            <li>Marketplaces and my gallery read the picture back.</li>
+          </ol>
+          <p>When a sky is minted, the contract briefly hands control to the receiving wallet, and that wallet can be a
+            program. The contract records that the wallet has minted before the hand-off. So a hostile program cannot
+            use that moment to mint a second sky. A test plays the hostile program and checks that it fails.</p>
+          <details class="cs-deep">
+            <summary>How the three size checks and the mint rules are wired<span class="cs-chev"
+                aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p><strong>Size checks.</strong> The mint panel checks right after capture. <code>validateSnapshot</code>
+                runs first in both <code>estimateMint</code> and <code>mintSky</code> in <code>src/lib/mint.ts</code>,
+                before any wallet or network access, so the mint library is safe to call without the UI. It checks WebP
+                first, then size. Tests pin that order ("throws ImageTooLargeError before touching the network", "throws
+                WebpRequiredError before the size guard"). The contract reverts with <code>ImageTooLarge</code> above
+                <code>MAX_IMAGE_BYTES = 16_000</code>, and <code>test_MintExactMaxSizeSucceeds</code> mints exactly
+                16,000 bytes.</p>
+              <p><strong>Mint rules.</strong> <code>mint(bytes image, uint32 seed)</code> checks, in order:
+                <code>SoldOut</code> (<code>MAX_SUPPLY = 100</code>), <code>WalletAlreadyMinted</code>
+                (<code>hasMinted</code>), <code>EmptyImage</code>, <code>ImageTooLarge</code> and
+                <code>SeedAlreadyMinted</code> (<code>seedMinted</code>). Both flags are set before
+                <code>_safeMint</code>, because <code>_safeMint</code> calls <code>onERC721Received</code> on a contract
+                recipient. That is the reentrancy window. <code>test_ReentrantSecondMintReverts</code> uses a
+                <code>MaliciousReceiver</code> that mints again from the callback and asserts the second mint reverts.
+                <code>test_TransferKeepsSeedMinted</code> checks that a transfer does not free the seed.</p>
+              <p><strong>Pre-checks.</strong> <code>checkMintable</code> reads <code>seedMinted</code> and
+                <code>hasMinted</code> with <code>Promise.allSettled</code>. With <code>Promise.all</code>, one failed
+                RPC read would reject the whole call, the caller would fall back to "ok", and a known "this seed is
+                taken" answer would be lost. Now only a double failure falls back to "ok", and the contract still has
+                the last word. Tests: "reports seed-taken even when the hasMinted read fails", "degrades to ok only when
+                both reads fail".</p>
+              <p><strong>Read paths.</strong> Marketplaces call <code>tokenURI()</code>. The on-site gallery reads
+                <code>imageOf</code> and <code>seedOf</code> in two multicalls, 15 tokens a page, which fills three rows
+                of the five-column grid. A page is roughly 135 kB of on-chain image. Pages are cached until a new mint
+                shifts every page by one. All reads share one viem client with a fallback transport over six public Base
+                RPCs, because <code>mainnet.base.org</code> was returning 429s under load.</p>
+              <p><strong>Seed limit.</strong> The NatSpec on <code>mint()</code> says the seed-to-image binding is
+                unverified on-chain by design. Anyone calling <code>mint()</code> directly can pair any WebP under the
+                cap with an unused seed.</p>
+            </div>
+          </details>
+        </div>
+      </section>
 
-        <section id="decisions" aria-labelledby="decisions-h">
-          <h2 id="decisions-h">Five decisions</h2>
-          <p>Each of these had a reasonable alternative. This is what I picked, what I passed on, and why.</p>
-
-          <div class="cs-decision">
-            <h3>1. WebP or nothing, and a cap that came down from 64,000 to 16,000 bytes</h3>
-            <dl class="cs-choice">
-              <div>
-                <dt>Chose</dt>
-                <dd>Mint only WebP. If the browser cannot encode it, there is no mint and the visitor is told why.
-                </dd>
-              </div>
-              <div>
-                <dt>Passed on</dt>
-                <dd>A PNG fallback for Safari, with a smaller snapshot and a cap sized for PNG.</dd>
-              </div>
-            </dl>
-            <p>Safari ignores <code>toDataURL("image/webp")</code> and silently returns a PNG. My first cost report
-              planned around that: a 256px snapshot and a <span class="num">64,000</span>-byte cap, because a PNG
-              might be 5 to 15 times larger than the WebP and a large one at 512px could exceed a 30M-gas block. That
-              5 to 15 range was an estimate I had never measured, and the plan was bending around it.</p>
-            <p>So I dropped the PNG path the same day. The capture checks what the encoder actually produced, not what
-              it asked for, and returns nothing if it is not WebP. With no PNG to make room for, the cap fell to
-              <span class="num">16,000</span> bytes. Under the model that is about <span class="num">11.15M</span> gas
-              in the worst case, roughly 37% of a 30M block. The cost is that Safari visitors can look at the sky but
-              cannot mint it.</p>
+      <!-- Chapter 5 -->
+      <section class="cs-ch" id="ch5" aria-labelledby="ch5-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 5</p>
+          <h2 id="ch5-h" class="cs-h">A timer bug could have minted the wrong sky</h2>
+          <p class="cs-stand">A mint cannot be undone, so the picture and its number must always match. A timing bug
+            could have paired a picture of one sky with the number of another. The fix makes the page wait for the sky
+            itself.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame cs-pair" role="img"
+            aria-label="Two timelines. Before the fix, a timer ends while the fade is paused, and the page captures the old sky with the new number. After the fix, the page waits until the sky reports the fade has finished, and the picture matches its number.">
+            <div>
+              <p class="cs-fig-h">Before</p>
+              <ol class="cs-flow">
+                <li class="cs-box">You ask for a new sky</li>
+                <li class="cs-box">Fade starts</li>
+                <li class="cs-box">You switch tabs, so the fade pauses</li>
+                <li class="cs-box">Timer ends</li>
+                <li class="cs-box is-bad">Picture of the old sky, labelled with the new number</li>
+              </ol>
+            </div>
+            <div>
+              <p class="cs-fig-h">Now</p>
+              <ol class="cs-flow">
+                <li class="cs-box">You ask for a new sky</li>
+                <li class="cs-box">Fade starts</li>
+                <li class="cs-box">You switch tabs, so the fade pauses</li>
+                <li class="cs-box">You come back, so the fade finishes</li>
+                <li class="cs-box">The sky reports it is ready</li>
+                <li class="cs-box is-good">Picture and number match</li>
+              </ol>
+            </div>
           </div>
+          <figcaption>The animation clock stops when the tab is hidden. A wall-clock timer does not.</figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>Visitors can ask for a new sky, and the old one fades out over about a second. The page used to wait a
+            fixed time for that fade before taking the picture. But the animation pauses when you switch tabs, and the
+            timer kept running. So the page could take a picture of the old sky and label it with the new sky's number.
+            On the blockchain that mistake is permanent.</p>
+          <p>Now the animation reports when the fade has finished, and the page waits for that signal. A paused
+            animation just means a longer wait.</p>
+          <details class="cs-deep">
+            <summary>The three guards that keep picture and number paired<span class="cs-chev"
+                aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p>The "try another aurora" flow in <code>MintPanel</code> used to wait <code>setTimeout(FADE_MS)</code>
+                before capturing. The crossfade runs on the renderer's pause-adjusted clock (<code>FADE_SECONDS =
+                  1</code>), which stops when the hero leaves the viewport or the tab is hidden. A wall-clock timer could
+                expire while the fade was frozen at its first frame. Now the renderer exposes <code>onceSettled</code>,
+                registered in <code>skyStore</code> as <code>whenSkySettled</code>, and the flow reseeds first, then
+                waits on it.</p>
+              <p>Guard 1: <code>MintPanel</code> captures the seed and the snapshot once and carries both through the
+                flow. It never reads the seed again at mint time.</p>
+              <p>Guard 2: <code>skyStore</code> holds a mint-active flag that disables "new sky" while the mint segment
+                is open. Only that segment sets it, so browsing the gallery leaves the sky free.</p>
+              <p>Guard 3: <code>captureFrame()</code> returns nothing mid-crossfade, because a blend of two skies is not
+                any one seed's image. Callers wait for <code>onceSettled</code>, and this makes it impossible to mint
+                the blend if one does not.</p>
+              <p>Tests: <code>src/lib/skyStore.test.ts</code> ("mint-active flag (seed-provenance guard)",
+                "whenSkySettled": "delegates to the registered renderer instead of firing itself").</p>
+            </div>
+          </details>
+        </div>
+      </section>
 
-          <div class="cs-decision">
-            <h3>2. The same size check in three places</h3>
-            <dl class="cs-choice">
-              <div>
-                <dt>Chose</dt>
-                <dd>Check the cap in the mint UI, again in <code>estimateMint</code> and <code>mintSky</code>, and
-                  revert in the contract.</dd>
-              </div>
-              <div>
-                <dt>Passed on</dt>
-                <dd>Trusting the contract alone, or the UI alone.</dd>
-              </div>
-            </dl>
-            <p>Each check has a different job. The UI check runs right after capture, before any wallet is involved,
-              so an oversized frame never gets a mint button. <code>validateSnapshot</code> runs first thing in both
-              <code>estimateMint</code> and <code>mintSky</code>, before any network access, so the mint library is
-              safe to call without going through the UI. Tests pin that ordering. The contract's
-              <code>ImageTooLarge</code> revert is the only check nobody can skip.</p>
-            <p>The real payload changed later. Once the capture became the live canvas at up to 800px
-              with the star boost, six captures at 1280x800 measured between <span class="num">7,998</span> and
-              <span class="num">9,657</span> bytes. A Foundry test mints a <span class="num">9,000</span>-byte payload,
-              which costs <span class="num">6,444,817</span> gas, and fails above <span class="num">6.8M</span>. The cap
-              stays about twice the largest capture I measured.</p>
+      <!-- Chapter 6 -->
+      <section class="cs-ch" id="ch6" aria-labelledby="ch6-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 6</p>
+          <h2 id="ch6-h" class="cs-h">Tests and eight live mints back the numbers</h2>
+          <p class="cs-stand">Sixteen contract tests check every rule the collection depends on. Eight of 100 skies have
+            been minted so far.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame">
+            <h3>Check it yourself</h3>
+            <ul class="cs-check">
+              <li><a href="https://basescan.org/address/0xc1aC1ac1Ac54691F6a22e2272ABA6f8989bd119a">AuroraSky on
+                  Basescan</a><span>The contract, verified, on Base</span></li>
+              <li><a
+                  href="https://basescan.org/tx/0xc1f41cc34f158406343f3844ac9f748677a97bb89ab8f12461bdd0c69e489f7f">The
+                  first mint</a><span>Token 1, its fee and its stored picture</span></li>
+              <li><a
+                  href="https://github.com/marcinciarka/ciarka.pl/blob/main/contracts/src/AuroraSky.sol">contracts/src/AuroraSky.sol</a><span>The
+                  contract, with 16 Foundry tests beside it</span></li>
+              <li><a
+                  href="https://github.com/marcinciarka/ciarka.pl/blob/main/scripts/estimate-mint-cost.mjs">scripts/estimate-mint-cost.mjs</a><span>The
+                  cost model I used before writing the contract</span></li>
+            </ul>
           </div>
+          <figcaption>Every number on this page can be checked against the chain or the code.</figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>The contract has been live on Base since 2 August 2026. All eight mints came in the first week, the last on
+            7 August. Two minted skies, at 10 kB and 10.5 kB, are larger than the 9 kB picture in the contract's gas
+            test. The 16 kB limit still has room. The Safari message is covered by tests only, and I have not checked it
+            on a real Safari.</p>
+          <details class="cs-deep">
+            <summary>What each test suite covers<span class="cs-chev" aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p>Foundry (<code>contracts/test/AuroraSky.t.sol</code>, 16 tests, all passing on 17 November 2026): name
+                and symbol, mint assigns the token, <code>tokenURI</code> and <code>contractURI</code> JSON fields, sold
+                out at 100, second mint from one wallet, reentrant mint from a malicious receiver, duplicate seed from a
+                different wallet, empty image, oversized image, an image of exactly 16,000 bytes, the gas ceiling,
+                <code>tokenURI</code> for a missing token, a transfer that keeps its seed taken, the getters, and the
+                <code>SkyMinted</code> event.</p>
+              <p>The gas test (<code>test_MintRealisticPayloadGas</code>) mints a 9,000-byte payload, which costs
+                6,444,817 gas, and fails above 6.8M. Its ceiling started at 3.6M for a 4,700-byte image. It moved when
+                the capture became the live canvas at up to 800 px with the star boost. Six captures at 1280 x 800 then
+                measured 7,998 to 9,657 bytes. Mainnet mints 4 and 6 stored 9,962 and 10,508 bytes, and used 7.22M and
+                7.61M gas.</p>
+              <p>Vitest (the whole site suite is 274 tests in 24 files, all passing on 17 November 2026; the Aurora files
+                are <code>seed</code>, <code>capture</code>, <code>aurora</code>, <code>mint</code>,
+                <code>mintConfig</code>, <code>skyStore</code>, <code>pageCache</code> and <code>mintedTotal</code>).
+                The WebGL context and the canvas encoder are browser-only and are not in the Node suite. The policy
+                around them is:</p>
+              <ul>
+                <li>seeds are deterministic, and the offset and phase stay byte-identical to the version before colours
+                  existed;</li>
+                <li>the snapshot guards throw before any wallet or network access, WebP check first;</li>
+                <li><code>checkMintable</code> keeps a known verdict when the other read fails;</li>
+                <li>the bigint USD math, the cost formatter, gallery paging and the page cache;</li>
+                <li>the render-size policy, including a phone's URL bar not reallocating the buffer;</li>
+                <li>the mint-active flag and <code>whenSkySettled</code> in <code>skyStore</code>.</li>
+              </ul>
+              <p>Deterministic still: <code>scripts/aurora-still.html</code> imports the shader and
+                <code>seed.ts</code> instead of copying them, and draws one frame at a fixed seed and time. Same seed,
+                byte-identical WebP. <code>scripts/aurora-still.test.mjs</code> checks the file exists, is a WebP and
+                stays under 50,000 bytes.</p>
+              <p>On-chain check: token 1 was minted in transaction
+                <code>0xc1f41cc34f158406343f3844ac9f748677a97bb89ab8f12461bdd0c69e489f7f</code> (block 49,458,324).</p>
+            </div>
+          </details>
+        </div>
+      </section>
 
-          <div class="cs-decision">
-            <h3>3. One sky per seed and one mint per wallet, enforced in the contract</h3>
-            <dl class="cs-choice">
-              <div>
-                <dt>Chose</dt>
-                <dd><code>seedMinted</code> and <code>hasMinted</code> mappings, plus <code>MAX_SUPPLY = 100</code>,
-                  all checked in <code>mint()</code>.</dd>
-              </div>
-              <div>
-                <dt>Passed on</dt>
-                <dd>Client-side checks only, and verifying on-chain that the image matches the seed.</dd>
-              </div>
-            </dl>
-            <p>Anyone can call the contract directly, so the rules that define the collection have to live there.
-              Both flags are set before <code>_safeMint</code>, because <code>_safeMint</code> calls back into a
-              receiving contract. A test uses a malicious receiver that tries to mint again from that callback and
-              asserts it fails.</p>
-            <p>The client reads both guards before offering a mint. It uses <code>Promise.allSettled</code>, not
-              <code>Promise.all</code>, so one failed RPC read cannot hide a known "this seed is taken" answer from
-              the other. Only a double failure degrades to "go ahead", and then the contract still has the last
-              word.</p>
-            <p>What the contract does not do is prove that the image came from the seed. It cannot re-run a WebGL
-              shader at any reasonable cost. The stored image is the artifact and the seed is provenance metadata. I
-              wrote that down in the contract's NatSpec rather than leave it implied.</p>
-          </div>
+      <!-- Closing chapter: the decision table -->
+      <section class="cs-sec" id="decisions" aria-labelledby="decisions-h">
+        <h2 id="decisions-h" class="cs-h">Six decisions and what each cost</h2>
+        <p class="cs-intro">Each row is a choice with a reasonable alternative. Read across for the trade-off, or open a
+          row for the reasoning and the evidence.</p>
 
-          <div class="cs-decision">
-            <h3>4. Keeping image and seed honest while a mint is open</h3>
-            <dl class="cs-choice">
-              <div>
-                <dt>Chose</dt>
-                <dd>Freeze seed and snapshot together once, lock "new sky" while minting, and wait for the crossfade
-                  itself to finish.</dd>
+        <div class="cs-cols4 cs-log-head" aria-hidden="true"><span>The question</span><span>What I
+            chose</span><span>What I passed on</span><span>What it cost</span></div>
+        <ul class="cs-log">
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">Where should the picture live?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Inside the contract, next to its
+                  number.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>A link to a hosting service,
+                  as most NFTs use.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>Every byte costs the visitor a fee, so the
+                  picture's size sets the price.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>My site is static files, so there is no server to hand out NFT data. A hosting service would be one
+                  more thing that has to keep running for a sky to exist. Storing the picture in the contract made size
+                  the main constraint of the project, and I accepted that.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>contracts/src/AuroraSky.sol</code> (<code>tokenURI</code>, <code>contractURI</code>);
+                    <code>test_TokenURIContainsMetadata</code>; deep note in Chapter 2.</p>
+                </aside>
               </div>
-              <div>
-                <dt>Passed on</dt>
-                <dd>Reading the seed again at mint time, and waiting on a wall-clock timer.</dd>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">Which browsers can mint?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Only browsers that can make WebP
+                  pictures. Others get an explanation instead of a mint button.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>A PNG fallback for Safari,
+                  with a 64 kB limit.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>Safari visitors can see the sky but cannot
+                  mint it.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>Safari returns a PNG when asked for WebP, and a PNG might be many times larger. The first plan bent
+                  around a 5 to 15 times estimate nobody had measured. Dropping the PNG path let the limit fall to 16
+                  kB, so every mint stays small and cheap.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>src/lib/capture.ts</code> (<code>isWebpDataUrl</code>, <code>supportsWebpCapture</code>);
+                    <code>src/lib/capture.test.ts</code> ("rejects png data urls (Safari fallback)");
+                    <code>docs/superpowers/plans/aurora-nft-cost-report.md</code>.</p>
+                </aside>
               </div>
-            </dl>
-            <p>Since the contract cannot check the pairing, the client is the only thing keeping it right, and a
-              mistake is permanent. If a visitor asks for a new sky during a mint, a naive flow sends image A with
-              seed B.</p>
-            <p>There are three guards. <code>MintPanel</code> captures the seed and the snapshot once and carries
-              both through the flow. <code>skyStore</code> holds a mint-active flag that disables "new sky" while the
-              mint segment is open, and only that segment sets it, so browsing the gallery leaves the sky free. And
-              <code>captureFrame()</code> returns nothing mid-crossfade, because a blend of two skies is not any one
-              seed's image.</p>
-            <p>The bug I had to fix here was a timer. The "try another aurora" flow used to wait
-              <code>setTimeout(FADE_MS)</code> before capturing. The fade runs on the renderer's pause-adjusted clock,
-              which stops when the hero scrolls out of view or the tab is hidden, so the timer could fire while the
-              canvas still showed the old sky. Now the renderer reports when the fade has landed
-              (<code>onceSettled</code>), and a stopped clock just means waiting longer.</p>
-          </div>
-
-          <div class="cs-decision">
-            <h3>5. Wallet code off the first load, and a gas estimate in dollars</h3>
-            <dl class="cs-choice">
-              <div>
-                <dt>Chose</dt>
-                <dd>viem only behind <code>import("../lib/mint")</code>, a dependency-free address module, and a
-                  Chainlink-priced estimate that degrades to ETH only.</dd>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">Where is the size checked?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Three places: the mint panel, the
+                  mint code and the contract.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>The contract alone, or the
+                  website alone.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>Three checks to keep in step, with tests
+                  pinning their order.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>The panel checks first, so a visitor never sees a mint button that would fail. The mint code checks
+                  again, so it is safe to use on its own. The contract checks last, because it is the only check nobody
+                  can skip.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>src/lib/mint.ts</code> (<code>validateSnapshot</code>); <code>src/lib/mint.test.ts</code>
+                    ("estimateMint guard ordering", "mintSky size guard"); <code>test_RevertsOnOversizedImage</code>,
+                    <code>test_MintExactMaxSizeSucceeds</code>.</p>
+                </aside>
               </div>
-              <div>
-                <dt>Passed on</dt>
-                <dd>viem in the entry bundle, and an estimate that fails if the price feed does.</dd>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">Who enforces the collection rules?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>The contract: one sky per number,
+                  one per wallet, 100 in total.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>Website-only checks, and
+                  proving that a picture matches its number.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>Someone calling the contract directly can
+                  pair any small WebP with an unused number.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>Anyone can call the contract without my website, so the rules have to live there. The number records
+                  where a picture came from, but the contract cannot check that the picture matches it. Redrawing the
+                  sky inside the contract to prove the match would cost far too much. For a free drop of 100 skies I
+                  accepted that limit and wrote it into the contract's documentation.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>test_SecondMintFromSameWalletReverts</code>, <code>test_RevertsOnDuplicateSeed</code>,
+                    <code>test_ReentrantSecondMintReverts</code>, <code>test_MintRevertsWhenSoldOut</code>; NatSpec on
+                    <code>mint()</code> in <code>contracts/src/AuroraSky.sol</code>.</p>
+                </aside>
               </div>
-            </dl>
-            <p>Most visitors never mint, so the wallet library should not cost them anything. Components in the entry
-              chunk read the address, the cap and the page size from <code>contractAddress.ts</code>, which imports
-              nothing. <code>mintConfig.ts</code> needs <code>viem/chains</code>, so it re-exports the address from
-              there instead of defining it, and only code behind the dynamic import touches it.</p>
-            <p>The estimate runs <code>estimateContractGas</code>, <code>getGasPrice</code> and the Chainlink ETH/USD
-              <code>latestRoundData</code> read in parallel. If the oracle fails, the dollar row is empty and the ETH
-              row still shows. The feed's 8 decimals are hardcoded to save a round trip, and the USD math is bigint
-              throughout, flooring like Solidity does. Base gas puts a mint well under 0.000001 ETH, where
-              <code>toFixed(6)</code> printed <code>0.000000</code>, so the formatter keeps 8 decimals and shows
-              <code>&lt;0.00000001</code> rather than implying the mint is free.</p>
-            <p>Reads go through one shared client with viem's fallback transport, because
-              <code>mainnet.base.org</code> was returning 429s under load. Six public Base RPCs sit behind it.</p>
-          </div>
-        </section>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">How do the picture and its number stay paired?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Freeze both at the start, lock
+                  "new sky" during a mint, and wait for the fade to finish.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>Reading the number again at
+                  mint time, and waiting on a fixed timer.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>Two extra signals to maintain in the shared
+                  sky state.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>The contract cannot check the pairing, so the page is the only thing keeping it right, and a mistake
+                  is permanent. The timer version could capture the old sky with the new number when the tab was hidden.
+                  Waiting on the animation itself removes that timing gap.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>src/lib/skyStore.ts</code> (<code>setMintActive</code>, <code>whenSkySettled</code>);
+                    <code>src/lib/skyStore.test.ts</code>; <code>captureFrame()</code> in <code>src/lib/aurora.ts</code>;
+                    Chapter 5.</p>
+                </aside>
+              </div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">Who downloads the wallet code?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Only visitors who open the mint
+                  panel.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>Shipping the wallet library
+                  to every visitor with the rest of the page.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>One small settings file must stay
+                  import-free by hand, or the wallet code leaks into the first load.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <div>
+                  <p>Most visitors never mint, so the wallet library should not cost them anything. The on-demand wallet
+                    code is about 92 kB compressed, a bit more than the 83 kB of JavaScript every visitor downloads. The
+                    price estimate shows dollars when the price feed answers and still shows the fee in ETH when it does
+                    not.</p>
+                  <p class="cs-more">Components in the entry chunk read the address, the cap and the page size from
+                    <code>contractAddress.ts</code>. <code>mintConfig.ts</code> needs <code>viem/chains</code>, so it
+                    re-exports the address from there instead of defining it, and only code behind
+                    <code>import("../lib/mint")</code> touches it. The estimate runs <code>estimateContractGas</code>,
+                    <code>getGasPrice</code> and the Chainlink ETH/USD <code>latestRoundData</code> read in parallel,
+                    and the oracle read fails to <code>null</code> on its own. The feed's 8 decimals are hardcoded to
+                    save a round trip. The USD math is bigint throughout and floors like Solidity does. The formatter
+                    keeps up to 8 decimals and shows <code>&lt;0.00000001</code> instead of a misleading
+                    <code>0.000000</code>.</p>
+                </div>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>src/lib/contractAddress.ts</code> (imports nothing) and <code>src/lib/mintConfig.ts</code>
+                    (re-exports the address); <code>src/lib/mint.test.ts</code> ("estimateMint totalUsd": "degrades to
+                    null when the oracle read throws"). Sizes from <code>vite build</code> of commit
+                    <code>6979317</code>: <code>mint</code> 5.3 kB, <code>_esm</code> 42.4 kB, <code>ccip</code> 31.4
+                    kB, <code>secp256k1</code> 11.9 kB and <code>utils</code> 1.0 kB gzipped on demand, against
+                    <code>main</code> at 82.9 kB gzipped.</p>
+                </aside>
+              </div>
+            </details>
+          </li>
+        </ul>
+      </section>
 
-        <section id="testing" aria-labelledby="testing-h">
-          <h2 id="testing-h">Testing</h2>
-          <p><strong>Foundry.</strong> <code>contracts/test/AuroraSky.t.sol</code> has 16 tests. They cover the
-            supply cap at 100, a second mint from one wallet, the reentrant mint, a duplicate seed from a different
-            wallet, empty and oversized images, an image of exactly <span class="num">16,000</span> bytes, the
-            <span class="num">9,000</span>-byte gas ceiling, and a transfer that must not free its seed. The
-            <code>tokenURI</code> and <code>contractURI</code> tests decode the base64 JSON and check its fields;
-            forge-std only ships base64 encoding, so the test file carries a small decoder.</p>
-          <p><strong>Vitest.</strong> The browser-only parts, the WebGL context and the canvas encoder, are not
-            in the Node suite. The policy around them is:</p>
-          <ul>
-            <li>Seeds are deterministic, and the noise offset and phase stay byte-identical to the version before
-              colors existed, so an existing seed keeps the sky it always had.</li>
-            <li>The snapshot guards throw before any wallet or network access, WebP check first.</li>
-            <li><code>checkMintable</code> keeps a known verdict when the other read fails.</li>
-            <li>The bigint USD math, the cost formatter, gallery paging and the page cache.</li>
-            <li>The render-size policy, including a phone's URL bar not reallocating the buffer.</li>
-            <li>The mint-active flag and <code>whenSkySettled</code> in <code>skyStore</code>.</li>
-          </ul>
-          <p><strong>Deterministic stills.</strong> The image at the top of this page comes from
-            <code>scripts/aurora-still.html</code>, which imports the real shader instead of a copy and draws one
-            frame at a fixed seed and a fixed time. Same seed, byte-identical WebP. A test checks the file exists, is
-            a real WebP and stays under <span class="num">50,000</span> bytes, since it is generated outside the
-            normal build and nothing else would notice it going missing.</p>
-        </section>
+      <section class="cs-sec" id="change" aria-labelledby="change-h">
+        <h2 id="change-h" class="cs-h">What I would change</h2>
+        <div class="cs-prose">
+          <p><strong>Measure the picture before writing the numbers down.</strong> The gas test started at 4,700 bytes
+            and had to move to 9,000 when the capture changed. The limit held because it had margin, but the test was
+            guarding a picture size that no longer existed. Two minted skies are now larger than its 9 kB. Next time I
+            would tie the test to measured pictures from the start.</p>
+          <p><strong>Settle the policy before modelling it.</strong> A full round of the cost report went into a Safari
+            PNG fallback that I dropped the same day. Deciding "WebP or nothing" first would have saved it.</p>
+        </div>
+      </section>
 
-        <section id="differently" aria-labelledby="differently-h">
-          <h2 id="differently-h">What I would change</h2>
-          <p><strong>Measure the payload before writing the numbers down.</strong> The gas test's ceiling started
-            at <span class="num">3.6M</span> for a <span class="num">4,700</span>-byte image and had to move to
-            <span class="num">6.8M</span> and <span class="num">9,000</span> bytes when the capture changed. The cap
-            held because it had margin, but the test was guarding an image size that no longer existed. It is now
-            tied to measured captures, which is where it should have started.</p>
-          <p><strong>Settle the policy before modelling it.</strong> A full round of the cost report went into sizing
-            for a PNG fallback that was later dropped. Deciding "WebP or nothing" first would have saved that.</p>
-          <p><strong>Know the limit of the seed.</strong> The seed is provenance, not proof. Someone calling
-            <code>mint()</code> directly can pair any WebP under the cap with an unused seed. For a free, personal
-            drop of 100 skies I accepted that, and the contract says so.</p>
-        </section>
-
-        <section id="links" aria-labelledby="links-h">
-          <h2 id="links-h">Source and contract</h2>
-          <ul class="cs-links">
-            <li><a href="https://basescan.org/address/0xc1aC1ac1Ac54691F6a22e2272ABA6f8989bd119a">AuroraSky on
-                Basescan</a> <code>0xc1aC1ac1Ac54691F6a22e2272ABA6f8989bd119a</code></li>
-            <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/contracts/src/AuroraSky.sol">contracts/src/AuroraSky.sol</a>
-              and <a href="https://github.com/marcinciarka/ciarka.pl/blob/main/contracts/test/AuroraSky.t.sol">its
-                Foundry tests</a></li>
-            <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/aurora.ts">src/lib/aurora.ts</a>,
-              the shader and <code>captureFrame()</code></li>
-            <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/seed.ts">src/lib/seed.ts</a> and
-              <a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/capture.ts">src/lib/capture.ts</a>
-            </li>
-            <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/mint.ts">src/lib/mint.ts</a> and
-              <a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/contractAddress.ts">src/lib/contractAddress.ts</a>
-            </li>
-            <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/components/MintPanel.tsx">src/components/MintPanel.tsx</a>
-              and <a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/skyStore.ts">src/lib/skyStore.ts</a>
-            </li>
-            <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/scripts/estimate-mint-cost.mjs">scripts/estimate-mint-cost.mjs</a>
-            </li>
-            <li><a href="/">Back to ciarka.pl</a>, where the sky is live and you can mint one</li>
-          </ul>
-        </section>
-      </article>
+      <section class="cs-sec" id="links" aria-labelledby="links-h">
+        <h2 id="links-h" class="cs-h">Contract and source code</h2>
+        <ul class="cs-links">
+          <li><a href="https://basescan.org/address/0xc1aC1ac1Ac54691F6a22e2272ABA6f8989bd119a">AuroraSky on
+              Basescan</a> <code>0xc1aC1ac1Ac54691F6a22e2272ABA6f8989bd119a</code></li>
+          <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/contracts/src/AuroraSky.sol">contracts/src/AuroraSky.sol</a>,
+            and <a href="https://github.com/marcinciarka/ciarka.pl/blob/main/contracts/test/AuroraSky.t.sol">its
+              Foundry tests</a></li>
+          <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/aurora.ts">src/lib/aurora.ts</a>, the
+            shader and the capture</li>
+          <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/seed.ts">src/lib/seed.ts</a>, and <a
+              href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/capture.ts">src/lib/capture.ts</a></li>
+          <li><a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/mint.ts">src/lib/mint.ts</a>, and <a
+              href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/contractAddress.ts">src/lib/contractAddress.ts</a>
+          </li>
+          <li><a
+              href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/components/MintPanel.tsx">src/components/MintPanel.tsx</a>,
+            and <a href="https://github.com/marcinciarka/ciarka.pl/blob/main/src/lib/skyStore.ts">src/lib/skyStore.ts</a>
+          </li>
+          <li><a
+              href="https://github.com/marcinciarka/ciarka.pl/blob/main/scripts/estimate-mint-cost.mjs">scripts/estimate-mint-cost.mjs</a>
+          </li>
+          <li><a href="/">Back to ciarka.pl, where the sky is live and you can keep one</a></li>
+        </ul>
+      </section>
     </div>
   </main>
 

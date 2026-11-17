@@ -32,8 +32,8 @@ function injectStats(): Plugin {
 }
 
 // The root index.html only. Both token-substituting hooks below throw when
-// their placeholders are missing, and aurora/index.html (the case study) is a
-// static page that carries none of them.
+// their placeholders are missing, and the case studies (aurora/index.html,
+// jaksietumieszka/index.html) are static pages that carry none of them.
 function isHomePage(path: string): boolean {
   return /^\/?index\.html$/.test(path);
 }
@@ -144,10 +144,14 @@ export default defineConfig({
   base: "/",
   build: {
     rolldownOptions: {
-      // Second page: the Aurora case study, served at /aurora/.
+      // The case studies are static pages served at /aurora/ and
+      // /jaksietumieszka/. Keep SITE_PATHS in src/lib/crawlerContent.ts in step.
       input: {
         main: fileURLToPath(new URL("./index.html", import.meta.url)),
         aurora: fileURLToPath(new URL("./aurora/index.html", import.meta.url)),
+        jaksietumieszka: fileURLToPath(
+          new URL("./jaksietumieszka/index.html", import.meta.url),
+        ),
       },
     },
   },

@@ -1,0 +1,1262 @@
+/* Case study template, shared by /aurora/ and /jaksietumieszka/. Tokens come
+   from src/index.css (@theme). Plain CSS rather than utility classes because
+   the markup is hand-written static HTML.
+
+   Layout: an opening (title + hero figure), a brief (at a glance, in short,
+   chapter list), then chapters. Each chapter has a figure that stays in view
+   with position: sticky while its text scrolls past; on narrow screens the
+   figure sits between the opening paragraph and the body. The closing
+   chapter is a decision table built from <details> rows. Ember is the only
+   interactive colour; teal and violet appear only in figures. */
+
+.cs {
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --soft: #c9d1df;
+  --lead: #dbe2ee;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--color-text);
+  /* Faint aurora wash at the very top only, so the page reads as the same
+     sky as the home page without a shader. Content sits on ink. */
+  background:
+    radial-gradient(64rem 30rem at 80% -6rem, rgb(124 108 246 / 0.18), transparent 70%),
+    radial-gradient(44rem 22rem at 10% -4rem, rgb(53 224 194 / 0.12), transparent 70%),
+    var(--color-ink);
+  background-repeat: no-repeat;
+  min-height: 100svh;
+}
+
+@media (min-width: 48rem) {
+  .cs {
+    font-size: 1.125rem;
+  }
+}
+
+.cs a {
+  color: var(--color-ember);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.cs a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.cs code,
+.cs .num {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs code {
+  color: #cfd7e6;
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.3rem;
+  padding: 0.05em 0.3em;
+  overflow-wrap: anywhere;
+}
+
+.cs strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.cs-wrap {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+.cs-nowrap {
+  white-space: nowrap;
+}
+
+/* Small muted label used for the brief's headings and figure titles. */
+.cs-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--color-muted);
+  margin: 0 0 0.75rem;
+}
+
+/* ---- top bar with the case-study switcher ---- */
+
+.cs-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  padding-block: 1.1rem;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+.cs .cs-mark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.cs-cases {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.cs-cases span {
+  color: var(--color-muted);
+  margin-right: 0.5rem;
+}
+
+.cs .cs-cases a {
+  color: var(--color-muted);
+  text-decoration: none;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+}
+
+.cs .cs-cases a:hover {
+  color: var(--color-ember);
+}
+
+.cs .cs-cases a[aria-current="page"] {
+  color: var(--color-text);
+  background: var(--color-glass);
+  box-shadow: inset 0 0 0 1px var(--color-glass-border);
+}
+
+/* ---- opening: title, lede, actions, hero figure ---- */
+
+.cs-opening {
+  display: grid;
+  gap: 2.5rem;
+  padding-block: clamp(2.5rem, 7vw, 5rem) clamp(2.5rem, 6vw, 4rem);
+}
+
+@media (min-width: 62rem) {
+  .cs-opening {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4.5rem;
+    align-items: center;
+  }
+}
+
+.cs-kicker {
+  color: var(--color-muted);
+  margin: 0 0 0.9rem;
+  font-size: 0.95rem;
+}
+
+.cs h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.75rem, 7.5vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  margin: 0 0 1.5rem;
+}
+
+.cs-lede {
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--lead);
+  max-width: 36ch;
+  margin: 0 0 1.75rem;
+}
+
+.cs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+}
+
+.cs .cs-btn {
+  display: inline-block;
+  background: var(--color-ember);
+  color: var(--color-ink);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.7rem 1.15rem;
+  border-radius: 0.6rem;
+}
+
+.cs .cs-btn:hover {
+  background: #ffc677;
+}
+
+.cs-plate {
+  margin: 0;
+}
+
+.cs-plate img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  border: 1px solid var(--color-glass-border);
+  box-shadow: 0 2rem 6rem -2rem rgb(53 224 194 / 0.25);
+}
+
+.cs figcaption {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+  margin-top: 0.7rem;
+}
+
+/* ---- brief: at a glance, in short, chapter list ---- */
+
+.cs-brief {
+  display: grid;
+  gap: 2.5rem;
+  padding-bottom: clamp(3rem, 7vw, 5rem);
+}
+
+@media (min-width: 62rem) {
+  .cs-brief {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4.5rem;
+  }
+}
+
+.cs-glance {
+  margin: 0;
+  border-top: 1px solid var(--color-glass-border);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.cs-glance div {
+  display: grid;
+  gap: 0.15rem 1.25rem;
+  padding-block: 0.7rem;
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+@media (min-width: 30rem) {
+  .cs-glance div {
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+  }
+}
+
+.cs-glance dt {
+  color: var(--color-muted);
+}
+
+.cs-glance dd {
+  margin: 0;
+}
+
+.cs-short {
+  margin: 0 0 2.5rem;
+  color: var(--lead);
+}
+
+/* The chapter list is the skim layer: read the headlines in order and you
+   have the story. */
+.cs-story ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: ch;
+  border-top: 1px solid var(--color-glass-border);
+}
+
+.cs-story li {
+  counter-increment: ch;
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+.cs .cs-story a {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  text-decoration: none;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.cs-story a::before {
+  content: counter(ch);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  padding-top: 0.2rem;
+}
+
+.cs .cs-story a:hover {
+  color: var(--color-ember);
+}
+
+/* ---- chapters ---- */
+
+.cs-ch {
+  display: grid;
+  /* minmax(0, ...) so a wide table in an open deep note scrolls inside its
+     own box instead of widening the column and the page. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  padding-block: clamp(3rem, 8vw, 6rem);
+  border-top: 1px solid var(--color-glass-border);
+  scroll-margin-top: 1rem;
+}
+
+.cs-ch-head,
+.cs-ch-body {
+  max-width: 38rem;
+}
+
+.cs-ch-n {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin: 0 0 0.6rem;
+}
+
+.cs h2.cs-h {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  margin: 0 0 1rem;
+}
+
+.cs-stand {
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  line-height: 1.5;
+  color: var(--lead);
+  margin: 0;
+}
+
+.cs-ch-body {
+  border-top: 1px solid var(--color-glass-border);
+  padding-top: 1.5rem;
+  color: var(--soft);
+}
+
+.cs-ch-body p {
+  margin: 0 0 1.1rem;
+}
+
+.cs-ch-body > ol {
+  list-style: decimal;
+  margin: 0 0 1.25rem;
+  padding-left: 1.9rem;
+}
+
+.cs-ch-body li {
+  margin-bottom: 0.4rem;
+}
+
+.cs-ch-body li::marker,
+.cs-deep li::marker {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.cs-stage {
+  margin: 0;
+  min-width: 0;
+}
+
+.cs-frame {
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.1rem;
+  background: var(--color-ink-raise);
+  padding: clamp(0.85rem, 2.5vw, 1.75rem);
+  overflow: hidden;
+}
+
+@media (min-width: 62rem) {
+  .cs-ch {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "head stage" "body stage";
+    grid-template-rows: auto 1fr;
+    column-gap: 4.5rem;
+    row-gap: 2rem;
+    align-items: start;
+  }
+
+  .cs-ch-head {
+    grid-area: head;
+  }
+
+  .cs-ch-body {
+    grid-area: body;
+  }
+
+  .cs-stage {
+    grid-area: stage;
+    position: sticky;
+    top: 2rem;
+  }
+}
+
+.cs-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.6rem;
+}
+
+/* A phone screenshot: keep it phone-sized rather than stretching it. */
+.cs-shot-phone {
+  max-width: 20rem;
+  margin-inline: auto;
+}
+
+/* ---- deep layer: one collapsible note per chapter ---- */
+
+.cs-deep {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--color-glass-border);
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+.cs-deep summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.cs-deep summary::-webkit-details-marker {
+  display: none;
+}
+
+.cs-deep summary:hover {
+  color: var(--color-ember);
+}
+
+.cs-chev {
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.3rem;
+  border-right: 2px solid var(--color-muted);
+  border-bottom: 2px solid var(--color-muted);
+  transform: translateY(-0.15rem) rotate(45deg);
+}
+
+details[open] > summary .cs-chev {
+  transform: translateY(0.15rem) rotate(225deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cs-chev {
+    transition: transform 0.2s ease;
+  }
+}
+
+.cs-deep-body {
+  padding: 0 0 1.25rem 1rem;
+  border-left: 2px solid var(--color-glass-border);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--soft);
+}
+
+.cs-deep-body p {
+  margin: 0 0 0.9rem;
+}
+
+.cs-deep-body ul {
+  list-style: disc;
+  margin: 0 0 0.9rem;
+  padding-left: 1.25rem;
+}
+
+/* Wide data tables scroll inside their own box, never the page. */
+.cs-scroll {
+  overflow-x: auto;
+  margin: 0 0 1rem;
+}
+
+.cs-table {
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.cs-table th,
+.cs-table td {
+  text-align: right;
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+.cs-table th {
+  font-weight: 500;
+  color: var(--color-muted);
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+.cs-table td {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+/* ---- figure: two chains side by side (linked NFT vs stored, timelines) ---- */
+
+.cs-fig-h {
+  margin: 0 0 0.6rem;
+  font-size: 0.92rem;
+  color: var(--color-muted);
+}
+
+.cs-chain {
+  list-style: none;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.cs-box {
+  position: relative;
+  border: 1px solid rgb(233 238 247 / 0.16);
+  background: #111a2d;
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.7rem;
+  display: grid;
+  gap: 0.15rem;
+  line-height: 1.3;
+}
+
+.cs-chain .cs-box + .cs-box::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: 1.1rem;
+  border-top: 1.5px solid rgb(150 160 181 / 0.7);
+}
+
+.cs-box.is-fragile {
+  background: none;
+  border-style: dashed;
+  border-color: rgb(150 160 181 / 0.6);
+}
+
+.cs-box b {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.cs-box span {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.cs-box.is-whole {
+  border-color: var(--color-aurora-1);
+  background: rgb(53 224 194 / 0.1);
+  padding: 0.9rem 1rem;
+  gap: 0.3rem;
+}
+
+.cs-box.is-whole span {
+  font-size: 0.92rem;
+  color: var(--soft);
+  line-height: 1.5;
+}
+
+@media (max-width: 26rem) {
+  .cs-chain {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  .cs-chain .cs-box + .cs-box::before {
+    right: auto;
+    left: 1.25rem;
+    top: auto;
+    bottom: 100%;
+    width: 0;
+    height: 0.9rem;
+    border-top: 0;
+    border-left: 1.5px solid rgb(150 160 181 / 0.7);
+  }
+}
+
+/* ---- figure: vertical flow (pipeline, data flow, timelines) ---- */
+
+.cs-flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.4rem;
+}
+
+.cs-flow > li {
+  position: relative;
+}
+
+/* Arrow from the box above: a gradient stem plus a violet head. */
+.cs-flow > li + li::before {
+  content: "";
+  position: absolute;
+  left: 1.6rem;
+  bottom: calc(100% + 0.35rem);
+  height: 1.05rem;
+  border-left: 1.5px solid var(--color-aurora-1);
+}
+
+.cs-flow > li + li::after {
+  content: "";
+  position: absolute;
+  left: calc(1.6rem - 0.3rem + 0.75px);
+  bottom: 100%;
+  border: 0.3rem solid transparent;
+  border-bottom: 0;
+  border-top: 0.4rem solid var(--color-aurora-2);
+}
+
+.cs-flow .cs-box {
+  grid-template-columns: 1.4rem minmax(0, 1fr);
+  column-gap: 0.4rem;
+}
+
+.cs-flow .cs-box > i {
+  grid-row: span 2;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  padding-top: 0.15rem;
+}
+
+.cs-box.is-gate {
+  border-color: var(--color-ember);
+  border-width: 1.5px;
+  background: rgb(255 180 84 / 0.08);
+}
+
+.cs-box.is-gate b {
+  color: var(--color-ember);
+}
+
+.cs-box.is-bad {
+  border-color: rgb(150 160 181 / 0.6);
+  border-style: dashed;
+  background: none;
+}
+
+.cs-box.is-good {
+  border-color: var(--color-aurora-1);
+  background: rgb(53 224 194 / 0.1);
+}
+
+/* Two boxes side by side at the end of a flow (6a / 6b): each box gets its
+   own arrow instead of the row. */
+.cs-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.cs-flow > li.cs-split::before,
+.cs-flow > li.cs-split::after {
+  content: none;
+}
+
+.cs-split .cs-box::before {
+  content: "";
+  position: absolute;
+  left: 1.6rem;
+  bottom: calc(100% + 0.35rem);
+  height: 1.05rem;
+  border-left: 1.5px solid var(--color-aurora-1);
+}
+
+.cs-split .cs-box::after {
+  content: "";
+  position: absolute;
+  left: calc(1.6rem - 0.3rem + 0.75px);
+  bottom: 100%;
+  border: 0.3rem solid transparent;
+  border-bottom: 0;
+  border-top: 0.4rem solid var(--color-aurora-2);
+}
+
+.cs-frame > h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+}
+
+/* Side inputs that feed a node (data-flow figure). */
+.cs-side {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+  margin: 0.9rem 0 0 1.6rem;
+  padding-left: 1rem;
+  border-left: 1.5px dashed rgb(150 160 181 / 0.6);
+}
+
+/* Arrowhead at the top of the dashed rule: the side inputs feed the box
+   above them. */
+.cs-side::before {
+  content: "";
+  position: absolute;
+  left: calc(-0.3rem - 0.75px);
+  top: -0.45rem;
+  border: 0.3rem solid transparent;
+  border-top: 0;
+  border-bottom: 0.4rem solid var(--color-muted);
+}
+
+.cs-side .cs-box {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.cs-absent s {
+  font-family: var(--font-mono);
+  margin-right: 0.4rem;
+}
+
+.cs-absent {
+  margin: 0.6rem 0 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid rgb(150 160 181 / 0.45);
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+/* Before/now timelines: side by side when there is room. */
+.cs-pair {
+  display: grid;
+  gap: 1.75rem;
+}
+
+@media (min-width: 34rem) {
+  .cs-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+.cs-pair .cs-flow {
+  gap: 1rem;
+}
+
+.cs-pair .cs-flow > li + li::before {
+  left: 1rem;
+  bottom: calc(100% + 0.3rem);
+  height: 0.7rem;
+}
+
+.cs-pair .cs-flow > li + li::after {
+  left: calc(1rem - 0.3rem + 0.75px);
+}
+
+.cs-pair .cs-box {
+  grid-template-columns: minmax(0, 1fr);
+  font-size: 0.9rem;
+}
+
+/* ---- figure: byte budget (one track, dots per minted sky) ---- */
+
+.cs-bb-track {
+  position: relative;
+  height: 1.75rem;
+  margin-top: 1rem;
+  background: rgb(233 238 247 / 0.06);
+  border-radius: 4px;
+}
+
+.cs-bb-dot {
+  position: absolute;
+  top: 50%;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin: -0.35rem 0 0 -0.35rem;
+  border-radius: 50%;
+  background: rgb(53 224 194 / 0.75);
+  box-shadow: 0 0 0 1px var(--color-ink-raise);
+}
+
+.cs-bb-test {
+  position: absolute;
+  top: -0.4rem;
+  bottom: -0.4rem;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--color-text);
+}
+
+.cs-bb-cap {
+  position: absolute;
+  right: 0;
+  top: -0.5rem;
+  bottom: -0.5rem;
+  width: 2px;
+  background: var(--color-ember);
+}
+
+.cs-bb-axis {
+  position: relative;
+  height: 1.5rem;
+  margin-top: 0.9rem;
+  border-top: 1px solid rgb(233 238 247 / 0.18);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.cs-bb-axis span {
+  position: absolute;
+  top: 0.3rem;
+  transform: translateX(-50%);
+}
+
+.cs-bb-axis span:first-child {
+  transform: none;
+}
+
+.cs-bb-axis span:last-child {
+  transform: translateX(-100%);
+}
+
+.cs-key {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+}
+
+.cs-key li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cs-key i {
+  flex: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 3px;
+}
+
+.cs-key .k-dot {
+  border-radius: 50%;
+  background: rgb(53 224 194 / 0.75);
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-inline: 0.1rem;
+}
+
+.cs-key .k-test {
+  background: linear-gradient(90deg, transparent 42%, var(--color-text) 42% 58%, transparent 58%);
+}
+
+.cs-key .k-cap {
+  background: linear-gradient(90deg, transparent 42%, var(--color-ember) 42% 58%, transparent 58%);
+}
+
+.cs-fig-note {
+  margin: 1.1rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+/* ---- figure: horizontal bars (score weights) ---- */
+
+.cs-hbars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+}
+
+.cs-hbars li {
+  display: grid;
+  grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr) 2.6rem;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--soft);
+}
+
+.cs-hbars .bar {
+  height: 0.85rem;
+  border-radius: 3px;
+  background: rgb(53 224 194 / 0.45);
+}
+
+.cs-hbars .num {
+  text-align: right;
+}
+
+.cs-hbars li.is-hi {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.cs-hbars li.is-hi .bar {
+  background: var(--color-aurora-1);
+}
+
+@media (max-width: 26rem) {
+  .cs-hbars li {
+    grid-template-columns: minmax(0, 7rem) minmax(0, 1fr) 2.4rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* ---- figure: vertical bars with two shaded phases (commits per day) ---- */
+
+/* Eight equal columns, four per phase, so the phase boundary is exactly
+   the middle of the box. */
+.cs-phases {
+  border-radius: 0.5rem;
+  background: linear-gradient(90deg, rgb(53 224 194 / 0.07) 50%, rgb(124 108 246 / 0.12) 50%);
+}
+
+.cs-phase-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--soft);
+}
+
+.cs-phase-labels p {
+  margin: 0;
+  padding: 0.55rem 0.6rem 0.75rem;
+}
+
+.cs-cols {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.2rem;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  column-gap: 0.4rem;
+}
+
+.cs-col {
+  display: grid;
+  grid-template-rows: 10rem auto;
+}
+
+.cs-col > span {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text);
+}
+
+.cs-col i {
+  display: block;
+  width: 75%;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-aurora-1);
+}
+
+.cs-col small {
+  padding: 0.35rem 0 0.5rem;
+  border-top: 1px solid rgb(233 238 247 / 0.18);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--color-muted);
+}
+
+.cs-notes {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+  color: var(--soft);
+}
+
+.cs-notes .num {
+  color: var(--color-muted);
+  margin-right: 0.5rem;
+}
+
+/* ---- figure: stat tiles ---- */
+
+.cs-tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+}
+
+.cs-tiles li {
+  border: 1px solid var(--color-glass-border);
+  background: var(--color-glass);
+  border-radius: 0.7rem;
+  padding: 0.8rem 0.9rem;
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--color-muted);
+}
+
+.cs-tiles b {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.3rem;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+/* ---- figure: link panel ---- */
+
+.cs-check {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.cs-check li {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.cs-check span {
+  color: var(--color-muted);
+  font-size: 0.92rem;
+}
+
+/* ---- decision table (closing chapter) ---- */
+
+.cs-sec {
+  padding-block: clamp(3rem, 8vw, 6rem);
+  border-top: 1px solid var(--color-glass-border);
+  scroll-margin-top: 1rem;
+}
+
+.cs-intro {
+  color: var(--color-muted);
+  margin: 0 0 1.75rem;
+  max-width: 60ch;
+}
+
+.cs-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid rgb(233 238 247 / 0.16);
+}
+
+.cs-log > li {
+  border-bottom: 1px solid var(--color-glass-border);
+}
+
+.cs-cols4 {
+  display: grid;
+  gap: 0.6rem;
+  align-items: start;
+}
+
+.cs-log-head {
+  display: none;
+}
+
+.cs-log summary {
+  list-style: none;
+  position: relative;
+  padding: 1.15rem 2rem 1.15rem 0;
+}
+
+.cs-log summary::-webkit-details-marker {
+  display: none;
+}
+
+.cs-log summary .cs-chev {
+  position: absolute;
+  right: 0.25rem;
+  top: 1.6rem;
+}
+
+.cs-log summary:hover .cs-q {
+  color: var(--color-ember);
+}
+
+.cs-q {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.2rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+.cs-cell {
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--soft);
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--color-glass-border);
+}
+
+.cs-cell.is-chose {
+  color: var(--color-text);
+  border-left-color: var(--color-ember);
+}
+
+.cs-cell.is-passed {
+  border-left-color: rgb(150 160 181 / 0.45);
+}
+
+.cs-lab {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+@media (min-width: 60rem) {
+  .cs-cols4 {
+    grid-template-columns: minmax(0, 1.15fr) repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .cs-log-head {
+    display: grid;
+    padding: 0.7rem 2rem 0.7rem 0;
+    font-size: 0.88rem;
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--color-glass-border);
+  }
+
+  /* The column header carries the labels on wide screens. */
+  .cs-lab {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* Open row: reasoning on the left, evidence in the margin. */
+.cs-entry {
+  display: grid;
+  gap: 1.5rem;
+  padding: 0 0 2rem;
+  color: var(--soft);
+}
+
+@media (min-width: 60rem) {
+  .cs-entry {
+    grid-template-columns: minmax(0, 40rem) minmax(0, 1fr);
+    gap: 3.5rem;
+  }
+}
+
+.cs-entry p {
+  margin: 0 0 1rem;
+}
+
+.cs-entry .cs-more {
+  font-size: 0.95rem;
+}
+
+.cs-evidence {
+  border: 1px solid var(--color-glass-border);
+  background: var(--color-ink-raise);
+  border-radius: 0.8rem;
+  padding: 1rem 1.15rem;
+  align-self: start;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.cs-evidence h3 {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin: 0 0 0.5rem;
+}
+
+.cs-evidence p {
+  margin: 0;
+}
+
+/* ---- closing sections ---- */
+
+.cs-prose {
+  max-width: 44rem;
+  color: var(--soft);
+}
+
+.cs-prose p {
+  margin: 0 0 1.1rem;
+}
+
+.cs-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+  max-width: 52rem;
+  color: var(--soft);
+}
+
+.cs-foot {
+  border-top: 1px solid var(--color-glass-border);
+  padding-block: 2rem 3rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cs .cs-foot a {
+  color: var(--color-muted);
+}

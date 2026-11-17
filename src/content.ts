@@ -138,7 +138,12 @@ export type Showcase = {
   poster?: string;
   // A still, not a video: the NFT is one frame, and the hero already
   // animates the same shader - a recording here would just repeat it.
+  // Rendered at 800x600 (4:3); imageAlt is required alongside it
+  // (content.test.ts enforces the pair).
   image?: string;
+  imageAlt?: string;
+  // Site path of a static case study page, linked from the card.
+  caseStudyUrl?: string;
   // Discriminates the entry whose call-to-action opens an in-page modal
   // instead of following liveUrl out to another site.
   kind?: "aurora";
@@ -160,6 +165,36 @@ export const showcases: Showcase[] = [
     ],
     tech: ["Solidity", "Foundry", "WebGL / GLSL", "viem", "Base"],
     image: "/aurora-still.webp",
+    imageAlt: "A generative aurora sky captured from the Aurora, on-chain shader",
+    caseStudyUrl: "/aurora/",
+    status: "live",
+  },
+  {
+    id: "jaksietumieszka",
+    name: "Jak się tu mieszka?",
+    tagline: "What living at any address in Warsaw or Kraków is like",
+    description:
+      "Pick any spot in Warsaw or Kraków and get a plain-language report on what living there is like. The facts are spread over a dozen public portals, so the site keeps its own copies of that public data, and a typical report needs no outside request. I designed it and run it alone, and I used AI coding agents for much of the implementation.",
+    highlights: [
+      "A typical report takes under a second, with no outside request",
+      "Walking times follow the street network",
+      "Every score is simple arithmetic, and rules write the verdict",
+      "First version in 8 days, live in Polish and English",
+    ],
+    tech: [
+      "TypeScript",
+      "React",
+      "MapLibre GL",
+      "Node.js",
+      "Fastify",
+      "SQLite",
+      "Docker",
+    ],
+    liveUrl: "https://jaksietumieszka.pl/",
+    image: "/case-studies/jaksietumieszka/still.webp",
+    imageAlt:
+      "A map of Warsaw covered in a colour grid, blue where living conditions score well and red where they score poorly. A side panel ranks districts, with Śródmieście first at 79, then Ochota at 74 and Wola at 71.",
+    caseStudyUrl: "/jaksietumieszka/",
     status: "live",
   },
   {

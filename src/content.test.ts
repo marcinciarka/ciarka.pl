@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { identity, showcases, work } from "./content";
+import { SITE_PATHS } from "./lib/crawlerContent";
 
 // Standalone punctuation tokens are separators, not words.
 function wordCount(...parts: string[]): number {
@@ -85,6 +86,20 @@ describe("showcases", () => {
   it("gives every card a recording or a still - no empty media frame", () => {
     for (const s of showcases) {
       expect(!!s.recording || !!s.image, s.id).toBe(true);
+    }
+  });
+
+  it("describes every still with alt text", () => {
+    for (const s of showcases) {
+      if (s.image) expect(s.imageAlt, s.id).toBeTruthy();
+    }
+  });
+
+  it("points every case study link at a page the build emits", () => {
+    for (const s of showcases) {
+      if (s.caseStudyUrl) {
+        expect(SITE_PATHS as readonly string[], s.id).toContain(s.caseStudyUrl);
+      }
     }
   });
 

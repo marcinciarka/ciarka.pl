@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jak się tu mieszka?: a case study - Marcin Ciarka</title>
+  <meta name="description"
+    content="A free site that tells you what living at any address in Warsaw or Kraków is like, built from public data. A case study by Marcin Ciarka." />
+  <meta name="author" content="Marcin Ciarka" />
+  <meta name="theme-color" content="#070b14" />
+  <link rel="canonical" href="https://ciarka.pl/jaksietumieszka/" />
+  <meta property="og:title" content="Jak się tu mieszka?: a case study - Marcin Ciarka" />
+  <meta property="og:description"
+    content="Pick any spot in Warsaw or Kraków and get a plain-language report on what living there is like. How I built it in 8 days from public data." />
+  <meta property="og:url" content="https://ciarka.pl/jaksietumieszka/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="https://ciarka.pl/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/clash-display-600.woff2" />
+  <script defer src="https://cloud.umami.is/script.js"
+    data-website-id="8589972c-eba7-40e1-9140-09e83bfa17d2" data-domains="ciarka.pl"
+    data-performance="true"></script>
+  <script type="module" src="/src/caseStudy/caseStudy.ts"></script>
+</head>
+
+<body class="cs">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="cs-wrap cs-bar">
+    <a class="cs-mark" href="/">ciarka.pl</a>
+    <nav class="cs-cases" aria-label="Case studies">
+      <span>Case studies</span>
+      <a href="/aurora/">Aurora, on-chain</a>
+      <a href="/jaksietumieszka/" aria-current="page" lang="pl">Jak się tu mieszka?</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="cs-wrap cs-opening">
+      <div>
+        <p class="cs-kicker">Case study by Marcin Ciarka</p>
+        <h1 lang="pl">Jak się tu mieszka?</h1>
+        <p class="cs-lede">Pick any spot in Warsaw or Kraków and get a plain-language report on what living there is
+          like. The name is Polish for "What is it like to live here?".</p>
+        <div class="cs-actions">
+          <a class="cs-btn" href="https://jaksietumieszka.pl/warszawa/">Check a place in Warsaw</a>
+          <a href="#decisions">Read the six decisions</a>
+        </div>
+      </div>
+      <figure class="cs-plate">
+        <img src="/case-studies/jaksietumieszka/explore-heatmap.webp" width="1200" height="750"
+          alt="A map of Warsaw covered in a colour grid, blue where living conditions score well and red where they score poorly. The centre and the west bank are mostly blue. A side panel ranks districts, with Śródmieście first at 79, then Ochota at 74 and Wola at 71." />
+        <figcaption>The city heat map scores Warsaw in 250 m squares, weighted by the visitor's own priorities.
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="cs-wrap cs-brief">
+      <section aria-labelledby="glance-h">
+        <h2 id="glance-h" class="cs-label">At a glance</h2>
+        <dl class="cs-glance">
+          <div>
+            <dt>What it is</dt>
+            <dd>A free website that writes a report on what living at any address in Warsaw or Kraków is like.</dd>
+          </div>
+          <div>
+            <dt>My role</dt>
+            <dd>Sole owner. I made the product and data decisions, directed and reviewed the work, and run the site. AI
+              coding agents wrote much of the code, first in cloud sessions and then on my laptop, committing under my
+              name.</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd>Live at jaksietumieszka.pl. Two cities, Polish and English.</dd>
+          </div>
+          <div>
+            <dt>Timeline</dt>
+            <dd>First version in 8 days, 10 to 17 November 2026.</dd>
+          </div>
+          <div>
+            <dt>Built with</dt>
+            <dd>TypeScript, React, MapLibre GL, Node.js with Fastify, SQLite, Docker</dd>
+          </div>
+          <div>
+            <dt>Data</dt>
+            <dd>OpenStreetMap, public transport timetables, city and national open data</dd>
+          </div>
+          <div>
+            <dt>Links</dt>
+            <dd>Live site: <a href="https://jaksietumieszka.pl/">jaksietumieszka.pl</a>. Source code: private
+              repository.</dd>
+          </div>
+        </dl>
+      </section>
+
+      <div>
+        <section aria-labelledby="short-h">
+          <h2 id="short-h" class="cs-label">In short</h2>
+          <p class="cs-short"><span lang="pl">Jak się tu mieszka?</span> answers one question about any spot in Warsaw
+            or Kraków: what is it like to live here? The facts exist, but they are spread over a dozen public portals,
+            and nobody reads them all for one address. The site keeps its own copies of that public data, so a typical
+            report needs no outside request and takes under a second. Walking times follow the street network, and
+            every score is simple arithmetic. I designed it and run it alone, and I used AI coding agents for much of
+            the implementation. The first version took 8 days.</p>
+        </section>
+        <nav class="cs-story" aria-labelledby="story-h">
+          <h2 id="story-h" class="cs-label">Chapters</h2>
+          <ol>
+            <li><a href="#ch1">A report answers one question about one address</a></li>
+            <li><a href="#ch2">Reports read local copies of public data, so they take under a second</a></li>
+            <li><a href="#ch3">Walking times are measured along the streets</a></li>
+            <li><a href="#ch4">Every score is simple arithmetic, and rules write the verdict</a></li>
+            <li><a href="#ch5">AI agents wrote much of the code under written plans and tests</a></li>
+            <li><a href="#ch6">One small server runs a free public site with no accounts</a></li>
+            <li><a href="#decisions">Six decisions and what each cost</a></li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <div class="cs-wrap">
+      <!-- Chapter 1 -->
+      <section class="cs-ch" id="ch1" aria-labelledby="ch1-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 1</p>
+          <h2 id="ch1-h" class="cs-h">A report answers one question about one address</h2>
+          <p class="cs-stand">You type an address or click the map. The site builds a report on what living there is
+            like, and ends with a verdict in plain words.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame">
+            <img class="cs-shot cs-shot-phone" src="/case-studies/jaksietumieszka/mobile-report.webp" width="390"
+              height="844" loading="lazy" decoding="async"
+              alt="A phone screen showing a report for Okólnik 9A in Warsaw's Śródmieście district. The headline reads &quot;Superbly connected and quiet city-centre spot with few drawbacks.&quot; Below it is a score of 88 out of 100, rated Excellent, and the line &quot;#1 of 55 in Warsaw&quot;." />
+          </div>
+          <figcaption>The top of a report on a phone: the verdict in one line, the overall score and the place's rank in
+            the city.</figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>The report is written for someone weighing up an address. It lists recent flat sale prices nearby, things
+            worth checking in person, and how well the place suits families, seniors or people without a car.</p>
+          <p>The report has four chapters: getting around, everyday life, environment and the area. Each topic opens with
+            one sentence, such as "City centre in 13 min.", then a score out of 100, charts and a map. It also covers
+            facts that are hard to judge on a viewing. These include road noise at the building, flood hazard, and
+            recent flat sale prices nearby. It also gives the hours of direct sun on 21 December, worked out from 3D
+            models of the buildings around.</p>
+          <p>The verdict at the end lists pros, cons and things worth checking in person. From there a visitor can
+            compare up to four places side by side, or open a heat map of the whole city to see where to look. There
+            are no accounts. Saved places and preferences stay in the visitor's own browser.</p>
+          <p>The name stays Polish in the English version too. It is the question a person asks before they move.</p>
+          <details class="cs-deep">
+            <summary>What is in a report<span class="cs-chev" aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p>Sections: transit, amenities, noise, air, environment with flood, local city facts, surroundings and
+                step-free access. Each section runs with a 15 s timeout, and a report shows what it has if one section
+                fails. A point within 50 m of a stored report reopens that report instead of building a new one.
+                Reports are stored once, in English, and translated when they are sent, so every report reads in both
+                languages. The Polish phrasebook is typed against the English one (<code>Catalogue&lt;typeof
+                  en&gt;</code>), so a missing Polish phrase fails the type check. Sunlight is computed for 21 December,
+                20 March and 21 June, at ground level and at about the 3rd floor, from GUGiK LoD1 building heights
+                (153,109 buildings in Warsaw). Its limits are on the page: trees and balconies are ignored and roofs are
+                flat. URLs carry the state: <code>/warszawa/report/&lt;id&gt;</code>,
+                <code>/warszawa/compare?ids=a,b,c</code>, <code>/warszawa/ranking</code>.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Chapter 2 -->
+      <section class="cs-ch" id="ch2" aria-labelledby="ch2-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 2</p>
+          <h2 id="ch2-h" class="cs-h">Reports read local copies of public data, so they take under a second</h2>
+          <p class="cs-stand">Asking a dozen public services for every report would be slow, and the report would break
+            whenever one of them did. So the server downloads each source in bulk on a schedule and builds reports from
+            its own copies.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame" role="img"
+            aria-label="Five steps from top to bottom. Public data sources are downloaded in bulk on a schedule into local copies, one set per city. The report builder reads only those copies and produces the report, the heat map and the ranking. Two side inputs feed the local copies: a data snapshot committed to git, and a sync from my laptop for city portals that block data-centre servers.">
+            <ol class="cs-flow">
+              <li class="cs-box"><i>1</i><b>Public data sources</b><span>timetables (GTFS), OpenStreetMap, city map
+                  server, flood maps (ISOK), air stations (GIOŚ), price register (RCN), addresses and 3D buildings
+                  (GUGiK)</span></li>
+              <li class="cs-box"><i>2</i><b>Downloaded in bulk, on a schedule</b><span>daily for timetables to yearly for
+                  tree canopy</span></li>
+              <li>
+                <div class="cs-box"><i>3</i><b>Local copies, one set per city</b><span>SQLite database with R-tree
+                    index, timetable index, walking network</span></div>
+                <div class="cs-side">
+                  <div class="cs-box"><b>My laptop</b><span>refreshes city-portal data and ships it with sync-city.sh,
+                      because some portals block data-centre servers</span></div>
+                  <div class="cs-box"><b>Data snapshot in git</b><span>121 MB, so a fresh copy starts with
+                      data</span></div>
+                </div>
+              </li>
+              <li>
+                <div class="cs-box"><i>4</i><b>Report builder</b><span>8 topics, scores out of 100, rule-based
+                    verdict</span></div>
+                <p class="cs-absent"><s aria-hidden="true">4 → 1</s> a typical report makes no outside request</p>
+              </li>
+              <li class="cs-box"><i>5</i><b>Report, heat map and ranking</b><span>one page per address, 250 m city
+                  grid, city ranking</span></li>
+            </ol>
+          </div>
+          <figcaption>A report reads only local copies. Outside services are contacted on a schedule, not per visitor.
+          </figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>All the sources are public: timetables, OpenStreetMap, the city's map server, and public registers for
+            flood risk, air quality, schools, health care, addresses, buildings and flat sales. After the deploy of 15
+            November 2026, all 26 sources for Warsaw and all 20 for Kraków reported ready.</p>
+          <p>Each source refreshes on its own schedule, from daily to yearly. A typical report in a built-up area makes
+            no outside request and takes 0.5 to 0.9 seconds, measured on 13 November on a 4-core server.</p>
+          <p>Some data needs cleaning first. The price data keeps only free-market flat sales, and air sensor readings
+            more than four times off the city median are dropped.</p>
+          <p>A 121 MB data snapshot is committed to the repository, so a fresh copy starts with data. Some city portals
+            block data-centre servers. So I refresh their data on my laptop and ship it to the server with one script.
+          </p>
+          <details class="cs-deep">
+            <summary>How the local copies are stored and checked<span class="cs-chev" aria-hidden="true"></span>
+            </summary>
+            <div class="cs-deep-body">
+              <p>City map layers are pulled in 4 to 8 km tiles. Geometry is stored as varint deltas, attribute sets are
+                deduplicated and deflated, and everything is R-tree indexed in SQLite (better-sqlite3), one database per
+                city. Image-only layers such as the 2 m noise map are reduced to one class byte per pixel. That is about
+                75 MB of layer data, and a full refresh cycle is roughly 1,000 requests a month. I checked the local
+                noise copy against the live city map on 120 random points (720 lookups): 8 lookups (1.1%) differed by
+                one 5 dB band, always where a band boundary passes within about 2 m. Public transport runs on my own
+                timetable index and an earliest-arrival Connection Scan router over the GTFS feeds. The Warsaw seed
+                holds 184,456 OpenStreetMap features, 127,028 address points and 153,109 buildings. Green cover adds
+                tree crowns measured from two national elevation models: everything at least 2.5 m above the terrain
+                that is rough like a crown and outside a building, on a 10 m grid
+                (<code>scripts/canopy-build.py</code>). The seed export is deterministic and sorted line by line, so a
+                data refresh shows up as a readable <code>git diff</code>.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Chapter 3 -->
+      <section class="cs-ch" id="ch3" aria-labelledby="ch3-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 3</p>
+          <h2 id="ch3-h" class="cs-h">Walking times are measured along the streets</h2>
+          <p class="cs-stand">A shop 300 m away in a straight line can be a 2.5 km walk when a river or a railway is in
+            the way. So the report measures every walk along the street network, and the minutes it shows are minutes a
+            person would walk.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame">
+            <img class="cs-shot" src="/case-studies/jaksietumieszka/report-daily-map.webp" width="1200" height="750"
+              loading="lazy" decoding="async"
+              alt="A report map of central Warsaw. Coloured lines run from the address to the nearest grocery, pharmacy, school, park and stop. Two dashed rings mark 5 and 10 minutes on foot. The headline above reads &quot;7 of 7 daily needs within a 10-minute walk.&quot;" />
+          </div>
+          <figcaption>Routes to the nearest place of each kind, with 5 and 10 minute walking rings.</figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>I built a walking network for each city from OpenStreetMap. From the address, one search over that network
+            measures the way to stops, shops, doctors, schools, parks, car parks and city bikes. The nearest place of
+            each kind gets its route drawn on the report map.</p>
+          <p>The network takes time to load after a restart, and some addresses are far from any mapped path. In those
+            cases the app estimates the walk as the straight-line distance times 1.3 and marks it as an estimate. It
+            switches to the network when it is ready. Counts such as "shops within 500 m" stay straight-line on
+            purpose.</p>
+          <p>The same network also gives a step-free route, for a parent with a pram or an older person with a walking
+            frame. Steps need a ramp, and rough paving and slopes cost more. The page says "step-free" and never
+            "wheelchair accessible", because kerb heights and pavement widths are not mapped well enough to promise
+            that.</p>
+          <p>One bug came from this network. When I added Kraków, its first walking network had been built at Warsaw's
+            latitude. The network stores east-west distances scaled for one latitude, and Kraków lies about 2 degrees
+            further south. So east-west walks in Kraków came out about 4.5% too short. Each city now builds its own
+            network at its own latitude, and the checklist for adding a city says so.</p>
+          <details class="cs-deep">
+            <summary>How the walk search works<span class="cs-chev" aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p><code>Walker</code> (<code>server/src/pois/walking.ts</code>) runs one bounded Dijkstra search from the
+                address, capped at 3,000 m (the furthest threshold that matters, the zero point for forests). It takes
+                the 5 nearest places of each kind by straight line and re-ranks them by walking distance. A place not
+                reached within the cap gets at least the cap, never a short straight-line guess. A route is stored when
+                the walk is 2,000 m or less. Every section records its <code>distanceBasis</code> (<code>network</code>
+                or <code>line</code>), and an old report without it is re-measured when opened. When places moved to
+                network distances on 16 November, a backfill re-measured every stored report at start-up and kept its
+                <code>updatedAt</code>, and the heat-map grid moved from version g7 to g8. Each risk in the plan had a
+                named test, for example "walker: a target across a barrier gets the network distance" and "walker:
+                unreached target gets at least the cap". The Warsaw graph is 19.3 MB, built from a Geofabrik extract
+                with osmium. The Kraków rebuild at latitude 50.06 has 329,659 nodes (commit c48a33f). The commit
+                measured the earlier error at about 4.5%, and <code>docs/adding-a-city.md</code> says up to 4.6%. Stops
+                use the network too, with 8 and 12 minute catchments.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Chapter 4 -->
+      <section class="cs-ch" id="ch4" aria-labelledby="ch4-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 4</p>
+          <h2 id="ch4-h" class="cs-h">Every score is simple arithmetic, and rules write the verdict</h2>
+          <p class="cs-stand">Each topic gets a score out of 100 from formulas simple enough to explain on the page. The
+            verdict is written by rules, so the same report always gets the same words.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame">
+            <p class="cs-fig-h">Share of the overall score, default priorities</p>
+            <!-- Bar widths are each share / 21, the largest share. -->
+            <ol class="cs-hbars" role="img"
+              aria-label="A bar chart of how much each topic counts towards the overall score with default priorities. Public transport counts most at 21%, then shops at 13%, health, greenery and quiet at 11% each, schools and free time at 9%, air at 8% and step-free access at 6%. A note says that raising quiet to the top slider level makes it about 53% of the score.">
+              <li><span>Public transport</span><span class="bar" style="width:100%"></span><span class="num">21%</span></li>
+              <li><span>Shops</span><span class="bar" style="width:61.9%"></span><span class="num">13%</span></li>
+              <li><span>Health</span><span class="bar" style="width:52.38%"></span><span class="num">11%</span></li>
+              <li><span>Greenery</span><span class="bar" style="width:52.38%"></span><span class="num">11%</span></li>
+              <li class="is-hi"><span>Quiet</span><span class="bar" style="width:52.38%"></span><span class="num">11%</span></li>
+              <li><span>Schools and education</span><span class="bar" style="width:42.86%"></span><span class="num">9%</span></li>
+              <li><span>Free time</span><span class="bar" style="width:42.86%"></span><span class="num">9%</span></li>
+              <li><span>Air</span><span class="bar" style="width:38.1%"></span><span class="num">8%</span></li>
+              <li><span>Step-free access</span><span class="bar" style="width:28.57%"></span><span class="num">6%</span></li>
+            </ol>
+            <p class="cs-fig-note">Quiet at the top slider level: about 53% of the overall score</p>
+          </div>
+          <figcaption>Default weights from the code. Each slider level multiplies a topic's weight by 0, 1, 3 or 9.
+          </figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>A distance counts in full up to a set distance, then falls in a straight line to zero. A count of places
+            rises quickly and then levels off, so the tenth café matters less than the first. When a fact is unknown, it
+            is left out and the other parts are reweighted. Missing data does not count as bad.</p>
+          <p>Kraków does not publish some things Warsaw does, such as school catchment areas and land use. It also has no
+            public city bike system. For those, the report says "not published by the city". A line saying "none nearby"
+            would be wrong, and a reader could not tell the two cases apart.</p>
+          <p>The verdict comes from rules in code, with thresholds taken from published norms such as the WHO noise
+            guidelines and 400 m and 800 m walking catchments. It writes grammatical Polish, with the right gender,
+            plural and case forms, as well as English. It has no randomness, and a test suite checks its output.</p>
+          <p>Visitors can raise or lower each topic with a slider. In the first version, moving one slider barely
+            changed the order of places. The cause was that transport, shops, health, schools and leisure tend to rise
+            and fall together, so together they outvoted any single topic. The four slider levels now multiply a
+            topic's weight by 0, 1, 3 or 9. Set to the top level, quiet goes from about 11% of the overall score to
+            about 53%.</p>
+          <details class="cs-deep">
+            <summary>The formulas and the verdict rules<span class="cs-chev" aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p>In <code>server/src/scoring.ts</code>, distance parts are <code>lin(v, full, zero)</code>, falling
+                linearly from 1 at <code>full</code> metres to 0 at <code>zero</code> metres. Count parts saturate as
+                <code>1 - exp(-count / k)</code>. <code>weighted()</code> drops parts whose value is null and
+                renormalises the rest. Default weights (<code>SCORE_WEIGHTS</code>, <code>shared/prefs.ts</code>):
+                transit 0.22, shopping 0.14, health 0.12, green 0.12, quiet 0.12, education 0.10, leisure 0.10, air
+                0.08, step-free 0.06. <code>LEVEL_FACTOR = [0, 1, 3, 9]</code> multiplies them (commit e326e24). The
+                verdict (<code>server/src/verdict.ts</code>, 1,561 lines, with 1,463 lines of tests) is pure: no clock,
+                no randomness, no I/O. It flattens the sections into facts, collects pros and cons with one polarity per
+                topic, picks a headline, lists things to check in person, and scores six lifestyles (families, car-free,
+                quiet seekers, city lovers, seniors, active people). Air thresholds are calibrated per city from the
+                city's own station medians (<code>npm run calibrate</code>): PM2.5 18/25 µg/m³ for Kraków against 15/21
+                for Warsaw. <code>cities/unpublished.ts</code> lists the facts each city leaves out, and a saved report
+                is recomputed when that list changes.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Chapter 5 -->
+      <section class="cs-ch" id="ch5" aria-labelledby="ch5-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 5</p>
+          <h2 id="ch5-h" class="cs-h">AI agents wrote much of the code under written plans and tests</h2>
+          <p class="cs-stand">I used AI coding agents (Claude Code) for much of the implementation. I decided what to
+            build, set the rules each change had to meet, and reviewed what came back. The agents worked fast, so the
+            checks had to live in the repository, where every session would run into them.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame">
+            <p class="cs-fig-h">Commits per day, 10 to 17 November 2026</p>
+            <!-- Bar heights are commits / 125 (the tallest day) x 8.5rem. -->
+            <div class="cs-phases" role="img"
+              aria-label="A bar chart of commits per day from 10 to 17 November 2026: 23, 71, 17, 24, 58, 125, 38 and 2, for 358 in total. The first four days are shaded as cloud agent sessions with pull requests. The last four are shaded as agent sessions on my laptop. The tallest bar, 125 commits on 15 November, is the day Kraków was added.">
+              <div class="cs-phase-labels">
+                <p>Cloud agent sessions, 10 pull requests that I merged</p>
+                <p>Agents on my laptop, commits under my name</p>
+              </div>
+              <ol class="cs-cols">
+                <li class="cs-col"><span>23<i style="height:1.56rem"></i></span><small>10 Nov</small></li>
+                <li class="cs-col"><span>71<i style="height:4.83rem"></i></span><small>11 Nov</small></li>
+                <li class="cs-col"><span>17<i style="height:1.16rem"></i></span><small>12 Nov</small></li>
+                <li class="cs-col"><span>24<i style="height:1.63rem"></i></span><small>13 Nov</small></li>
+                <li class="cs-col"><span>58<i style="height:3.94rem"></i></span><small>14 Nov</small></li>
+                <li class="cs-col"><span>125<i style="height:8.5rem"></i></span><small>15 Nov</small></li>
+                <li class="cs-col"><span>38<i style="height:2.58rem"></i></span><small>16 Nov</small></li>
+                <li class="cs-col"><span>2<i style="height:0.14rem"></i></span><small>17 Nov</small></li>
+              </ol>
+            </div>
+            <ul class="cs-notes">
+              <li><span class="num">15 Nov</span>Kraków added</li>
+              <li><span class="num">16 Nov</span>Walking routes and step-free access</li>
+              <li><span class="num">17 Nov</span>Visit statistics</li>
+            </ul>
+          </div>
+          <figcaption>358 commits in 8 days. Git counts by author, so it shows the phases and not how the work was split
+            inside them.</figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>For the first four days, the agents worked in cloud sessions and opened pull requests. I merged 10 of them.
+            Git shows 124 of the 358 commits authored by Claude, all from that phase. From 14 November most commits were
+            made by agents running on my laptop, and they committed under my name. So from that day git does not
+            separate their commits from mine.</p>
+          <p>Each large change started as a written plan in the repository. A plan states the goal, the constraints that
+            must hold, the commands that prove the work is done, and a short list of risks to review. Each risk names
+            the test that guards it, for example "a shop across a river gets the walking distance". The plan also
+            records my decisions, such as which sources' licence terms allow their use. The Kraków plan was reviewed by
+            a separate model run before any code was written.</p>
+          <p>The checks run on every change. Tests cannot reach the internet, and a test that tries fails. The web build
+            fails if a component contains text that is not translated, and a missing Polish phrase fails the type check.
+            The same checks run before each commit and again on GitHub. Review rounds show up in git as their own
+            commits, such as "Review fixes" and "Second review fixes".</p>
+          <p>The result was 358 commits in 8 days, about 50,000 lines of code and nearly 800 tests. Kraków went from a
+            written plan to production in one day.</p>
+          <details class="cs-deep">
+            <summary>How the plans and checks were set up<span class="cs-chev" aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p>Plans live in <code>docs/superpowers/plans/</code> and open with "For agentic workers: REQUIRED
+                SUB-SKILL: Use superpowers:subagent-driven-development", so an agent executes them task by task with
+                checkbox steps, a failing test first, then the code, then the full suite. Each plan has "Global
+                Constraints", "Verification commands" (<code>npm test</code>, <code>npm run typecheck</code>,
+                <code>npm --prefix web run build</code>) and "Review Focus". The walking plan's review focus lists five
+                risks, each tied to a named test. The Kraków plan says "Reviewed once by an independent Opus pass. Its
+                findings are folded in." The onboarding plan was revised after a "cold review" (commit f70d814).
+                Cloud-phase branches are named <code>claude/...</code>. Local commits were switched on with a marker file
+                on 14 November (commit 6385b4d). 131 commits carry a co-author trailer naming Claude Opus 5.5, Claude
+                Fable 5.2 or Claude Sonnet 5.5. Guard rails: <code>server/src/test-data-dir.ts</code> refuses
+                connections to outside hosts and fails the file that tried (commit 57fda8a). CI runs the tests behind a
+                dead proxy at 127.0.0.1:9 so any network call fails fast. <code>web/scripts/i18n-check.mjs</code> fails
+                the build on literal text in components. <code>web/scripts/css-check.mjs</code> stops page stylesheets
+                from restyling the map. The web app has no test runner, so its pure logic lives in files with relative
+                imports and is tested from the server runner (<code>web/src/lib/compareCore.ts</code> in
+                <code>server/src/web/compare-core.test.ts</code>). Counts: 91 test files and 796 test cases by count on
+                17 November. The last full run recorded in the repository was 772 passing tests on 15 November. About
+                52,000 lines of non-test code (server 29,153, web 20,236, shared 3,057). <code>CONTRIBUTING.md</code>
+                and <code>docs/adding-a-city.md</code> are written so that the next session, human or agent, starts
+                from the current state.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Chapter 6 -->
+      <section class="cs-ch" id="ch6" aria-labelledby="ch6-h">
+        <div class="cs-ch-head">
+          <p class="cs-ch-n">Chapter 6</p>
+          <h2 id="ch6-h" class="cs-h">One small server runs a free public site with no accounts</h2>
+          <p class="cs-stand">The site is free, has no logins and runs on one rented server with 4 GB of memory. So the
+            limits that keep it running are built into the server.</p>
+        </div>
+        <figure class="cs-stage">
+          <div class="cs-frame">
+            <p class="cs-fig-h">Limits that keep a free site running</p>
+            <ul class="cs-tiles" role="img"
+              aria-label="Six tiles listing the server's limits: a new point within 50 m reopens the existing report; at most 4 reports are built at once with 50 more waiting; at most 500 new reports a day; 10 reports a minute per visitor; no accounts, with personal settings in cookies; and about 5 minutes from a push to the live site.">
+              <li><b>50 m</b>a new point this close reopens the existing report</li>
+              <li><b>4 at once</b>reports built at the same time, 50 more can wait</li>
+              <li><b>500 a day</b>new reports per day, across both cities</li>
+              <li><b>10 a minute</b>reports one visitor can create</li>
+              <li><b>0 accounts</b>personal settings stay in the visitor's cookies</li>
+              <li><b>about 5 min</b>from a push to the live site, plus build time</li>
+            </ul>
+          </div>
+          <figcaption>All limits are set in the server's configuration and listed in the project documentation.
+          </figcaption>
+        </figure>
+        <div class="cs-ch-body">
+          <p>A point within 50 m of an existing report reopens that report in about 17 milliseconds. The server builds at
+            most 4 reports at once and 500 new ones a day, and each visitor can create 10 a minute.</p>
+          <p>Personal settings stay in the visitor's own cookies, and the server never reads them. Visit statistics are
+            self-hosted and never record an address, a search or coordinates.</p>
+          <p>A place stays in the ranking only while its data is at most 30 days old. A push to the main branch goes live
+            within about 5 minutes plus the build.</p>
+          <p>Where it stands: Warsaw and Kraków are live, in Polish and English. Statistics started on 17 November 2026,
+            so I have no traffic numbers yet. Wrocław is planned and not built. I have not tested the site with a screen
+            reader or a browser's print dialog, or checked the rate limits behind the production proxy. The report is
+            still too long on phones.</p>
+          <details class="cs-deep">
+            <summary>Limits, memory and load numbers<span class="cs-chev" aria-hidden="true"></span></summary>
+            <div class="cs-deep-body">
+              <p>Rate limits per IP: create 10/min, refresh 10/min, travel times 60/min, report reads 120/min.
+                Process-wide: <code>REPORT_CONCURRENCY</code> 4 with 50 waiting, <code>REPORT_DAILY_CAP</code> 500 new
+                reports per UTC day across cities. Past the cap, creating answers 503 <code>daily_cap</code> with
+                <code>Retry-After</code>, and the status page shows it. Reuse within 50 m does not count towards the
+                cap. Each section has a 15 s timeout that does not count time spent waiting in the per-host HTTP queue.
+                Load test on 13 November (4 vCPU): 10 concurrent creates finished in 9 s. 100 took 80 s, and 59 sections
+                timed out. Flood and elevation have since moved to local files, so those sections no longer wait on
+                outside services in most places. Memory with both cities loaded: 662 MB at rest, 840 to 900 MB during
+                start-up, measured on 15 November. <code>docker-compose.yml</code> caps the container at 3 GB and the
+                Node heap at 2,560 MB. The cookies are capped at 6,000 bytes together, below a common 8 KB header limit.
+                Deploys: a cron job on the server fetches <code>origin/main</code> every 5 minutes and runs
+                <code>docker compose up -d --build</code> when it moved. Ranking rules
+                (<code>shared/leaderboard.ts</code>, pure functions): titles need 5 contenders city-wide and a score of
+                65, and contenders older than 25 days that someone opened in the last 90 days are refreshed in the
+                background.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Closing chapter: the decision table -->
+      <section class="cs-sec" id="decisions" aria-labelledby="decisions-h">
+        <h2 id="decisions-h" class="cs-h">Six decisions and what each cost</h2>
+        <p class="cs-intro">Each row is a choice with an alternative I passed on. Read across for the trade-off, or open
+          a row for the reasoning.</p>
+
+        <div class="cs-cols4 cs-log-head" aria-hidden="true"><span>The question</span><span>What I
+            chose</span><span>What I passed on</span><span>What it cost</span></div>
+        <ul class="cs-log">
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">Where does a report get its data?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Local copies of every source,
+                  downloaded in bulk on a schedule.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>Asking each public service
+                  for every report.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>About 75 MB of layer data per city, a
+                  refresh schedule per source, and a manual sync from my laptop.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>Asking per report would make each report as slow as the slowest portal, and one portal outage would
+                  break every report. Local copies make a typical report take under a second with no outside request.
+                  They also keep the load on the city's map server to roughly 1,000 requests a month.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p>README "How it works"; commit 0a4ab36 ("Serve city facts, noise, flood extents and geocoding from
+                    local data"); <code>scripts/sync-city.sh</code></p>
+                </aside>
+              </div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">How far away is the shop?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Walking distance along the street
+                  network, with straight line times 1.3 only as a marked fallback.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>Straight line times 1.3 for
+                  everything, which the first version used for shops.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>A walking network of about 10 to 19 MB per
+                  city, built at each city's latitude, plus a re-measure of every stored report.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>A straight line ignores rivers, railways and motorways, and those are where the error is largest.
+                  Stops used the network from early on, and places followed on 16 November. Each section records which
+                  method it used, so an estimated distance is never shown as a measured one.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>server/src/pois/walking.ts</code>; commits 680ab1d, 2667cfb, d02971e;
+                    <code>docs/superpowers/plans/2026-11-16-walking-routes.md</code></p>
+                </aside>
+              </div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">Who writes the verdict?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Rules in code, with thresholds
+                  from published norms.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>Scores alone, leaving the
+                  reader to add them up.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>About 1,500 lines of rules and as many
+                  lines of tests, and every new phrase written by hand in two languages.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>A score of 72 does not tell a reader whether the place is loud or far from a doctor. The verdict
+                  names the pros, the cons and what to check in person, in plain sentences, and every line comes from
+                  facts in the report. Because it is built from rules, the same report always gets the same verdict,
+                  and the rules are tested.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>server/src/verdict.ts</code> (header: "Pure and deterministic");
+                    <code>server/src/verdict.test.ts</code></p>
+                </aside>
+              </div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">What does the report say when a city does not publish a fact?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>"Not published by the city",
+                  tracked per fact and per city.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>Treating a missing source as
+                  "none nearby".</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>Every section keeps a list of facts each
+                  city leaves out, and a saved report is recomputed when that list changes.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>"None nearby" would tell a Kraków reader there are no school catchments, when the city simply does not
+                  publish them. Unknown values are left out of the score, so missing data does not pull a place
+                  down.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>server/src/cities/unpublished.ts</code>; <code>docs/adding-a-city.md</code> ("Say 'not
+                    published', not 'none nearby'")</p>
+                </aside>
+              </div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">How much should one priority slider matter?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Four levels that multiply a
+                  topic's weight by 0, 1, 3 or 9.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>A linear 0 to 3 scale.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>At the top level one topic carries about
+                  half of the overall score or more (quiet about 53%, transport about 70%), so a single slider can
+                  reorder the whole ranking.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>With a linear scale, one slider barely reordered places, because five related topics outvoted it. A
+                  steep scale makes a change visible on the map and in the ranking.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>shared/prefs.ts</code> (<code>LEVEL_FACTOR</code> and its comment);
+                    <code>web/src/lib/priorities.ts</code>; commit e326e24</p>
+                </aside>
+              </div>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary class="cs-cols4">
+                <span class="cs-q">How do you keep a free site with no accounts from being overloaded?</span>
+                <span class="cs-cell is-chose"><span class="cs-lab">What I chose</span>Limits in the server: reuse
+                  within 50 m, 4 reports at once, 500 new reports a day, 10 per minute per visitor.</span>
+                <span class="cs-cell is-passed"><span class="cs-lab">What I passed on</span>Accounts and logins.</span>
+                <span class="cs-cell"><span class="cs-lab">What it cost</span>On a very busy day, new reports stop until
+                  midnight UTC. Reports are public and permanent, and only I can delete one.</span>
+                <span class="cs-chev" aria-hidden="true"></span>
+              </summary>
+              <div class="cs-entry">
+                <p>Accounts would add friction for a visitor who wants one answer, and they would mean storing personal
+                  data. Server-side limits protect a 4 GB server without knowing who anyone is.</p>
+                <aside class="cs-evidence" aria-label="Evidence">
+                  <h3>Evidence</h3>
+                  <p><code>CONTRIBUTING.md</code> "Decisions worth knowing"; <code>server/src/reports/queue.ts</code>,
+                    <code>server/src/reports/cap.ts</code></p>
+                </aside>
+              </div>
+            </details>
+          </li>
+        </ul>
+      </section>
+
+      <section class="cs-sec" id="change" aria-labelledby="change-h">
+        <h2 id="change-h" class="cs-h">What I would change</h2>
+        <div class="cs-prose">
+          <p><strong>Measure walks along the streets from day one.</strong> The first version estimated walks to places
+            as a straight line times 1.3. Switching on 16 November meant re-measuring every stored report at start-up
+            and recomputing the heat map for both cities. The scoring thresholds now read as walking metres, and they
+            still need a review.</p>
+          <p><strong>Decide what the first screen is for before building the ranking.</strong> People who got a link to
+            the site thought it was a leaderboard, because the ranking panel opened first. On 16 November I closed the
+            ranking by default and put a "Check your place" box on the first screen. That cost a redesign of the map's
+            first screen and its menus.</p>
+          <p><strong>Compute scores when a report is read, instead of storing them.</strong> Saved reports keep the
+            scores from their last refresh. So a scoring change leaves old numbers on saved reports until I run a
+            rescore command by hand. That cost a separate rescore tool and a manual step after every change.
+            Recomputing on open is still on the open-work list.</p>
+        </div>
+      </section>
+
+      <section class="cs-sec" id="links" aria-labelledby="links-h">
+        <h2 id="links-h" class="cs-h">Links</h2>
+        <ul class="cs-links">
+          <li>Try it: <a href="https://jaksietumieszka.pl/">jaksietumieszka.pl</a> (city picker)</li>
+          <li>Warsaw map: <a href="https://jaksietumieszka.pl/warszawa/">jaksietumieszka.pl/warszawa/</a></li>
+          <li>Kraków map: <a href="https://jaksietumieszka.pl/krakow/">jaksietumieszka.pl/krakow/</a></li>
+          <li>Warsaw ranking: <a
+              href="https://jaksietumieszka.pl/warszawa/ranking">jaksietumieszka.pl/warszawa/ranking</a></li>
+          <li>Source code: the repository is private.</li>
+          <li><a href="/#showcases">Back to the portfolio</a></li>
+          <li><a href="/#contact">Contact</a></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="cs-wrap cs-foot">
+    <span>Marcin Ciarka, senior Web3 full-stack engineer</span>
+    <a href="/">ciarka.pl</a>
+  </footer>
+</body>
+
+</html>

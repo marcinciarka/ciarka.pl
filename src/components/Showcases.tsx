@@ -111,7 +111,17 @@ function ShowcaseCard({
             </span>
           ))}
         </div>
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+          {showcase.caseStudyUrl && (
+            <a
+              href={showcase.caseStudyUrl}
+              data-umami-event="case-study"
+              data-umami-event-project={showcase.id}
+              className="font-medium text-ember transition-opacity hover:opacity-80"
+            >
+              Read the case study →
+            </a>
+          )}
           <ShowcaseLinks showcase={showcase} />
         </div>
       </div>
@@ -128,7 +138,7 @@ function ShowcaseCard({
           <div className="glass aspect-4/3 w-full overflow-hidden rounded-2xl">
             <img
               src={showcase.image}
-              alt={`A generative aurora sky captured from the ${showcase.name} shader`}
+              alt={showcase.imageAlt}
               width={800}
               height={600}
               loading="lazy"
